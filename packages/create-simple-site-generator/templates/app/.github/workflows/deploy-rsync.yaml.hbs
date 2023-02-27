@@ -1,0 +1,42 @@
+name: Build and deploy through rsync
+
+on:
+  push:
+    branches: ["production"]
+
+env:
+  working-directory: ./
+  url: {{ url }}
+
+jobs:
+  build:
+    name: Build and deploy production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 7
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18.x"
+      - name: Install and build
+        working-directory: ${{ env.working-directory }}
+        run: |
+          echo -e "@simsustech:registry=npm.simsus.tech
+          //npm.simsus.tech/:_authToken=${process.env.SIMSUSTECH_NPM_TOKEN}}" > ~/.npmrc
+          pnpm i
+          pnpm run build
+          rm ~/.npmrc
+
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@5.2
+        with:
+          switches: -avzr --delete
+          path: $\{{env.working-directory}}dist/static/
+          remote_path: /srv/$\{{env.url}}
+          remote_host: $\{{ secrets.DEPLOY_HOST }}
+          remote_user: $\{{ secrets.DEPLOY_USER }}
+          remote_key: $\{{ secrets.DEPLOY_KEY }}

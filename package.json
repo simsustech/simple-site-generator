@@ -1,0 +1,65 @@
+{
+  "name": "simple-site-generator-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=16.2.0"
+  },
+  "scripts": {
+    "build": "run-s build:create build:templates",
+    "build:create": "cd packages/create-simple-site-generator && pnpm run build",
+    "build:templates": "cd packages/templates && pnpm run build",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "version": "changeset version",
+    "publish": "changeset publish",
+    "lint": "eslint packages/*/src/",
+    "test:cli": "cd packages/cli && pnpm run test",
+    "test:plugin-vite": "cd packages/plugin-vite && pnpm run test",
+    "test": "run-s test:cli test:plugin-vite"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.23.0",
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.30.4",
+    "@typescript-eslint/parser": "^5.30.4",
+    "changesets": "^1.0.2",
+    "eslint": "^8.19.0",
+    "eslint-define-config": "^1.5.1",
+    "eslint-import-resolver-typescript": "^3.2.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "git-conventional-commits": "^1.2.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.7.1",
+    "simple-git-hooks": "^2.8.0",
+    "syncpack": "^9.8.4"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm run lint && pnpm run format:check",
+    "commit-msg": "pnpm exec commitlint --edit $1"
+  },
+  "lint-staged": {
+    "*": [
+      "prettier --write --ignore-unknown"
+    ],
+    "packages/*/{src,types}/**/*.ts": [
+      "eslint --ext .ts"
+    ],
+    "packages/**/*.d.ts": [
+      "eslint --ext .ts"
+    ]
+  },
+  "pnpm": {
+    "overrides": {
+      "@simsustech/simple-site-generator": "workspace:*",
+      "@simsustech/simple-site-generator-plugin-vite": "workspace:*",
+      "@simsustech/simple-site-generator-templates": "workspace:*",
+      "@simsustech/simple-site-generator-app": "workspace:*"
+    }
+  },
+  "packageManager": "pnpm@6.32.3"
+}

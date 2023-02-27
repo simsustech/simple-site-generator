@@ -1,0 +1,48 @@
+{
+  "name": "@simsustech/simple-site-generator-templates",
+  "version": "0.1.0",
+  "author": "simsustech",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js",
+    "./*/css": "./dist/*.css"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/types/index.d.ts"
+      ]
+    }
+  },
+  "types": "./dist/types",
+  "dependencies": {
+    "@quasar/quasar-ui-qmarkdown": "^2.0.0-beta.6",
+    "@quasar/quasar-ui-qmediaplayer": "^2.0.0-beta.6",
+    "import-meta-resolve": "^2.0.3",
+    "unplugin-vue-components": "^0.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.24",
+    "@vitejs/plugin-vue": "4.0.0",
+    "@vue/runtime-dom": "^3.2.47",
+    "quasar": "^2.11.6",
+    "sass": "^1.50.0",
+    "typescript": "^4.6.3",
+    "vite": "^4.1.4",
+    "vue": "^3.2.47",
+    "vue-router": "^4.1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simsustech/simple-site-generator.git",
+    "directory": "packages/templates"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
