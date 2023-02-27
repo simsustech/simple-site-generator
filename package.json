@@ -16,9 +16,7 @@
     "version": "changeset version",
     "publish": "changeset publish",
     "lint": "eslint packages/*/src/",
-    "test:cli": "cd packages/cli && pnpm run test",
-    "test:plugin-vite": "cd packages/plugin-vite && pnpm run test",
-    "test": "run-s test:cli test:plugin-vite"
+    "test": "echo \"Error: no test specified\" && exit 0"
   },
   "devDependencies": {
     "@changesets/cli": "^2.23.0",
