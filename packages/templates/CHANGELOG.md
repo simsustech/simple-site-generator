@@ -1,5 +1,13 @@
 # @simsustech/simple-site-generator-templates
 
+## 0.1.1
+
+### Patch Changes
+
+- 84e9ea9: Simple Site Generator
+- 84e9ea9: Update
+- 84e9ea9: Fix Landing page in small-business
+
 ## 0.2.2
 
 ### Patch Changes
