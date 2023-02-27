@@ -1,0 +1,50 @@
+{
+  "name": "create-simple-site-generator",
+  "version": "0.1.1",
+  "license": "MIT",
+  "author": "simsustech",
+  "type": "module",
+  "bin": {
+    "create-simple-site-generator": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "main": "dist/cli.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simsustech/simple-site-generator.git",
+    "directory": "packages/create-simple-site-generator"
+  },
+  "bugs": {
+    "url": "https://github.com/simsustech/simple-site-generator/issues"
+  },
+  "homepage": "https://github.com/simsustech/simple-site-generator/tree/main/packages/create-simple-site-generator#readme",
+  "dependencies": {
+    "@vitrify/tools": "^0.1.0",
+    "handlebars": "^4.7.7",
+    "inquirer": "^8.2.2",
+    "latest-version": "^7.0.0",
+    "minimist": "^1.2.6"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.2.1",
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^17.0.23",
+    "typescript": "^4.7.3",
+    "vite": "^4.0.1",
+    "vue": "^3.2.37"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
