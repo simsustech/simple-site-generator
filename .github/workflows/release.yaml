@@ -20,7 +20,7 @@ jobs:
 
       - name: Creating .npmrc
         run: |
-          cat > ~/.npmrc << EOF
+          cat > .npmrc << EOF
             //registry.npmjs.org/:_authToken=$NPM_TOKEN
             //npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
             //https://npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
