@@ -50,6 +50,7 @@ export interface PageProps {
   }[]
   tags: string[]
   extra?: Record<string, any>
+  subpages?: string[]
   cta?: {
     message: string
     route?: string

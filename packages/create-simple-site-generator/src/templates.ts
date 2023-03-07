@@ -61,7 +61,7 @@ export const templates: Templates = {
           'vue',
           'vue-router'
         ])),
-        '@simsustech/simple-site-generator-templates': '^0.1.0',
+        '@simple-site-generator/templates': '^0.1.0',
         '@quasar/quasar-ui-qmarkdown': '^2.0.0-beta.6',
         '@quasar/quasar-ui-qmediaplayer': '^2.0.0-beta.6'
       },

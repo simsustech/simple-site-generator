@@ -6,15 +6,9 @@ import { h, defineAsyncComponent } from 'vue'
 import { Layout } from 'virtual:ssg:template'
 const { title, tags, favicon, extra } = config.ssg
 
-// const { Layout } = await import('virtual:ssg:template')
 const pagesImport = import.meta.glob('src/pages/**/*.md', {
   eager: true
 })
-// const pagesContent = import.meta.glob('src/pages/*.md', {
-//   eager: true,
-//   as: 'raw'
-// })
-// const YAMLfrontMatterRegex = /---(.|\n)*---/
 
 const noSsrComponent = {
   name: 'NoSSRWrapper',
@@ -55,12 +49,12 @@ const routes: RouteRecordRaw[] = [
     },
     children: pages.map(([key, page]) => {
       const { attributes, markdown } = page
-      // console.log(key)
-      // const content = pagesContent[key].replace(YAMLfrontMatterRegex, '')
-      // console.log(content)
+
       const vuePage = () =>
         import('virtual:ssg:template').then((module) => {
-          return attributes.page ? module[attributes.page] : module.Page
+          return attributes.page && module[attributes.page]
+            ? module[attributes.page]
+            : module.Page
         })
 
       const props = {
@@ -81,7 +75,6 @@ const routes: RouteRecordRaw[] = [
         alias: attributes.id === 'home' ? ['home'] : []
       }
     })
-    // children: [{ path: '', component: () => import('src/pages/IndexPage.vue') }]
   },
 
   // Always leave this as last one,

@@ -23,7 +23,6 @@ jobs:
           cat > .npmrc << EOF
             //registry.npmjs.org/:_authToken=$NPM_TOKEN
             //npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
-            //https://npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
           EOF
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,10 +1,7 @@
 lockfileVersion: 5.4
 
 overrides:
-  '@simsustech/simple-site-generator': workspace:*
-  '@simsustech/simple-site-generator-plugin-vite': workspace:*
-  '@simsustech/simple-site-generator-templates': workspace:*
-  '@simsustech/simple-site-generator-app': workspace:*
+  '@simple-site-generator/templates': workspace:*
 
 importers:
 

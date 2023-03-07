@@ -14,22 +14,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Creating .npmrc
+        run: |
+          cat > $\{{env.working-directory}}.npmrc << EOF
+            @simsustech:registry=https://npm.simsus.tech
+            //npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
+          EOF
+        env:
+          SIMSUSTECH_NPM_TOKEN: $\{{ secrets.SIMSUSTECH_NPM_TOKEN }}
+
       - name: Install pnpm
         uses: pnpm/action-setup@v2.2.2
         with:
           version: 7
+
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
           node-version: "18.x"
+
       - name: Install and build
         working-directory: ${{ env.working-directory }}
         run: |
-          echo -e "@simsustech:registry=npm.simsus.tech
-          //npm.simsus.tech/:_authToken=${process.env.SIMSUSTECH_NPM_TOKEN}}" > ~/.npmrc
           pnpm i
           pnpm run build
-          rm ~/.npmrc
 
       - name: rsync deployments
         uses: burnett01/rsync-deployments@5.2
@@ -40,3 +49,6 @@ jobs:
           remote_host: $\{{ secrets.DEPLOY_HOST }}
           remote_user: $\{{ secrets.DEPLOY_USER }}
           remote_key: $\{{ secrets.DEPLOY_KEY }}
+
+      - name: Remove .npmrc
+        run: rm $\{{env.working-directory}}.npmrc
