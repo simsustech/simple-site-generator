@@ -18,7 +18,9 @@ Currently there are two free templates in the `@simple-site-generator/templates`
 # Features
 
 - Easily switch between templates with a single configuration option.
-- Define your content with Markdown.
+- Separation of content and style:
+  - Define your content with Markdown.
+  - Choose your template
 - Builds a full-featured, static, Quasar Framework powered website.
 - Comes with a Github workflow which automatically uploads the generated files to your server.
 
@@ -40,7 +42,7 @@ On Github, define the following action secrets:
 - DEPLOY_HOST: IP address or hostname of your server
 - DEPLOY_USER: SSH user on your server
 - DEPLOY_KEY: SSH key corresponding to the user
-- SIMSUSTECH_NPM_TOKEN: NPM access token for npm.simsus.tech
+- ~~SIMSUSTECH_NPM_TOKEN: NPM access token for npm.simsus.tech~~
 
 If you have `rsync` installed on your server/host, you can then push to the `production` branch and it will upload your website to `/srv/${URL}`.
 
