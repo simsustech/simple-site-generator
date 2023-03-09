@@ -1,5 +1,7 @@
 {{ url }} {
-  root * /srv/{{ url }}
-  file_server
-  try_files "{path}.html {path} /index.html"
+  handle {
+    root * /srv/{{ url }}
+    try_files {path}.html {path} /index.html
+    file_server
+  }
 }
