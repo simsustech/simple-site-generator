@@ -48,3 +48,7 @@ If you have `rsync` installed on your server/host, you can then push to the `pro
 
 > **Note**
 > Change the `template` variable in `vitrify.config.ts` to `small-business` to experience the ease of changing the template of your website.
+
+# API
+
+[PageProps can be defined in the frontmatter of your Markdown files.](/packages/templates/src/index.ts)
