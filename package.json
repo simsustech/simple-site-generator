@@ -8,8 +8,9 @@
     "node": ">=16.2.0"
   },
   "scripts": {
-    "build": "run-s build:create build:templates",
+    "build": "run-s build:create build:cli build:templates",
     "build:create": "cd packages/create-simple-site-generator && pnpm run build",
+    "build:cli": "cd packages/simple-site-generator && pnpm run build",
     "build:templates": "cd packages/templates && pnpm run build",
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
