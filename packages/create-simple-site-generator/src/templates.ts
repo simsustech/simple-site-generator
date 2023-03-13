@@ -70,6 +70,7 @@ export const templates: Templates = {
           '@vitejs/plugin-vue',
           '@typescript-eslint/eslint-plugin',
           '@typescript-eslint/parser',
+          '@types/node',
           '@vitrify/tools',
           'critters',
           'eslint',
