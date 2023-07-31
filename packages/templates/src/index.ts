@@ -28,6 +28,7 @@ export interface PageProps {
   }[]
   lists?: {
     header: string
+    dense?: boolean
     items: {
       label: string
       overline?: string
@@ -36,6 +37,7 @@ export interface PageProps {
         name: string
         color?: string
       }
+      href?: string
     }[]
   }[]
   meta?: Record<string, any>

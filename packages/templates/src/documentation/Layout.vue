@@ -11,9 +11,7 @@
           >
             <img alt="Logo" :src="favicon" />
           </q-avatar>
-
           <q-space horizontal />
-
           <q-btn borderless flat stretch icon="more_vert">
             <q-menu>
               <q-item clickable @click="$q.dark.toggle()">
@@ -29,7 +27,6 @@
         </q-toolbar>
       </div>
     </q-header>
-
     <q-drawer v-model="drawer" bordered>
       <div class="row justify-center q-ml-lg q-mr-md">
         <q-avatar
@@ -41,12 +38,6 @@
       </div>
       <q-scroll-area class="fit">
         <q-list>
-          <!-- <q-item clickable to="/" exact v-ripple>
-            <q-item-section avatar>
-              <q-icon name="home" />
-            </q-item-section>
-            <q-item-section>{{ landingPage.title }}</q-item-section>
-          </q-item>-->
           <q-item
             v-for="page in menuPages"
             clickable
@@ -60,7 +51,6 @@
             </q-item-section>
             <q-item-section>{{ page.label }}</q-item-section>
           </q-item>
-
           <q-expansion-item icon="person" :label="tags.contact.label">
             <q-item
               v-for="page in contactPages"
@@ -74,7 +64,6 @@
         </q-list>
       </q-scroll-area>
     </q-drawer>
-
     <q-page-container @click="drawer = false">
       <router-view />
       <q-page-scroller
@@ -85,11 +74,9 @@
         <q-btn fab icon="keyboard_arrow_up" />
       </q-page-scroller>
     </q-page-container>
-
     <div class="bg-secondary">
       <div class="row justify-center q-pa-md page-content">
         <q-list class="col-12 col-md-4" dense separator padding>
-          <!-- <q-item-label header>{{ contact.label }}</q-item-label> -->
           <q-item
             v-for="page in footerPages"
             :key="page.id"
