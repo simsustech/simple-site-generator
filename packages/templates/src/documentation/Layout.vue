@@ -30,6 +30,7 @@
     <q-drawer v-model="drawer" bordered>
       <div class="row justify-center q-ml-lg q-mr-md">
         <q-avatar
+          square
           style="height: 50px; width: 50px"
           class="q-mt-xs q-mb-xs q-mr-lg"
         >
