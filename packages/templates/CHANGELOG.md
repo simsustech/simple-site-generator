@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.3
+
+### Patch Changes
+
+- a455612: chore(templates): update packages
+
 ## 0.1.2
 
 ### Patch Changes
