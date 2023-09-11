@@ -35,7 +35,7 @@ jobs:
           node-version: "18.x"
 
       - name: Install and build
-        working-directory: ${{ env.working-directory }}
+        working-directory: $\{{ env.working-directory }}
         run: |
           pnpm i
           pnpm run build
