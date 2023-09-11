@@ -1,5 +1,11 @@
 # create-simple-site-generator
 
+## 0.1.4
+
+### Patch Changes
+
+- e6dc952: fix(create-simple-site-generator): escape working-directory input
+
 ## 0.1.3
 
 ### Patch Changes
