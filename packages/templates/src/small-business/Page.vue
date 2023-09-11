@@ -6,7 +6,7 @@
         <q-item
           v-for="item in list.items"
           :key="item.label"
-          :clickable="item.href!!"
+          :clickable="item.href !== void 0"
           :href="item.href"
         >
           <q-item-section avatar v-if="item.icon">
@@ -92,6 +92,7 @@ export interface PageProps {
       label: string
       overline?: string
       caption?: string
+      href?: string
       icon?: {
         name: string
         color?: string

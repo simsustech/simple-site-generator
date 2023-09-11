@@ -100,7 +100,7 @@
             v-ripple
           >
             <q-item-section avatar>
-              <q-icon :name="page.icon" />
+              <q-icon :name="page.icon.name" />
             </q-item-section>
             <q-item-section>{{ page.label }}</q-item-section>
           </q-item>

@@ -3,7 +3,12 @@
     <div v-if="lists">
       <q-list v-for="list in lists" :key="list.header" :dense="list.dense">
         <q-item-label header v-if="list.header">{{ list.header }}</q-item-label>
-        <q-item v-for="item in list.items" :key="item.label">
+        <q-item
+          v-for="item in list.items"
+          :key="item.label"
+          :clickable="item.href !== void 0"
+          :href="item.href"
+        >
           <q-item-section avatar v-if="item.icon">
             <q-icon :color="item.icon.color" :name="item.icon.name" />
           </q-item-section>
@@ -87,6 +92,7 @@ export interface PageProps {
       label: string
       overline?: string
       caption?: string
+      href?: string
       icon?: {
         name: string
         color?: string
