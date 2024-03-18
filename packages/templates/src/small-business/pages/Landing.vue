@@ -5,7 +5,9 @@
         v-if="images"
         class="col"
         :src="images[0].src"
-        style="height: 90vh"
+        :style="{
+          height: $q.screen.gt.sm ? '90vh' : '700px'
+        }"
         fit="cover"
         position="50% 0%"
       >
