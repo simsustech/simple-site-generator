@@ -23,19 +23,19 @@
   "dependencies": {
     "@quasar/quasar-ui-qmarkdown": "^2.0.0-beta.6",
     "@quasar/quasar-ui-qmediaplayer": "^2.0.0-beta.6",
-    "import-meta-resolve": "^3.0.0",
-    "unplugin-vue-components": "^0.25.2"
+    "import-meta-resolve": "^4.1.0",
+    "unplugin-vue-components": "^0.27.5"
   },
   "devDependencies": {
-    "@types/node": "^20.6.0",
-    "@vitejs/plugin-vue": "4.3.4",
-    "@vue/runtime-dom": "^3.3.4",
-    "quasar": "^2.12.6",
-    "sass": "^1.66.1",
-    "typescript": "^5.2.2",
-    "vite": "^4.4.9",
-    "vue": "^3.3.4",
-    "vue-router": "^4.2.4"
+    "@types/node": "^22.10.1",
+    "@vitejs/plugin-vue": "5.2.1",
+    "@vue/runtime-dom": "^3.5.13",
+    "quasar": "^2.17.4",
+    "sass": "^1.81.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "repository": {
     "type": "git",

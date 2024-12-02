@@ -58,6 +58,7 @@ export const templates: Templates = {
           '@fastify/static',
           '@quasar/extras',
           'quasar',
+          'vite-plugin-pwa',
           'vue',
           'vue-router'
         ])),
