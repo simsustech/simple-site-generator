@@ -1,5 +1,11 @@
 # create-simple-site-generator
 
+## 0.1.5
+
+### Patch Changes
+
+- 657fff8: chore: update dependencies
+
 ## 0.1.4
 
 ### Patch Changes
