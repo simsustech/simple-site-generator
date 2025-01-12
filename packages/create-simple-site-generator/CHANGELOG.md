@@ -1,5 +1,11 @@
 # create-simple-site-generator
 
+## 0.1.6
+
+### Patch Changes
+
+- df9b484: Update packages
+
 ## 0.1.5
 
 ### Patch Changes
