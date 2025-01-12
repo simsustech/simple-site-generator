@@ -56,7 +56,7 @@
     <div class="row justify-center">
       <q-card v-for="page in cta" class="col-6 q-ma-md" style="width: 300px">
         <q-card-section style="height: 150px">
-          <div class="row justify-center">
+          <div v-if="page.icon" class="row justify-center">
             <q-icon size="xl" :name="page.icon.name" />
           </div>
           <div class="row justify-center">
@@ -78,58 +78,8 @@
 <script setup lang="ts">
 import { useQuasar, useMeta, openURL } from 'quasar'
 import { ref, watch, toRefs, computed } from 'vue'
-import type { Component } from 'vue'
 
-// import type { PageProps } from '../../index.js'
-export interface PageProps {
-  id: string
-  pages?: PageProps[]
-  title?: string
-  description?: string
-  icon?: {
-    name: string
-    color?: string
-  }
-  content?: string
-  cards?: {
-    header: string
-    content: string
-    cta: {
-      message: string
-      route: string
-    }
-  }[]
-  lists?: {
-    header: string
-    items: {
-      label: string
-      overline?: string
-      caption?: string
-      icon?: {
-        name: string
-        color?: string
-      }
-    }[]
-  }[]
-  meta?: Record<string, any>
-  videos?: {
-    src: string
-    type: string
-  }[]
-  images?: {
-    name: string
-    src: string
-    caption: string
-  }[]
-  tags: string[]
-  extra?: Record<string, any>
-  cta?: {
-    message: string
-    route?: string
-  }
-}
-
-// export interface Props extends PageProps {}
+import type { PageProps } from '../../index.js'
 
 const $q = useQuasar()
 

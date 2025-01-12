@@ -99,7 +99,7 @@
             exact
             v-ripple
           >
-            <q-item-section avatar>
+            <q-item-section v-if="page.icon" avatar>
               <q-icon :name="page.icon.name" />
             </q-item-section>
             <q-item-section>{{ page.label }}</q-item-section>
@@ -181,16 +181,7 @@
 import { ref, computed, toRefs } from 'vue'
 import { openURL, useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
-// import type { LayoutProps } from '../index.js'
-// TODO: https://github.com/vuejs/core/issues/4294
-export interface LayoutProps {
-  title: string
-  favicon?: string
-  pages?: Record<string, any>
-  tags?: Record<string, any>
-  extra?: Record<string, any>
-}
-// export interface Props extends LayoutProps {}
+import type { LayoutProps } from '../index.js'
 
 const props = defineProps<LayoutProps>()
 
