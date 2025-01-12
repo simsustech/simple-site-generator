@@ -3,7 +3,7 @@ const templates = import.meta.glob('./*/index.ts')
 export interface LayoutProps {
   title: string
   favicon?: string
-  pages?: Record<string, any>
+  pages?: PageProps[]
   tags?: Record<string, any>
   extra?: Record<string, any>
 }
@@ -11,7 +11,8 @@ export interface LayoutProps {
 export interface PageProps {
   id: string
   pages?: PageProps[]
-  title?: string
+  title: string
+  label: string
   description?: string
   icon?: {
     name: string
@@ -24,6 +25,10 @@ export interface PageProps {
     cta: {
       message: string
       route: string
+      alternative?: {
+        message: string
+        route: string
+      }
     }
   }[]
   lists?: {
