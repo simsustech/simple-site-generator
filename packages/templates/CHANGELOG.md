@@ -1,5 +1,12 @@
 # @simple-site-generator/templates
 
+## 0.1.4
+
+### Patch Changes
+
+- b20dd30: fix(templates): fix small-business LandingPage image height"
+- 657fff8: chore: update dependencies
+
 ## 0.1.3
 
 ### Patch Changes
