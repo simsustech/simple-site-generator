@@ -65,57 +65,7 @@ import { useQuasar, useMeta } from 'quasar'
 import { ref, watch, toRefs } from 'vue'
 import { QMediaPlayer } from '@quasar/quasar-ui-qmediaplayer'
 import { QMarkdown } from '@quasar/quasar-ui-qmarkdown'
-// import type { Component } from 'vue'
-// import type { PageProps } from '../index.js'
-// TODO: https://github.com/vuejs/core/issues/4294
-export interface PageProps {
-  id: string
-  pages?: PageProps[]
-  title?: string
-  description?: string
-  icon?: {
-    name: string
-    color?: string
-  }
-  content?: string
-  cards?: {
-    header: string
-    content: string
-    CTA: {
-      message: string
-      route: string
-    }
-  }[]
-  lists?: {
-    header: string
-    items: {
-      label: string
-      overline?: string
-      caption?: string
-      href?: string
-      icon?: {
-        name: string
-        color?: string
-      }
-    }[]
-  }[]
-  meta?: Record<string, any>
-  videos?: {
-    src: string
-    type: string
-  }[]
-  images?: {
-    name: string
-    src: string
-    caption: string
-  }[]
-  tags: string[]
-  extra?: Record<string, any>
-  cta?: {
-    message: string
-    route?: string
-  }
-}
+import type { PageProps } from '../index.js'
 
 // export interface Props extends PageProps {}
 
