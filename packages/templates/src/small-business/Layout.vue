@@ -117,6 +117,17 @@
           </q-expansion-item>
         </q-list>
       </q-scroll-area>
+      <q-space />
+      <q-list>
+        <q-item>
+          <q-item-section avatar> </q-item-section>
+          <q-item-section>
+            <q-item-label caption>
+              © <a href="https://www.simsus.tech">simsustech</a>
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
     </q-drawer>
     <q-page-container @click="drawer = false">
       <router-view />
