@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.5
+
+### Patch Changes
+
+- df9b484: Update packages
+
 ## 0.1.4
 
 ### Patch Changes
