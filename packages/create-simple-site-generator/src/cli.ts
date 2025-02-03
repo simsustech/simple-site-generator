@@ -63,6 +63,7 @@ const author = await input({
 interface TemplateVariables {
   template: string
   name: string
+  url: string
   productName: string
   description: string
   author: string
@@ -72,10 +73,11 @@ const templateVariables = {
   template: templateName,
   name,
   productName,
+  url,
   description,
   author
 } as TemplateVariables
-// @ts-ignore
+
 const template = templates[templateName]
 
 const directoryUrl = template.url

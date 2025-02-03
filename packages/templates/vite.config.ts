@@ -13,10 +13,13 @@ const templates = (
   .filter((file) => file.isDirectory())
   .map((file) => file.name)
 
-const input = templates.reduce((acc, cur) => {
-  acc[cur] = new URL(`./src/${cur}/${cur}.ts`, import.meta.url).pathname
-  return acc
-}, {} as Record<string, string>)
+const input = templates.reduce(
+  (acc, cur) => {
+    acc[cur] = new URL(`./src/${cur}/${cur}.ts`, import.meta.url).pathname
+    return acc
+  },
+  {} as Record<string, string>
+)
 
 function toPascalCase(text: string) {
   return text.replace(/(^\w|-\w)/g, clearAndUpper)

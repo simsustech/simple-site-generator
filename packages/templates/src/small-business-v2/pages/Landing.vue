@@ -8,7 +8,7 @@
       <div class="col">
         <div class="row items-center">
           <div class="col-1" />
-          <div class="col-12 col-md-5 justify-center q-pa-md">
+          <div v-if="card" class="col-12 col-md-5 justify-center q-pa-md">
             <div class="row">
               <div class="text-h4">
                 {{ card.header }}
@@ -37,7 +37,13 @@
             </div>
           </div>
           <div class="col-12 col-md-6 text-center">
-            <q-avatar size="75vmin" class="avatar-border" square rounded>
+            <q-avatar
+              v-if="images?.[0]"
+              size="75vmin"
+              class="avatar-border"
+              square
+              rounded
+            >
               <q-img
                 v-if="images"
                 class="col"
@@ -54,6 +60,7 @@
 
     <div class="row justify-center">
       <div
+        v-if="qualityMarks"
         v-for="qualityMark in qualityMarks"
         class="col-3 text-center q-ma-md"
       >
@@ -68,7 +75,12 @@
     </div>
 
     <div class="row justify-center">
-      <q-card v-for="page in cta" class="col-6 q-ma-md" style="width: 300px">
+      <q-card
+        v-if="cta"
+        v-for="page in cta"
+        class="col-6 q-ma-md"
+        style="width: 300px"
+      >
         <q-card-section style="height: 150px">
           <div class="row justify-center">
             <q-icon
@@ -91,6 +103,7 @@
         </q-card-actions>
       </q-card>
     </div>
+    <slot name="default" />
   </q-page>
 </template>
 
