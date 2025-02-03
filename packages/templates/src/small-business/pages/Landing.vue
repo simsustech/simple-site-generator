@@ -13,6 +13,7 @@
       >
         <div class="absolute-top q-mt-xl text-center transparent">
           <q-card
+            v-if="card"
             class="text-center"
             :class="$q.dark.isActive ? 'text-white' : 'text-black'"
             :dark="$q.dark.isActive"
@@ -72,6 +73,7 @@
         </q-card-actions>
       </q-card>
     </div>
+    <slot name="default" />
   </q-page>
 </template>
 

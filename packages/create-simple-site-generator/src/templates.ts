@@ -60,10 +60,10 @@ export const templates: Templates = {
           'quasar',
           'vite-plugin-pwa',
           'vue',
-          'vue-router'
+          'vue-router',
+          '@simple-site-generator/templates',
+          '@quasar/quasar-ui-qmarkdown'
         ])),
-        '@simple-site-generator/templates': '^0.1.0',
-        '@quasar/quasar-ui-qmarkdown': '^2.0.0-beta.6',
         '@quasar/quasar-ui-qmediaplayer': '^2.0.0-beta.6'
       },
       devDependencies: {
@@ -72,8 +72,13 @@ export const templates: Templates = {
           '@typescript-eslint/eslint-plugin',
           '@typescript-eslint/parser',
           '@types/node',
-          '@vitrify/tools',
-          'critters',
+          '@vue/reactivity',
+          '@vue/runtime-core',
+          '@vue/runtime-dom',
+          '@vue/server-renderer',
+          '@vue/shared',
+          'animated-unocss',
+          'beasties',
           'eslint',
           'eslint-config-prettier',
           'eslint-plugin-prettier-vue',
@@ -83,11 +88,12 @@ export const templates: Templates = {
           'icon-gen',
           'npm-run-all',
           'typescript',
+          'unocss',
           'vite',
-          'vitrify'
-          // 'vite-plugin-markdown'
-        ])),
-        'vite-plugin-markdown': '2.2.0-2'
+          'vitrify',
+          'workbox-window',
+          'vite-plugin-markdown'
+        ]))
       },
       exports: {
         '.': {

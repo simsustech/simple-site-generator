@@ -5,7 +5,13 @@
     >
       <div class="col-1"></div>
       <div class="col-4 text-center">
-        <q-img class="max-w-80vw" height="100%" fit="fill" :src="logoSrc" />
+        <q-img
+          class="max-w-80vw"
+          height="100%"
+          fit="fill"
+          :src="logoSrc"
+          loading="eager"
+        />
       </div>
       <div class="col-1" />
       <div class="col-3">
@@ -52,6 +58,7 @@
         </div>
       </div>
     </div>
+    <slot name="default" />
   </q-page>
 </template>
 
