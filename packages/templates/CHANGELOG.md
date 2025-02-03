@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.7
+
+### Patch Changes
+
+- 7ec70e2: feat(templates): add one-page template
+
 ## 0.1.6
 
 ### Patch Changes
