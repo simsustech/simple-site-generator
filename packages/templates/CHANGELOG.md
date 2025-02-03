@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.8
+
+### Patch Changes
+
+- d57c6d3: fix(templates): update templates
+
 ## 0.1.7
 
 ### Patch Changes
