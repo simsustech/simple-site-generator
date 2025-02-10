@@ -10,6 +10,7 @@
         }"
         fit="cover"
         position="50% 0%"
+        fetchpriority="high"
       >
         <div class="absolute-top q-mt-xl text-center transparent">
           <q-card

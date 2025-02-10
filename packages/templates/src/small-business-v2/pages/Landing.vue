@@ -50,6 +50,7 @@
                 :src="images[0].src"
                 height="100%"
                 fit="cover"
+                fetchpriority="high"
               />
             </q-avatar>
           </div>
