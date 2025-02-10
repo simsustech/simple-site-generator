@@ -1,5 +1,12 @@
 # @simple-site-generator/templates
 
+## 0.1.10
+
+### Patch Changes
+
+- 07c8a28: chore(templates): update one-page
+- aca0a6b: fix(templates): set fetchpriority high
+
 ## 0.1.9
 
 ### Patch Changes
