@@ -1,10 +1,8 @@
 <template>
   <q-page>
-    <div
-      class="column bg-gradient-to-br from-primary from-60% to-secondary h-100vh"
-    >
-      <div class="col-1"></div>
-      <div class="col-4 text-center">
+    <div class="column h-100vh">
+      <div class="col-1 bg-primary"></div>
+      <div class="col-4 text-center bg-primary">
         <q-img
           class="max-w-80vw"
           height="100%"
@@ -13,8 +11,8 @@
           fetchpriority="high"
         />
       </div>
-      <div class="col-1" />
-      <div class="col-3">
+      <div class="col-1 bg-primary" />
+      <div class="col-4 bg-primary">
         <div
           v-if="address || phoneNumber || email"
           class="row text-h6 justify-center"
@@ -57,8 +55,15 @@
           <div class="col"></div>
         </div>
       </div>
+      <div class="col bg-primary"></div>
     </div>
-    <slot name="default" />
+    <div class="h-15vh bg-gradient-to-b from-primary to-transparent"></div>
+    <div class="">
+      <slot name="default" />
+    </div>
+    <div class="w-full text-center">
+      <a href="https://www.simsus.tech" target="_blank">© simsustech</a>
+    </div>
   </q-page>
 </template>
 
