@@ -52,7 +52,10 @@
         :name="image.name"
         :img-src="image.src"
       >
-        <div v-if="image.caption" class="absolute-top custom-caption">
+        <div
+          v-if="image.caption"
+          class="absolute-top text-center p-12px text-white bg-black/30"
+        >
           <div class="text-subtitle1">{{ image.caption }}</div>
         </div>
       </q-carousel-slide>
@@ -135,14 +138,3 @@ watch(
   }
 )
 </script>
-
-<style lang="sass" scoped>
-@import '@quasar/quasar-ui-qmarkdown/src/QMarkdown.sass'
-@import '@quasar/quasar-ui-qmediaplayer/src/QMediaPlayer.sass'
-
-.custom-caption
-  text-align: center
-  padding: 12px
-  color: white
-  background-color: rgba(0, 0, 0, .3)
-</style>

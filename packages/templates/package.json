@@ -27,13 +27,15 @@
     "unplugin-vue-components": "^28.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.0",
+    "@types/node": "^22.13.1",
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/runtime-dom": "^3.5.13",
     "quasar": "^2.17.7",
-    "sass": "^1.83.4",
+    "sass": "^1.84.0",
     "typescript": "^5.7.3",
-    "vite": "^6.0.11",
+    "unocss": "^65.4.3",
+    "vite": "^6.1.0",
+    "vitrify": "^0.17.17",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

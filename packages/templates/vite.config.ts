@@ -3,7 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import { promises, readFileSync } from 'fs'
 import Components from 'unplugin-vue-components/vite'
 import { QuasarResolver } from 'unplugin-vue-components/resolvers'
-
+import UnoCSS from 'unocss/vite'
+import { presetUno } from 'unocss'
 // const autoImportMap = JSON.parse(await promises.readFile(new URL('../node_modules/@qso/app/dist/auto-import.json', import.meta.url), { encoding: 'utf-8' }))
 const templates = (
   await promises.readdir(new URL('./src', import.meta.url), {
@@ -31,6 +32,10 @@ function clearAndUpper(text: string) {
 export default defineConfig({
   plugins: [
     vue(),
+    UnoCSS({
+      presets: [presetUno()],
+      mode: 'per-module'
+    }),
     Components({
       resolvers: [
         QuasarResolver()
