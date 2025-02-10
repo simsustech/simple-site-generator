@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.9
+
+### Patch Changes
+
+- feb2326: chore: update templates
+
 ## 0.1.8
 
 ### Patch Changes
