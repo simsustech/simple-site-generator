@@ -10,7 +10,7 @@
           height="100%"
           fit="fill"
           :src="logoSrc"
-          loading="eager"
+          fetchpriority="high"
         />
       </div>
       <div class="col-1" />
