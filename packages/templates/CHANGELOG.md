@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.11
+
+### Patch Changes
+
+- 540e897: fix(templates): fix one-page layout and seo
+
 ## 0.1.10
 
 ### Patch Changes
