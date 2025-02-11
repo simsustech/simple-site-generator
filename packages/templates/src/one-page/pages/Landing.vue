@@ -1,14 +1,15 @@
 <template>
   <q-page>
-    <div class="column h-100vh">
+    <div class="column flex-nowrap h-100vh">
       <div class="col-1 bg-primary"></div>
       <div class="col-4 text-center bg-primary">
-        <q-img
+        <img
           class="max-w-80vw"
           height="100%"
           fit="fill"
           :src="logoSrc"
           fetchpriority="high"
+          alt="logo"
         />
       </div>
       <div class="col-1 bg-primary" />
