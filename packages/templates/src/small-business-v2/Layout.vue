@@ -2,7 +2,11 @@
   <q-layout view="hHh lpR fFf">
     <q-header>
       <q-toolbar style="height: 100px">
-        <q-btn class="lt-sm q-mr-lg" icon="menu" @click="drawer = !drawer" />
+        <q-btn
+          class="lt-sm q-mr-lg"
+          icon="i-mdi-menu"
+          @click="drawer = !drawer"
+        />
         <q-avatar
           square
           style="height: 50px; width: 50px"
@@ -141,7 +145,7 @@
     </q-page-container>
     <div class="bg-secondary">
       <div class="row justify-center q-pa-md page-content">
-        <!-- <q-list class="col-12 col-md-4" dense separator padding>
+        <q-list class="col-12 col-md-4" dense separator padding>
           <q-item
             v-for="page in footerPages"
             :key="page.id"
@@ -151,7 +155,7 @@
           >
             <q-item-section>{{ page.label }}</q-item-section>
           </q-item>
-        </q-list> -->
+        </q-list>
         <div v-if="openingTimesLists" class="col-12 col-md-4">
           <router-link to="/openingtimes">Openingstijden:</router-link>
           <q-list

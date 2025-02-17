@@ -1,24 +1,22 @@
 <template>
   <q-page>
     <div
-      class="column justify-center page-background"
+      class="column justify-center bg-gradient-to-b from-primary to-transparent q-pl-md q-pr-md"
       style="min-height: inherit"
     >
       <div class="col-md"></div>
       <div class="col">
         <div class="row items-center">
           <div class="col-1" />
-          <div v-if="card" class="col-12 col-md-5 justify-center q-pa-md">
+          <div v-if="card" class="col-12 col-md-5 justify-center">
             <div class="row">
-              <div class="text-h4">
+              <div class="col-12 text-h4">
                 {{ card.header }}
               </div>
-              <br />
-              <div class="text-h6">
+              <div class="col-12 text-h6">
                 {{ card.content }}
               </div>
-              <br />
-              <div class="col text-center">
+              <div class="col-12 text-center">
                 <q-btn
                   class="q-mt-md q-mb-sm"
                   color="accent"
@@ -40,7 +38,7 @@
             <q-avatar
               v-if="images?.[0]"
               size="75vmin"
-              class="avatar-border"
+              class="shadow-lg shadow-accent"
               square
               rounded
             >

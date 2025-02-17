@@ -62,8 +62,11 @@
     <div class="">
       <slot name="default" />
     </div>
-    <div class="w-full text-center">
-      <a href="https://www.simsus.tech" target="_blank">© simsustech</a>
+    <div class="w-full q-pb-xs text-center text-0.75em font-archivo">
+      ©
+      <a class="text-secondary" href="https://www.simsus.tech" target="_blank"
+        >simsustech</a
+      >
     </div>
   </q-page>
 </template>
