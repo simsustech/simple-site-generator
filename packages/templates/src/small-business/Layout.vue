@@ -136,7 +136,7 @@
         :scroll-offset="150"
         :offset="[18, 18]"
       >
-        <q-btn fab icon="keyboard_arrow_up" />
+        <q-btn fab icon="i-mdi-keyboard-arrow-up" />
       </q-page-scroller>
     </q-page-container>
     <div class="bg-secondary">
