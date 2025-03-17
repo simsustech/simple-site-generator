@@ -21,21 +21,21 @@
   },
   "types": "./dist/types",
   "dependencies": {
-    "@quasar/quasar-ui-qmarkdown": "^2.0.4",
+    "@quasar/quasar-ui-qmarkdown": "^2.0.5",
     "@quasar/quasar-ui-qmediaplayer": "^2.0.0-beta.6",
     "import-meta-resolve": "^4.1.0",
-    "unplugin-vue-components": "^28.0.0"
+    "unplugin-vue-components": "^28.4.1"
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
-    "@vitejs/plugin-vue": "5.2.1",
+    "@types/node": "^22.13.10",
+    "@vitejs/plugin-vue": "5.2.2",
     "@vue/runtime-dom": "^3.5.13",
-    "quasar": "^2.17.7",
-    "sass": "^1.84.0",
-    "typescript": "^5.7.3",
-    "unocss": "^65.4.3",
-    "vite": "^6.1.0",
-    "vitrify": "^0.17.17",
+    "quasar": "^2.18.1",
+    "sass": "^1.85.1",
+    "typescript": "^5.8.2",
+    "unocss": "^66.0.0",
+    "vite": "^6.2.2",
+    "vitrify": "^0.18.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

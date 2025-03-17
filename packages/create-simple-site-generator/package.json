@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/simsustech/simple-site-generator/tree/main/packages/create-simple-site-generator#readme",
   "dependencies": {
-    "@inquirer/prompts": "^7.3.1",
+    "@inquirer/prompts": "^7.4.0",
     "@vitrify/tools": "^0.4.0",
     "handlebars": "^4.7.8",
     "latest-version": "^9.0.0",
@@ -34,9 +34,9 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.7",
     "@types/minimist": "^1.2.5",
-    "@types/node": "^22.13.1",
-    "typescript": "^5.7.3",
-    "vite": "^6.1.0",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
     "vue": "^3.5.13"
   },
   "files": [
