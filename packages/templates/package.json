@@ -1,6 +1,6 @@
 {
   "name": "@simple-site-generator/templates",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "author": "simsustech",
   "license": "MIT",
   "type": "module",

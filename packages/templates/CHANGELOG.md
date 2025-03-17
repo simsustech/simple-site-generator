@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.13
+
+### Patch Changes
+
+- 3d32e99: fix(templates): fix QPageScroller
+
 ## 0.1.12
 
 ### Patch Changes
