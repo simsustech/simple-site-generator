@@ -62,7 +62,7 @@
             </q-item>
           </q-list>
         </q-btn-dropdown>
-        <q-btn borderless flat stretch icon="more_vert">
+        <q-btn borderless flat stretch icon="i-mdi-more-vert">
           <q-menu>
             <q-item clickable @click="$q.dark.toggle()">
               <q-item-section avatar>

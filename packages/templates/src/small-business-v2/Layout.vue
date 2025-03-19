@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="lHh Lpr lFf">
     <q-header>
       <q-toolbar style="height: 100px">
         <q-btn
@@ -66,12 +66,14 @@
             </q-item>
           </q-list>
         </q-btn-dropdown>
-        <q-btn borderless flat stretch icon="more_vert">
+        <q-btn borderless flat stretch icon="i-mdi-more-vert">
           <q-menu>
             <q-item clickable @click="$q.dark.toggle()">
               <q-item-section avatar>
                 <q-icon
-                  :name="$q.dark.mode ? 'brightness_2' : 'brightness_5'"
+                  :name="
+                    $q.dark.mode ? 'i-mdi-brightness-2' : 'i-mdi-brightness-5'
+                  "
                 />
               </q-item-section>
             </q-item>

@@ -17,7 +17,9 @@
               <q-item clickable @click="$q.dark.toggle()">
                 <q-item-section avatar>
                   <q-icon
-                    :name="$q.dark.mode ? 'brightness_2' : 'brightness_5'"
+                    :name="
+                      $q.dark.mode ? 'i-mdi-brightness-2' : 'i-mdi-brightness-5'
+                    "
                   />
                 </q-item-section>
               </q-item>
