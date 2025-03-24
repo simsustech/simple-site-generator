@@ -157,6 +157,24 @@
           >
             <q-item-section>{{ page.label }}</q-item-section>
           </q-item>
+          <q-item>
+            <q-item-section>
+              <q-item-label>
+                <q-btn
+                  v-if="extra?.instagramUrl"
+                  flat
+                  icon="i-mdi-instagram"
+                  :href="extra?.instagramUrl"
+                />
+                <q-btn
+                  v-if="extra?.facebookUrl"
+                  flat
+                  icon="i-mdi-facebook"
+                  :href="extra?.facebookUrl"
+                />
+              </q-item-label>
+            </q-item-section>
+          </q-item>
         </q-list>
         <div v-if="openingTimesLists" class="col-12 col-md-4">
           <router-link to="/openingtimes">Openingstijden:</router-link>
