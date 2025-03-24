@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.16
+
+### Patch Changes
+
+- 5ef28d3: fix(templates): add margins to Landing photo
+
 ## 0.1.15
 
 ### Patch Changes
