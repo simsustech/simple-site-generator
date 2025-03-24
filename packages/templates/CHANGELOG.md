@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.14
+
+### Patch Changes
+
+- 434e4b3: fix(templates): fix layout icons
+
 ## 0.1.13
 
 ### Patch Changes
