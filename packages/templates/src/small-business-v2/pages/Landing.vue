@@ -34,7 +34,7 @@
               </div>
             </div>
           </div>
-          <div class="col-12 col-md-6 text-center">
+          <div class="col-12 col-md-6 text-center q-mb-lg q-mt-lg">
             <q-avatar
               v-if="images?.[0]"
               size="75vmin"
