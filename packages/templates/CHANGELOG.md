@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.15
+
+### Patch Changes
+
+- 5355865: feat(templates): add instagram and facebook links to small-business-v2
+
 ## 0.1.14
 
 ### Patch Changes
