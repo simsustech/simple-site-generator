@@ -24,7 +24,7 @@
               split
               v-if="page.subpages"
               :label="page.label"
-              :to="page.id"
+              :to="`/${page.id}`"
             >
               <q-list>
                 <q-item
@@ -32,7 +32,7 @@
                   flat
                   clickable
                   :name="child.label"
-                  :to="child.id"
+                  :to="`/${child.id}`"
                 >
                   <q-item-section>{{ child.label }}</q-item-section>
                 </q-item>
@@ -42,7 +42,7 @@
               v-else
               :key="page.id"
               :name="page.label"
-              :to="page.id"
+              :to="`/${page.id}`"
               :label="page.label"
             />
           </div>
@@ -59,7 +59,7 @@
             <q-item
               v-for="page in contactPages"
               :key="page.id"
-              :to="page.id"
+              :to="`/${page.id}`"
               clickable
             >
               <q-item-section>{{ page.label }}</q-item-section>
@@ -101,7 +101,7 @@
             v-for="page in menuPages"
             clickable
             :key="page.id"
-            :to="page.id"
+            :to="`/${page.id}`"
             exact
             v-ripple
           >
@@ -115,7 +115,7 @@
             <q-item
               v-for="page in contactPages"
               :key="page.id"
-              :to="page.id"
+              :to="`/${page.id}`"
               clickable
             >
               <q-item-section>{{ page.label }}</q-item-section>
@@ -151,7 +151,7 @@
           <q-item
             v-for="page in footerPages"
             :key="page.id"
-            :to="page.id"
+            :to="`/${page.id}`"
             class="text-grey-8"
             active-class="text-grey-8"
           >
