@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.18
+
+### Patch Changes
+
+- 728294b: fix(templates): fix small-business template layout
+
 ## 0.1.17
 
 ### Patch Changes
