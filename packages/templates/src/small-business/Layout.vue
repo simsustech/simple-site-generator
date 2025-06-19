@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated>
       <q-toolbar style="height: 100px">
-        <q-btn class="lt-sm q-mr-lg" icon="menu" @click="drawer = !drawer" />
+        <q-btn class="lt-md q-mr-lg" icon="menu" @click="drawer = !drawer" />
         <q-avatar
           square
           style="height: 50px; width: 50px"
