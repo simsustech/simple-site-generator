@@ -1,5 +1,11 @@
 # @simple-site-generator/templates
 
+## 0.1.17
+
+### Patch Changes
+
+- bcc48b4: fix(templates): fix routes for nested pages
+
 ## 0.1.16
 
 ### Patch Changes
