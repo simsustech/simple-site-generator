@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div
-      class="column justify-center bg-gradient-to-b from-primary to-transparent q-pl-md q-pr-md"
+      class="column justify-center page-background"
       style="min-height: inherit"
     >
       <div class="col-md"></div>
