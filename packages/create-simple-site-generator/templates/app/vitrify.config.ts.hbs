@@ -7,7 +7,6 @@ import { certificateFor } from 'devcert'
 import { plugin as mdPlugin } from 'vite-plugin-markdown'
 import { Mode } from 'vite-plugin-markdown'
 import { copyFile } from 'fs/promises'
-import presetWebFonts from '@unocss/preset-web-fonts'
 
 interface SimpleSiteGenerator {
   ssg: {
@@ -26,9 +25,9 @@ const ssg = {
   template: 'documentation',
   templatePackage: '@simple-site-generator/templates',
   colors: {
-    primary: '#EDBF1C',
-    secondary: '#ED1C23',
-    accent: '#1C32ED',
+    primary: '#22c92a',
+    secondary: '#eece0cff',
+    accent: '#00a4e6ff',
     text: '#3B352E',
     dark: '#1D1D1D',
     positive: '#21BA45',
@@ -215,6 +214,9 @@ const quasarConf: NonNullable<VitrifyConfig['quasar']> = {
 
 export default async function ({ mode, command }): VitrifyConfigAsync {
   const config: VitrifyConfig & SimpleSiteGenerator = {
+    optimizeDeps: {
+      exclude: ['@simple-site-generator/templates']
+    },
     plugins: [
       mdPlugin({
         mode: [Mode.HTML]

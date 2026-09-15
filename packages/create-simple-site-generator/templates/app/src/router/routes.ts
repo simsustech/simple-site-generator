@@ -1,4 +1,3 @@
-import { groupCollapsed } from 'console'
 import { RouteRecordRaw } from 'vue-router'
 import config from 'virtual:vitrify-config'
 import { QNoSsr } from 'quasar'
@@ -6,16 +5,19 @@ import { h, defineAsyncComponent } from 'vue'
 import { Layout } from 'virtual:ssg:template'
 const { title, tags, favicon, extra } = config.ssg
 
-const pagesImport = import.meta.glob('src/pages/**/*.md', {
-  eager: true
-})
+const pagesImport = import.meta.glob(
+  ['src/pages/**/*.(md|vue)', '!**/Error404Page.vue'],
+  {
+    eager: true
+  }
+)
 
 const noSsrComponent = {
   name: 'NoSSRWrapper',
   render() {
     const component = defineAsyncComponent(this.component)
     return h(QNoSsr, null, {
-      default: (props) => h(component, this.page)
+      default: () => h(component, this.page)
     })
   },
   props: ['page', 'component']
@@ -26,13 +28,11 @@ const noSsrComponent = {
  **/
 const pages = [
   ...Object.entries(pagesImport)
-    .filter(([key, page]) => {
-      const {
-        attributes: { id, order = 0 }
-      } = page
+    .filter(([, page]) => {
+      const { attributes: { id, order = 0 } = { id: null, order: 0 } } = page
       return order || id === 'home'
     })
-    .sort(([key1, page1], [key2, page2]) => {
+    .sort(([, page1], [, page2]) => {
       const {
         attributes: { id: id1, order: order1 = 0 }
       } = page1
@@ -46,11 +46,9 @@ const pages = [
 
       return order
     }),
-  ...Object.entries(pagesImport).filter(([key, page]) => {
-    const {
-      attributes: { id, order = 0 }
-    } = page
-    return !order && id !== 'home'
+  ...Object.entries(pagesImport).filter(([, page]) => {
+    const { attributes: { id, order = 0 } = { id: null, order: 0 } } = page
+    return !order && id && id !== 'home'
   })
 ]
 
@@ -61,24 +59,28 @@ const routes: RouteRecordRaw[] = [
     props: {
       title,
       favicon,
-      pages: pages.map(([key, page]) => page.attributes),
+      pages: pages.map(([, page]) => page.attributes),
       tags,
       extra
     },
-    children: pages.map(([key, page]) => {
-      const { attributes, markdown } = page
-
-      const vuePage = () =>
-        import('virtual:ssg:template').then((module) => {
-          return attributes.page && module[attributes.page]
-            ? module[attributes.page]
-            : module.Page
-        })
+    children: pages.map(([, page]) => {
+      const { attributes = {}, html = '' } = page
+      const vuePage = async () => {
+        if (page.default) {
+          return page.default
+        } else {
+          return import('virtual:ssg:template').then((module) => {
+            return attributes.page && module[attributes.page]
+              ? module[attributes.page]
+              : module.Page
+          })
+        }
+      }
 
       const props = {
         ...attributes,
-        content: markdown,
-        pages: pages.map(([key, page]) => page.attributes)
+        content: html,
+        pages: pages.map(([, page]) => page.attributes)
       }
 
       return {
@@ -98,7 +100,8 @@ const routes: RouteRecordRaw[] = [
   // Always leave this as last one,
   // but you can also remove it
   {
-    path: '/:catchAll(.*)*',
+    path: '/404',
+    alias: '/:catchAll(.*)*',
     component: () => import('src/pages/Error404Page.vue')
   }
 ]

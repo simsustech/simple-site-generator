@@ -12,7 +12,7 @@ export default function createRouter() {
     history: import.meta.env.SSR
       ? createMemoryHistory(__BASE_URL__)
       : createWebHistory(__BASE_URL__),
-    scrollBehavior(to, from, savedPosition) {
+    scrollBehavior(_to, _from, _savedPosition) {
       return { top: 0 }
     },
     routes

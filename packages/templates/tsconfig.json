@@ -6,7 +6,6 @@
     "types": ["vue", "vite/client", "node"],
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
     "resolveJsonModule": true,
     "target": "ESNext",
     "outDir": "./dist",

@@ -1,2 +1,16 @@
 packages:
   - 'packages/*'
+
+overrides:
+  '@simple-site-generator/templates': workspace:*
+  # TypeScript 7 is the native (Go) port and no longer ships the JS API
+  # (`typescript` resolves to a version stub, so `ts.sys` is gone).
+  # @vue/compiler-sfc needs it to resolve imported types in defineProps()/
+  # defineEmits(), so pin to the newest release that still exposes it.
+  typescript: '^6.0.3'
+
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  simple-git-hooks: true
+  unrs-resolver: true

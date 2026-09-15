@@ -1,5 +1,8 @@
 module.exports = {
-  parserPreset: 'conventional-changelog-conventionalcommits',
+  // commitlint's built-in parser already follows conventional commits. Loading
+  // conventional-changelog-conventionalcommits by name is no longer possible:
+  // v10 is ESM-only (`exports: { import }`), which breaks commitlint's CJS
+  // require.resolve.
   rules: {
     'body-leading-blank': [1, 'always'],
     'body-max-line-length': [2, 'always', 100],

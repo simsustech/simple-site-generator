@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { promises, readFileSync } from 'fs'
+import { promises } from 'fs'
 import Components from 'unplugin-vue-components/vite'
 import { QuasarResolver } from 'unplugin-vue-components/resolvers'
 import UnoCSS from 'unocss/vite'
@@ -21,13 +21,6 @@ const input = templates.reduce(
   },
   {} as Record<string, string>
 )
-
-function toPascalCase(text: string) {
-  return text.replace(/(^\w|-\w)/g, clearAndUpper)
-}
-function clearAndUpper(text: string) {
-  return text.replace(/-/, '').toUpperCase()
-}
 
 export default defineConfig({
   plugins: [
