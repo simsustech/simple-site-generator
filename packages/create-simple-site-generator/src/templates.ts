@@ -45,10 +45,10 @@ export const templates: Templates = {
         'build:ssr': 'vitrify build -m ssr',
         'build:ssg': 'vitrify build -m ssg',
         test: 'vitrify test',
-        lint: 'eslint --ext .vue --ext .ts src',
-        'lint:fix': 'eslint --ext .vue --ext .ts src --fix',
-        'format:check': 'prettier --check .',
-        'format:write': 'prettier --write .',
+        lint: 'oxlint src',
+        'lint:fix': 'oxlint --fix src',
+        'format:check': 'oxfmt --check .',
+        'format:write': 'oxfmt --write .',
         'generate:icons':
           "icon-gen -i logo.svg -o public/ --favicon --favicon-name 'favicon-' --favicon-png-sizes '[32, 48, 96, 128, 256]'"
       },
@@ -68,32 +68,33 @@ export const templates: Templates = {
       },
       devDependencies: {
         ...(await getLatestVersions([
+          '@iconify-json/mdi',
           '@vitejs/plugin-vue',
-          '@typescript-eslint/eslint-plugin',
-          '@typescript-eslint/parser',
           '@types/node',
           '@vue/reactivity',
           '@vue/runtime-core',
           '@vue/runtime-dom',
           '@vue/server-renderer',
           '@vue/shared',
+          '@unocss/preset-icons',
+          '@unocss/preset-web-fonts',
           'animated-unocss',
           'beasties',
-          'eslint',
-          'eslint-config-prettier',
-          'eslint-plugin-prettier-vue',
-          'eslint-plugin-vue',
           'devcert',
           'fastify',
           'icon-gen',
           'npm-run-all',
-          'typescript',
+          'oxfmt',
+          'oxlint',
           'unocss',
           'vite',
           'vitrify',
           'workbox-window',
           'vite-plugin-markdown'
-        ]))
+        ])),
+        // TypeScript 7 is the native (Go) port and dropped the JS API that
+        // @vue/compiler-sfc uses to resolve imported types in defineProps().
+        typescript: '^6.0.3'
       },
       exports: {
         '.': {
