@@ -58,4 +58,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Remove .npmrc
-        run: rm .npmrc
+        # run even if an earlier step failed: this file holds registry tokens
+        if: always()
+        # -f: the file may legitimately be gone already
+        run: rm -f .npmrc

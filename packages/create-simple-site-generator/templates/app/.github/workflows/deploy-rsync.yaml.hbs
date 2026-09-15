@@ -52,4 +52,7 @@ jobs:
           remote_key: $\{{ secrets.DEPLOY_KEY }}
 
       - name: Remove .npmrc
-        run: rm $\{{env.working-directory}}.npmrc
+        # run even if an earlier step failed: this file holds registry tokens
+        if: always()
+        # -f: the file may legitimately be gone already
+        run: rm -f $\{{env.working-directory}}.npmrc
