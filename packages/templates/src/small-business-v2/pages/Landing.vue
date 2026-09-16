@@ -38,7 +38,7 @@
             <q-avatar
               v-if="images?.[0]"
               size="75vmin"
-              class="shadow-lg shadow-accent"
+              class="avatar-border"
               square
               rounded
             >
