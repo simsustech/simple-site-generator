@@ -1,5 +1,21 @@
 # @simple-site-generator/templates
 
+## 0.1.19
+
+### Patch Changes
+
+- b9491bb: Restore the hero background gradient in `small-business-v2`. The hero uses the
+  template's own `page-background` class again, instead of UnoCSS utilities that
+  consumers without a `vitrify.unocss` config never generate, which left the
+  landing page without a background.
+- b9491bb: Modernize the toolchain: oxlint and oxfmt replace eslint and prettier, and
+  everything moves to pnpm 12 and Node 20.19+, with dependencies updated (vite 8,
+  vue 3.5.42, quasar 2.32, vitrify 0.28).
+
+  Scaffolded projects now ship `.oxlintrc.json`/`.oxfmtrc.json` and the oxc VS
+  Code extension instead of the eslint stack, pin TypeScript 6, and their deploy
+  workflow uses the current GitHub Actions.
+
 ## 0.1.18
 
 ### Patch Changes
