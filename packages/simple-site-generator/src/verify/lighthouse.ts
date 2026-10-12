@@ -13,6 +13,14 @@ import type { ResourceEntry } from './budgets.js'
 export interface LighthouseVerification {
   scores: Record<string, number>
   resources: ResourceEntry[]
+  /**
+   * Failing audit ids per category. `verify` reports these next to a score so a
+   * failed accessibility/SEO score names the audit that failed instead of only
+   * the number — a bare "seo score is 82" is not actionable.
+   */
+  failures: Record<string, string[]>
+  /** Failing-audit id to the selectors of the nodes that failed it. */
+  details: Record<string, string[]>
 }
 
 export interface LighthouseOptions {
@@ -79,12 +87,52 @@ export async function runLighthouse(
     const { lhr } = result
 
     const scores: Record<string, number> = {}
+    const failures: Record<string, string[]> = {}
 
     for (const [key, category] of Object.entries(lhr.categories)) {
+      const refs = category.auditRefs ?? []
+      const failing = refs
+        .map((ref) => lhr.audits[ref.id])
+        .filter(
+          (audit) =>
+            audit &&
+            audit.score !== null &&
+            audit.score !== undefined &&
+            audit.score < 1
+        )
+        .map((audit) => audit.id)
+
+      if (failing.length) failures[key] = failing
+
       if (category.score === null || category.score === undefined) continue
 
       // Lighthouse reports 0–1; a 0–100 integer is what people compare against.
       scores[key] = Math.round(category.score * 100)
+    }
+
+    // The selector of the nodes behind each failing audit, so a failed
+    // accessibility or SEO score points at an element instead of only an id.
+    const details: Record<string, string[]> = {}
+
+    for (const audit of Object.values(lhr.audits)) {
+      if (
+        !audit ||
+        audit.score === null ||
+        audit.score === undefined ||
+        audit.score >= 1
+      ) {
+        continue
+      }
+
+      const items = (audit.details as { items?: unknown } | undefined)?.items
+      const selectors = (Array.isArray(items) ? items : [])
+        .map(
+          (item) => (item as { node?: { selector?: string } }).node?.selector
+        )
+        .filter((selector): selector is string => Boolean(selector))
+        .slice(0, 3)
+
+      if (selectors.length) details[audit.id] = selectors
     }
 
     // Measured from `resource-summary`, which reports one row per resource TYPE
@@ -107,7 +155,7 @@ export async function runLighthouse(
         transferSize: Number(item.transferSize) || 0
       }))
 
-    return { scores, resources }
+    return { scores, resources, failures, details }
   } finally {
     await chrome.kill()
   }

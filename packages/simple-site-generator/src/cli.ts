@@ -35,6 +35,7 @@ Options:
   --page <component>        add-page: template component, e.g. Landing
   --yes                     Never prompt; use defaults
   --no-lighthouse           verify: skip Lighthouse (deterministic checks only)
+  --ignore <glob>           verify: skip HTML files matching a glob (repeatable)
   --js-budget <kb>          verify: JavaScript budget in KB (default 250)
   --css-budget <kb>         verify: CSS budget in KB (default 60)
   -h, --help                Show this message
@@ -57,10 +58,11 @@ async function main(argv: string[]): Promise<number> {
       'title',
       'description',
       'tags',
-      'page'
+      'page',
+      'ignore'
     ],
     boolean: ['yes', 'lighthouse', 'help'],
-    default: { lighthouse: true },
+    default: { lighthouse: true, ignore: [] },
     alias: { h: 'help' }
   })
 
@@ -166,6 +168,7 @@ async function main(argv: string[]): Promise<number> {
       const result = await verify({
         skipLighthouse: args.lighthouse === false,
         siteUrl: args.url,
+        ignore: [args.ignore].flat().filter(Boolean),
         budgets:
           args['js-budget'] || args['css-budget']
             ? {

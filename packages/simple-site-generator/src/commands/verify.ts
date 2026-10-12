@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, matchesGlob, relative } from 'node:path'
 import { appDir, distDir } from '../paths.js'
 import {
   DEFAULT_BUDGETS,
@@ -23,6 +23,13 @@ export interface VerifyOptions {
    * deterministic SEO/byte checks still run and still gate.
    */
   skipLighthouse?: boolean
+  /**
+   * Glob patterns, relative to the output root, of HTML files to leave out of
+   * the SEO surface check. A third-party drop-in that happens to end in `.html`
+   * (a Google site-verification file, for instance) is not a page and cannot
+   * carry a title, canonical or JSON-LD.
+   */
+  ignore?: string[]
   /** Chromium binary for Lighthouse. */
   chromePath?: string
 }
@@ -87,7 +94,12 @@ export async function verify(
   let budgetTotals = { js: 0, css: 0 }
 
   // --- SEO surface (deterministic, hard failure) --------------------------
-  const htmlFiles = await collectHtml(outputDir)
+  const ignore = options.ignore ?? []
+  const htmlFiles = (await collectHtml(outputDir)).filter((file) => {
+    const page = relative(outputDir, file).replace(/\\/g, '/')
+
+    return !ignore.some((pattern) => matchesGlob(page, pattern))
+  })
 
   if (htmlFiles.length === 0) {
     issues.push(`No HTML files found in ${outputDir}`)
@@ -152,7 +164,19 @@ export async function verify(
 
         const scoreResult = evaluateScores(result.scores)
 
-        if (!scoreResult.ok) issues.push(...scoreResult.issues)
+        for (const issue of scoreResult.issues) {
+          const category = issue.split(' ')[0]
+          const failing = result.failures?.[category]
+          const detail = failing
+            ?.map((id) =>
+              result.details?.[id]?.length
+                ? `${id} [${result.details[id].join(' | ')}]`
+                : id
+            )
+            .join(', ')
+
+          issues.push(detail ? `${issue} (failing audits: ${detail})` : issue)
+        }
         warnings.push(...scoreResult.warnings)
       }
     } finally {

@@ -1,3 +1,4 @@
+/// <reference types="vitrify/client" />
 import {
   createMemoryHistory,
   createRouter as _createRouter,

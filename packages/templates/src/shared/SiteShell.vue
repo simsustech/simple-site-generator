@@ -19,19 +19,27 @@
     >
       <nav aria-label="Sections">
         <q-list>
-          <q-item
-            v-for="page in menuPages"
-            :key="page.id"
-            v-ripple
-            clickable
-            exact
-            :to="`/${page.id}`"
-            @click="drawer = false"
-          >
+          <q-item v-for="page in menuPages" :key="page.id" role="listitem">
             <q-item-section v-if="page.icon" avatar>
               <q-icon :name="page.icon.name" :color="page.icon.color" />
             </q-item-section>
-            <q-item-section>{{ page.label }}</q-item-section>
+            <q-item-section>
+              <!--
+                The link is a real anchor inside a list item rather than a
+                clickable `q-item`. A `q-list` renders `role="list"`, and a
+                clickable item renders an `<a>`, which is not a `listitem` — so
+                Lighthouse's `aria-required-children` audit fails the list.
+                Keeping the anchor inside a `listitem` satisfies the list and
+                keeps the link role intact.
+              -->
+              <router-link
+                class="ssg-shell__drawer-link"
+                :to="`/${page.id}`"
+                @click="drawer = false"
+              >
+                {{ page.label }}
+              </router-link>
+            </q-item-section>
           </q-item>
         </q-list>
       </nav>
@@ -98,11 +106,19 @@ const menuPages = computed(() => menuPagesOf(pages.value))
 
 const route = useRoute()
 
-const currentPage = computed<SeoPage | undefined>(() =>
-  (pages.value ?? []).find((page) =>
+const currentPage = computed<SeoPage | undefined>(() => {
+  // The route's own `meta` is authoritative: it is derived in `routes.ts` from
+  // the same frontmatter the page list is built from, and it also covers routes
+  // that are not in `pages` at all (the 404 page). Falling back to the page list
+  // keeps an older, meta-less route table working.
+  const fromRoute = route.meta as SeoPage | undefined
+
+  if (fromRoute?.id) return fromRoute
+
+  return (pages.value ?? []).find((page) =>
     page.id === 'home' ? route.path === '/' : route.path === `/${page.id}`
   )
-)
+})
 
 const seoContext = computed<SeoContext>(() => ({
   title: props.title,
@@ -134,5 +150,12 @@ useSeo(currentPage.value, seoContext.value, route.path)
 #main:focus-visible {
   outline: 3px solid currentColor;
   outline-offset: -3px;
+}
+
+.ssg-shell__drawer-link {
+  display: block;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
 }
 </style>
