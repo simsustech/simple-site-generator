@@ -5,11 +5,13 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest run"
   },
   "exports": {
     ".": "./dist/index.js",
     "./*": "./dist/*.js",
+    "./seo": "./dist/seo.js",
     "./*/css": "./dist/*.css"
   },
   "typesVersions": {
@@ -23,6 +25,7 @@
   "dependencies": {
     "@quasar/quasar-ui-qmarkdown": "^4.2.1",
     "@quasar/quasar-ui-qmediaplayer": "^3.0.1",
+    "gray-matter": "^4.0.3",
     "import-meta-resolve": "^4.2.0",
     "unplugin-vue-components": "^32.1.0"
   },
@@ -30,11 +33,14 @@
     "@types/node": "^26.5.1",
     "@vitejs/plugin-vue": "6.0.9",
     "@vue/runtime-dom": "^3.5.42",
+    "@vue/test-utils": "^2.5.1",
+    "happy-dom": "^20.14.6",
     "quasar": "^2.32.3",
     "sass": "^1.104.1",
     "typescript": "^7.0.2",
     "unocss": "^66.10.2",
     "vite": "^8.3.0",
+    "vitest": "^5.0.3",
     "vitrify": "^0.28.1",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"

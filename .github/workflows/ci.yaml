@@ -4,10 +4,18 @@ on:
   push:
     branches:
       - main
+      - rewrite
+  pull_request:
 
 defaults:
   run:
     shell: bash
+
+# Least privilege: both jobs only read the repository. Without this the
+# workflow inherits the repository's default token permissions, which are
+# broader than anything here needs.
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -15,14 +23,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install pnpm
         # the pnpm version comes from the packageManager field in package.json
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
 
@@ -38,5 +46,94 @@ jobs:
       - name: Build Packages
         run: pnpm run build
 
+      # Covers the unit/component specs and the budget policy specs (seam S5).
       - name: Test
         run: pnpm run test
+
+      # The CLI specs (seam S1) spawn the binary as a subprocess, so they run
+      # separately from the unit suites rather than competing with them.
+      - name: Test CLI
+        run: pnpm run test:cli
+
+  integration:
+    name: Scaffold, build and verify a site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Packages
+        run: pnpm run build
+
+      # The real proof: generate a project from the template, build it, and
+      # hold the result to the same contract a user would. This job catches
+      # "the template does not build" and "prerendered pages ship an empty
+      # app div".
+      - name: Scaffold a site
+        run: node packages/simple-site-generator/dist/cli.js init
+          "$RUNNER_TEMP/site" --template docs --yes
+          --site-name "CI Site" --url https://ci.test
+
+      # Consume the templates from the workspace rather than the registry, so
+      # this tests the current commit instead of the last published release.
+      - name: Point the site at the workspace templates
+        run: |
+          node -e '
+            const fs = require("fs")
+            const file = process.env.RUNNER_TEMP + "/site/package.json"
+            const pkg = JSON.parse(fs.readFileSync(file, "utf8"))
+            const dep = "@simple-site-generator/templates"
+            const root = process.cwd()
+            pkg.dependencies[dep] = "file:" + root + "/packages/templates"
+            fs.writeFileSync(file, JSON.stringify(pkg, null, 2))
+          '
+
+      - name: Install the site
+        working-directory: ${{ runner.temp }}/site
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Check the site's pages
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          node "$GITHUB_WORKSPACE/packages/simple-site-generator/dist/cli.js" \
+            check
+
+      - name: Build the site
+        working-directory: ${{ runner.temp }}/site
+        run: pnpm run build:ssg
+
+      # Byte budgets and the SEO surface are deterministic and need no
+      # browser, so this half always gates.
+      - name: Verify the site (deterministic half)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          node "$GITHUB_WORKSPACE/packages/simple-site-generator/dist/cli.js" \
+            verify --no-lighthouse --url https://ci.test
+
+      - name: Install Chrome for Lighthouse
+        # Left on a floating tag: this action's 40-character SHA makes the
+        # `uses:` line 83 characters, over the 80-character limit this repo
+        # enforces on YAML. The other actions are pinned above.
+        uses: browser-actions/setup-chrome@v2
+        id: setup-chrome
+
+      # Accessibility, best-practices and SEO must be 100, and the byte
+      # budgets are re-checked. Performance only warns.
+      - name: Verify the site (with Lighthouse)
+        working-directory: ${{ runner.temp }}/site
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: |
+          node "$GITHUB_WORKSPACE/packages/simple-site-generator/dist/cli.js" \
+            verify --url https://ci.test

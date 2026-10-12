@@ -1,0 +1,206 @@
+import type { VitrifyConfig, VitrifyConfigAsync } from 'vitrify'
+import { QuasarPlugin, type QuasarPluginOptions } from 'vitrify/plugins'
+// `QuasarPreset` is exported by the preset, NOT by vitrify. Importing it from
+// 'vitrify' fails at load time ("does not provide an export named
+// 'QuasarPreset'"), and since 0.7 the preset also refuses to run without a
+// style, so both the import and `style` below are required.
+import { QuasarPreset } from 'unocss-preset-quasar'
+import { MaterialDesign3 } from 'unocss-preset-quasar/styles'
+import { certificateFor } from 'devcert'
+import { plugin as mdPlugin } from 'vite-plugin-markdown'
+import { Mode } from 'vite-plugin-markdown'
+import { copyFile } from 'fs/promises'
+import { ssgSitemap } from '@simple-site-generator/templates/seo'
+
+interface SimpleSiteGenerator {
+  ssg: {
+    title: string
+    url: string
+    template: string
+    favicon: string
+    lang: string
+    colors: Record<string, string>
+    sourceColor: string
+    tags: Record<string, { label: string }>
+    extra?: Record<string, unknown>
+    jsonLd?: { business?: Record<string, unknown> }
+  }
+}
+
+const ssg = {
+  title: '{{ productName }}',
+  url: '{{ url }}',
+  favicon: '/favicon-96.png',
+  // Rendered from the `--template` value passed to `ssg init`. It selects which
+  // template module the app imports, so it must be templated, not hardcoded.
+  template: '{{ template }}',
+  templatePackage: '@simple-site-generator/templates',
+  colors: {
+    primary: '#22c92a',
+    secondary: '#eece0cff',
+    accent: '#00a4e6ff',
+    text: '#3B352E',
+    dark: '#1D1D1D',
+    positive: '#21BA45',
+    negative: '#C10015',
+    info: '#31CCEC',
+    warning: '#F2C037'
+  },
+  // BCP-47 tag for <html lang> and og:locale. Change it here and the SSR
+  // pass applies it through Quasar's Meta plugin.
+  lang: 'en',
+  // MD3 derives its whole tonal palette from one source colour.
+  sourceColor: '#22c92a',
+  tags: {
+    menu: {
+      label: 'Menu'
+    },
+    footer: {
+      label: 'Footer'
+    },
+    contact: {
+      label: 'Contact'
+    }
+  }
+}
+
+const { template, templatePackage, title, url } = ssg
+
+const quasarConf: QuasarPluginOptions = {
+  framework: {
+    components: [],
+    // 'Meta' is what makes Quasar emit the per-page <title>, description,
+    // canonical, OpenGraph and JSON-LD tags. Without it `ssrContext._meta.headTags`
+    // stays empty and a prerendered page ships no metadata at all.
+    plugins: ['Dialog', 'Notify', 'Loading', 'Meta'],
+    // A Quasar icon-library name. The preset derives the nested icon set from
+    // `quasar/dist/icon-set`, rewrites each value to its iconify class and
+    // safelists them — so the ~200-line hand-written icon map is not needed.
+    iconSet: 'mdi-v7'
+  },
+  /*
+   * Disable SASS if you use UnoCSS
+   */
+  disableSass: true
+}
+
+export default async function ({ mode }): Promise<VitrifyConfigAsync> {
+  const config: VitrifyConfig & SimpleSiteGenerator = {
+    optimizeDeps: {
+      exclude: ['@simple-site-generator/templates']
+    },
+    plugins: [
+      mdPlugin({
+        mode: [Mode.HTML]
+      }),
+      // Emits sitemap.xml and robots.txt into dist/static, generated from the
+      // same page frontmatter the router reads.
+      ssgSitemap({
+        site: {
+          title: ssg.title,
+          url: ssg.url,
+          favicon: ssg.favicon,
+          sourceColor: undefined,
+          extra: ssg.extra,
+          jsonLd: ssg.jsonLd
+        } as never,
+        pagesDir: new URL('./src/pages', import.meta.url).pathname,
+        distDir: new URL('./dist', import.meta.url).pathname
+      }),
+      {
+        name: 'simple-site-generator-plugin',
+        resolveId(id) {
+          if (id === 'virtual:ssg:template' || id === 'virtual:ssg:site') {
+            return `\0${id}`
+          }
+        },
+        load(id) {
+          if (id === '\0virtual:ssg:template') {
+            return `import * as template from '${templatePackage}/${template}';
+              export * from '${templatePackage}/${template}';
+              export default template;`
+          }
+          if (id === '\0virtual:ssg:site') {
+            // ONLY the identity the browser needs. The previous version imported
+            // `virtual:vitrify-config`, which inlined the whole build config
+            // (UnoCSS presets, Quasar options, icon map) into the client bundle.
+            // The client reads exactly these fields, so anything else added here
+            // would ship to every visitor.
+            return `export const site = ${JSON.stringify({
+              title: ssg.title,
+              url: ssg.url,
+              favicon: ssg.favicon,
+              lang: ssg.lang,
+              template: ssg.template,
+              templatePackage: ssg.templatePackage,
+              tags: ssg.tags,
+              extra: ssg.extra,
+              jsonLd: ssg.jsonLd
+            })};`
+          }
+        },
+        closeBundle: () => {
+          copyFile(
+            new URL('./build/Caddyfile', import.meta.url).pathname,
+            new URL(`./dist/static/Caddyfile`, import.meta.url).pathname
+          )
+        }
+      }
+    ],
+    ssg,
+    vitrify: {
+      // Registering the Quasar plugin is what makes `useQuasar()` and every
+      // `q-*` component work during SSR. Without it a prerendered page throws
+      // "Cannot read properties of undefined (reading 'screen')" and ships an
+      // empty <div id="app">.
+      plugins: [
+        {
+          plugin: QuasarPlugin,
+          options: quasarConf
+        }
+      ],
+      productName: title,
+      hooks: {
+        onSetup: [new URL('src/setup.ts', import.meta.url)]
+      },
+      unocss: {
+        presets: [
+          QuasarPreset({
+            style: MaterialDesign3,
+            sourceColor: ssg.sourceColor,
+            plugins: quasarConf.framework.plugins,
+            iconSet: quasarConf.framework.iconSet,
+            // Only the third-party Quasar UI libraries this app actually uses
+            // contribute CSS; declaring them is what ports their selectors.
+            appExtensions: ['qmarkdown', 'qmediaplayer']
+          })
+        ],
+        theme: {
+          colors: ssg.colors
+        },
+        content: {
+          pipeline: {
+            include: [
+              /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
+              new RegExp(`${ssg.template}.js(.*?)`, 'g')
+            ]
+          }
+        }
+      },
+      globalCss: [`${templatePackage}/${template}/css`],
+      // No `sass.global` block: the QMarkdown/QMediaPlayer styles now come from
+      // the preset's `appExtensions`, and the old `QMarkdown.sass` path does not
+      // exist (the file is `.scss`), so it only produced a resolution error.
+      ssr: {
+        serverModules: ['vite-plugin-markdown']
+      }
+    },
+    quasar: quasarConf
+  }
+  if (mode === 'development') {
+    config.server = {
+      https: await certificateFor('vitrify.test')
+    }
+  }
+  return config
+}

@@ -1,0 +1,10 @@
+# pnpm 12 does not run a dependency's build scripts unless they are allowlisted,
+# and it fails the install when one is skipped. These need theirs:
+#   - esbuild / sharp select and link a prebuilt native binary at install time,
+#   - @parcel/watcher compiles its native watcher.
+# Vitrify's dev server uses esbuild, so without these the project installs but
+# cannot build.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  sharp: true

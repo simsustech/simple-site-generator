@@ -1,26 +1,34 @@
+import { existsSync, promises } from 'fs'
+import { join } from 'path'
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { promises } from 'fs'
 import Components from 'unplugin-vue-components/vite'
 import { QuasarResolver } from 'unplugin-vue-components/resolvers'
 import UnoCSS from 'unocss/vite'
 import { presetUno } from 'unocss'
-// const autoImportMap = JSON.parse(await promises.readFile(new URL('../node_modules/@qso/app/dist/auto-import.json', import.meta.url), { encoding: 'utf-8' }))
-const templates = (
-  await promises.readdir(new URL('./src', import.meta.url), {
-    withFileTypes: true
-  })
-)
-  .filter((file) => file.isDirectory())
-  .map((file) => file.name)
 
-const input = templates.reduce(
-  (acc, cur) => {
-    acc[cur] = new URL(`./src/${cur}/${cur}.ts`, import.meta.url).pathname
-    return acc
-  },
-  {} as Record<string, string>
-)
+const srcDir = fileURLToPath(new URL('./src', import.meta.url))
+
+/**
+ * One entry per template module.
+ *
+ * A directory counts as a template module only when it contains
+ * `<name>/<name>.ts` — that keeps `shared/` and `seo/`, which are libraries
+ * imported by the modules, out of the entry list instead of failing the build
+ * by looking for `shared/shared.ts`.
+ */
+const input = (await promises.readdir(srcDir, { withFileTypes: true }))
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .filter((name) => existsSync(join(srcDir, name, `${name}.ts`)))
+  .reduce(
+    (acc, name) => {
+      acc[name] = join(srcDir, name, `${name}.ts`)
+      return acc
+    },
+    {} as Record<string, string>
+  )
 
 export default defineConfig({
   plugins: [
@@ -30,43 +38,24 @@ export default defineConfig({
       mode: 'per-module'
     }),
     Components({
-      resolvers: [
-        QuasarResolver()
-        // {
-        //   type: 'component',
-        //   resolve: (name: string) => {
-        //     if (components.includes(name))
-        //       console.log(name)
-        //     return { importName: name, path: 'quasar' }
-        //   },
-        // }
-      ]
+      resolvers: [QuasarResolver()],
+      dts: 'components.d.ts'
     })
   ],
-  resolve: {
-    alias: [
-      {
-        find: '@simsustech/simple-site-generator',
-        replacement: new URL('../src', import.meta.url).pathname
-      }
-    ]
-  },
   build: {
-    // lib: {
-    //   name: 'templates',
-    //   entry: new URL('./index.ts', import.meta.url).pathname,
-    //   formats: ['es'],
-    //   // fileName: (format) => `templates.${format}.js'`
-    // },
     outDir: 'dist',
-    // emptyOutDir: false,
-
     rollupOptions: {
       preserveEntrySignatures: 'strict',
       input,
-      external: ['vue', 'quasar', 'vue-router'],
+      // Provided by the consuming app (and by Quasar), never bundled here.
+      // `gray-matter` and the `node:` builtins stay external too: they are only
+      // reachable through `./seo`, which is imported by build tooling running in
+      // Node, never by the browser bundle.
+      external: ['vue', 'quasar', 'vue-router', 'gray-matter', /^node:/],
       output: {
-        entryFileNames: (chunkInfo) => `${chunkInfo.name}.js`,
+        // `[name].js` keeps the existing per-module filenames (`docs.js`, …)
+        // without a callback whose parameter type would be implicit-any.
+        entryFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
         format: 'es'
       }
