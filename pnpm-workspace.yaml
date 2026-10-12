@@ -8,6 +8,12 @@ overrides:
   # @vue/compiler-sfc needs it to resolve imported types in defineProps()/
   # defineEmits(), so pin to the newest release that still exposes it.
   typescript: '^6.0.3'
+  # A single Vue copy, workspace-wide. Without this the root Vitest config
+  # compiles the templates' SFCs against one Vue build while the components
+  # import another, and rendering a slot throws
+  # "Cannot read properties of null (reading 'ce')" — the classic duplicate-Vue
+  # instance failure.
+  vue: '^3.5.43'
 
 allowBuilds:
   '@parcel/watcher': true

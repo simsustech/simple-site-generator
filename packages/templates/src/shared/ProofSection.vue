@@ -1,0 +1,156 @@
+<template>
+  <section
+    class="ssg-section"
+    :class="{ 'ssg-muted-surface': muted }"
+    data-ssg="proof-section"
+  >
+    <div class="ssg-section__inner">
+      <h2 class="ssg-proof-section__heading">{{ heading }}</h2>
+
+      <div class="ssg-proof-section__grid">
+        <div class="ssg-proof-section__reviews">
+          <blockquote
+            v-for="review in reviews"
+            :key="review.name"
+            class="ssg-proof-section__review"
+          >
+            <p class="ssg-proof-section__text">“{{ review.text }}”</p>
+            <footer class="ssg-proof-section__attribution">
+              <cite>{{ review.name }}</cite>
+              <span v-if="review.rating" class="ssg-proof-section__rating">
+                <span aria-hidden="true">{{ '★'.repeat(review.rating) }}</span>
+                <span class="ssg-proof-section__sr">
+                  {{ review.rating }} out of 5
+                </span>
+              </span>
+            </footer>
+          </blockquote>
+        </div>
+
+        <aside class="ssg-proof-section__facts">
+          <h3 class="ssg-proof-section__facts-heading">Verified details</h3>
+          <dl class="ssg-proof-section__list">
+            <template v-if="serviceArea?.length">
+              <dt>Service area</dt>
+              <dd>{{ serviceArea.join(', ') }}</dd>
+            </template>
+            <template v-if="address">
+              <dt>Address</dt>
+              <dd>{{ address }}</dd>
+            </template>
+            <template v-if="phone">
+              <dt>Phone</dt>
+              <dd>
+                <a class="ssg-proof-section__link" :href="`tel:${phone}`">{{
+                  phone
+                }}</a>
+              </dd>
+            </template>
+            <template v-if="registration">
+              <dt>Registration</dt>
+              <dd>{{ registration }}</dd>
+            </template>
+            <template v-if="insured !== undefined">
+              <dt>Insurance</dt>
+              <dd>{{ insured ? 'Insured' : 'Not insured' }}</dd>
+            </template>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+/**
+ * Trust section: real reviews plus the verifiable business facts a visitor
+ * checks before trusting a local service (service area, address, registration,
+ * insurance).
+ *
+ * These are also the fields that feed `LocalBusiness` structured data, so what
+ * the visitor reads and what a crawler reads come from the same source.
+ */
+withDefaults(
+  defineProps<{
+    heading?: string
+    muted?: boolean
+    reviews?: { name: string; text: string; rating?: number }[]
+    serviceArea?: string[]
+    address?: string
+    phone?: string
+    /** Trade licence / company registration number. */
+    registration?: string
+    insured?: boolean
+  }>(),
+  {
+    heading: 'What customers say',
+    muted: true,
+    reviews: () => []
+  }
+)
+</script>
+
+<style scoped>
+.ssg-proof-section__heading {
+  font-size: var(--ssg-step-3);
+  margin: 0 0 var(--ssg-space-4);
+}
+
+.ssg-proof-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--ssg-space-4);
+}
+
+.ssg-proof-section__review {
+  margin: 0 0 var(--ssg-space-3);
+}
+
+.ssg-proof-section__text {
+  font-size: var(--ssg-step-1);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ssg-proof-section__attribution {
+  margin-top: var(--ssg-space-1);
+  font-size: var(--ssg-step--1);
+}
+
+.ssg-proof-section__rating {
+  margin-inline-start: var(--ssg-space-2);
+}
+
+/* Visually hidden but read out, so the star glyphs are not the only rating. */
+.ssg-proof-section__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ssg-proof-section__facts-heading {
+  font-size: var(--ssg-step-0);
+  margin: 0 0 var(--ssg-space-2);
+}
+
+.ssg-proof-section__list {
+  margin: 0;
+  font-size: var(--ssg-step--1);
+}
+
+.ssg-proof-section__list dt {
+  font-weight: 600;
+  margin-top: var(--ssg-space-2);
+}
+
+.ssg-proof-section__list dd {
+  margin: 0;
+}
+
+.ssg-proof-section__link {
+  color: inherit;
+}
+</style>
