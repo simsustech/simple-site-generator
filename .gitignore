@@ -4,3 +4,12 @@
 /packages/**/components.d.ts
 /.npmrc
 /.pnpm-store
+
+# Test-runner artifacts. Vitest writes a JSON reporter output under .vitest/,
+# which is not source and otherwise surfaces as an unformatted untracked file
+# that `format:check` fails on.
+/packages/**/.vitest
+/.vitest
+
+# Lighthouse reports produced by `ssg verify`.
+/.lighthouseci
