@@ -35,6 +35,12 @@ export function checkSeoSurface(
   const issues: SeoSurfaceIssue[] = []
   const add = (message: string) => issues.push({ page, message })
 
+  // Comments are meta-text, not page content. The app template's own comments
+  // mention `<h1>`, and counting those made a page that renders exactly one
+  // heading report "3 <h1> tags". Every check below therefore runs on the
+  // comment-free document.
+  html = html.replace(/<!--[\s\S]*?-->/g, '')
+
   // A page the site has deliberately marked `noindex` (the 404, for example) is
   // excluded from the index, so the tags that exist to describe an indexed page
   // — canonical, description, structured data — are not required of it. A title,

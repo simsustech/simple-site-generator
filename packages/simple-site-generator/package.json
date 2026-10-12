@@ -5,6 +5,7 @@
   "author": "simsustech",
   "type": "module",
   "bin": {
+    "ssg": "dist/cli.js",
     "simple-site-generator": "dist/cli.js"
   },
   "scripts": {
@@ -27,10 +28,12 @@
   "dependencies": {
     "@inquirer/prompts": "^8.7.3",
     "@vitrify/tools": "^0.5.4",
+    "chrome-launcher": "^1.2.2",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.9",
     "inquirer": "^14.2.2",
     "latest-version": "^9.0.0",
+    "lighthouse": "^13.5.0",
     "minimist": "^1.2.8",
     "zod": "^4.6.5"
   },
@@ -38,8 +41,6 @@
     "@types/inquirer": "^9.0.10",
     "@types/minimist": "^1.2.5",
     "@types/node": "^26.5.1",
-    "chrome-launcher": "^1.2.2",
-    "lighthouse": "^13.5.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vue": "^3.5.42"
