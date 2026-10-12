@@ -255,7 +255,11 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
 
   await fs.writeFile(
     new URL('./tsconfig.json', outputDir),
-    renderTsconfigJson(TSCONFIG)
+    // `renderTsconfigJson` emits library defaults, including a `rootDir` of
+    // `./src` — which the very same tsconfig includes `vitrify.config.ts`
+    // outside of, so `tsc` fails every generated project with TS6059. A
+    // generated app has no reason to pin a `rootDir`, so strip it.
+    renderTsconfigJson(TSCONFIG).replace(/^\s*"rootDir": "\.\/src",\n/m, '')
   )
 
   return { directory: resolved.directory, template: resolved.template }

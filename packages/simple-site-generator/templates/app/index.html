@@ -3,9 +3,9 @@
   <head>
     <!--
       `charset` must stay first: the encoding has to be declared inside the
-      first 1 KiB, and the SSR-collected meta tags are injected at the END of
-      `<head>` (see the vitrify `injectSsrContext` fix) so they cannot push this
-      line out of that window.
+      first 1 KiB, and the SSR-collected meta tags are injected at the end of the
+      head element (see the vitrify injectSsrContext fix) so they cannot push
+      this line out of that window.
     -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,9 +16,16 @@
     -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- `Meta` owns the <title>. A static one here would be a second <title> in
-         the built HTML, which `ssg verify` rejects (and which makes a crawler
-         pick arbitrarily between them). -->
+    <!--
+      The Meta plugin owns the document title. A static title element written
+      here would be a second one in the built HTML, which the verifier rejects —
+      and a crawler would then pick arbitrarily between the two.
+
+      Keep element literals (an angle-bracketed `title`, `head` or `link`) out of
+      these comments: vitrify rewrites the head with tag-matching regular
+      expressions, and a tag-shaped word inside a comment is a false match that
+      mangles the document.
+    -->
   </head>
 
   <body>

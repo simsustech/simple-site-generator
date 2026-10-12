@@ -84,7 +84,9 @@ const quasarConf: QuasarPluginOptions = {
   disableSass: true
 }
 
-export default async function ({ mode }): Promise<VitrifyConfigAsync> {
+export default async function ({
+  mode
+}: Parameters<VitrifyConfigAsync>[0]): Promise<VitrifyConfig> {
   const config: VitrifyConfig & SimpleSiteGenerator = {
     optimizeDeps: {
       exclude: ['@simple-site-generator/templates']
@@ -109,12 +111,12 @@ export default async function ({ mode }): Promise<VitrifyConfigAsync> {
       }),
       {
         name: 'simple-site-generator-plugin',
-        resolveId(id) {
+        resolveId(id: string) {
           if (id === 'virtual:ssg:template' || id === 'virtual:ssg:site') {
             return `\0${id}`
           }
         },
-        load(id) {
+        load(id: string) {
           if (id === '\0virtual:ssg:template') {
             return `import * as template from '${templatePackage}/${template}';
               export * from '${templatePackage}/${template}';
@@ -194,8 +196,7 @@ export default async function ({ mode }): Promise<VitrifyConfigAsync> {
       ssr: {
         serverModules: ['vite-plugin-markdown']
       }
-    },
-    quasar: quasarConf
+    }
   }
   if (mode === 'development') {
     config.server = {

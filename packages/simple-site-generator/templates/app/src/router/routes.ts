@@ -61,7 +61,7 @@ const noSsrComponent = {
   render(this: { component: unknown; page: unknown }) {
     const component = defineAsyncComponent(this.component as never)
     return h(QNoSsr, null, {
-      default: () => h(component, this.page)
+      default: () => h(component, this.page as Record<string, unknown>)
     })
   },
   props: ['page', 'component']
@@ -109,7 +109,7 @@ const routes: RouteRecordRaw[] = [
     },
     children: [
       ...orderedPages.map(([, page]) => {
-        const { id, page: componentName = '', noSsr } = attributesOf(page)
+        const { id = '', page: componentName = '', noSsr } = attributesOf(page)
         const { attributes = {}, html = '' } = (page ?? {}) as PageModule
 
         const vuePage = async () => {
@@ -118,8 +118,9 @@ const routes: RouteRecordRaw[] = [
           }
 
           return import('virtual:ssg:template').then((module) => {
-            return componentName && module[componentName]
-              ? module[componentName]
+            const templates = module.default
+            return componentName && templates[componentName]
+              ? templates[componentName]
               : module.Page
           })
         }
@@ -154,7 +155,7 @@ const routes: RouteRecordRaw[] = [
             image: attributes.image,
             breadcrumbs: attributes.breadcrumbs
           }
-        }
+        } as RouteRecordRaw
       }),
 
       // The catch-all is a CHILD of the layout on purpose. As a sibling it
