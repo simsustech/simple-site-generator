@@ -1,6 +1,6 @@
 <template>
   <section
-    class="ssg-section"
+    class="ssg-section ssg-bento"
     :class="{ 'ssg-muted-surface': muted }"
     data-ssg="bento"
   >
