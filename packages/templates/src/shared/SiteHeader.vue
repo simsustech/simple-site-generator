@@ -1,5 +1,5 @@
 <template>
-  <q-header elevated>
+  <q-header elevated class="ssg-header">
     <div class="ssg-header__inner">
       <q-toolbar class="ssg-header__toolbar">
         <!--
