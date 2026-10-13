@@ -19,6 +19,18 @@ Express the templates' styling as UnoCSS configuration, and measure the site the
   `<package>/<template>/css` — got every `var(--ssg-*)` undefined and rendered
   **unstyled in both dev and the build**.
 
+- The design uses **colour**: a dark brand bar for the header, a tinted title
+  panel per page with a primary accent rule, white cards on a tinted page, and a
+  dark footer. All of it reads `unocss-preset-quasar`'s MD3 role tokens
+  (`--q-primary`, `--q-secondary-container`, `--q-surface-container*`,
+  `--q-outline-variant`, `--q-elevation-level*`), so the app re-themes the whole
+  template — including dark mode — from one source colour. The header background
+  is set in a preflight because Quasar's own `q-header` rule wins the cascade for
+  the element, so a utility cannot colour it.
+- **Imagery is supported**: markdown images and blockquotes in the prose are
+  styled (full column width, rounded, brand-rule pull quotes) and get no
+  layout shift.
+
 - The class names are safelisted because the components are code-split into
   chunks (`assets/SiteHeader-*.js`) that the consumer's UnoCSS content scan does
   not match.
