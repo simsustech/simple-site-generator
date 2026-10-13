@@ -7,7 +7,18 @@
   encode zstd gzip
   handle {
     root * /srv/{{ url }}
-    try_files {path}.html {path} /index.html
+    try_files {path}.html {path}
+    file_server
+  }
+
+  # A missing page has to answer 404. Ending `try_files` in a file — the old
+  # `/index.html` fallback, or a `/404.html` one — answers 200, so every
+  # mistyped URL is served as a real page and a crawler indexes it. The status
+  # a monitor sees would be a lie too.
+  handle_errors {
+    root * /srv/{{ url }}
+    @notFound expression {err.status_code} == 404
+    rewrite @notFound /404.html
     file_server
   }
 }
