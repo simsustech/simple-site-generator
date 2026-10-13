@@ -3,7 +3,10 @@
     <article class="ssg-section__inner">
       <Breadcrumbs v-if="breadcrumbs?.length" :trail="breadcrumbs" />
 
-      <header class="ssg-business__header">
+      <header
+        class="ssg-business__header"
+        :style="headerImageStyle(headerImage)"
+      >
         <!--
           The page owns the document's single <h1>. `PageContent` demotes markdown
           headings so the body starts at `<h2>` and the outline stays valid.
@@ -48,6 +51,7 @@ import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
+import { headerImageStyle } from '../design/design.js'
 import type { PageProps } from '../shared/types.js'
 
 /**

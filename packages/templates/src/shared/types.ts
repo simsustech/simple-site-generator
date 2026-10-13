@@ -41,6 +41,8 @@ export interface SitePage {
   cta?: {
     message: string
     route?: string
+    /** Absolute destination (`tel:`, `mailto:`); ignored when `route` is set. */
+    href?: string
   }
   /** Question/answer pairs rendered as an FAQ and mirrored into FAQPage JSON-LD. */
   faq?: { question: string; answer: string }[]
@@ -48,6 +50,15 @@ export interface SitePage {
   extra?: Record<string, unknown>
   /** Excluded from the sitemap and marked `noindex`. */
   noindex?: boolean
+  /**
+   * Illustration for the page's header band, rendered as the band's background.
+   *
+   * Declared here, not only on `SeoPage`: a field missing from this type is
+   * never exposed as a prop (Vue derives runtime props from the type), so the
+   * frontmatter value would land in `attrs` and the band would render without
+   * its background.
+   */
+  headerImage?: string
   /** Rendered in the hero rather than the body. */
   page?: string
   [key: string]: unknown
@@ -138,6 +149,28 @@ export interface SeoPage {
   lastmod?: string
   /** Breadcrumb trail, outermost first, e.g. `['Guides', 'Install']`. */
   breadcrumbs?: string[]
+  /**
+   * Illustration for the page header band, rendered as the band's background.
+   * Distinct from `image`, which is the social-card image: an OG image is a
+   * self-contained card, a header illustration is decoration behind the title.
+   */
+  headerImage?: string
+  /**
+   * BCP-47 tag for this page when it differs from the site default — `nl` on a
+   * Dutch page of an otherwise English site. Drives `<html lang>`, `og:locale`
+   * and the JSON-LD `inLanguage`, so a translated page is not announced to a
+   * crawler as English.
+   */
+  lang?: string
+  /**
+   * Other-language versions of this page, rendered as `rel="alternate"`
+   * hreflang links and `og:locale:alternate`.
+   *
+   * Include this page's own language in the list: a self-referencing hreflang is
+   * what makes the cluster valid, and without it a crawler has to guess which
+   * version is canonical.
+   */
+  alternates?: { lang: string; path: string; label?: string }[]
   /** Question/answer pairs mirrored into FAQPage structured data. */
   faq?: { question: string; answer: string }[]
   tags?: string[]
