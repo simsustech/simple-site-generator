@@ -17,8 +17,9 @@ const templatesSrc = fileURLToPath(
  * verbatim, and component tests assert against markup the browser never sees.
  *
  * Test roots:
- *   - `packages/templates/test/**`  — seam S2 (component render) and S3 (pure builders)
- *   - `tests/lighthouse/**`         — seam S5 (measured budgets)
+ *   - `packages/templates/test/**`           — seam S2 (component render) and S3 (pure builders)
+ *   - `packages/simple-site-generator/test/**` — pure verifier units (SEO surface, ignore globs)
+ *   - `tests/lighthouse/**`                  — seam S5 (measured budgets)
  *
  * The CLI specs (seam S1, `tests/cli/**`) are deliberately **not** in this list.
  * They spawn the `ssg` binary as a subprocess ~20 times; run in parallel with the
@@ -46,6 +47,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: [
       'packages/templates/test/**/*.test.ts',
+      'packages/simple-site-generator/test/**/*.test.ts',
       'tests/lighthouse/**/*.test.ts'
     ],
     reporters: 'default'

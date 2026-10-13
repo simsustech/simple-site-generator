@@ -46,5 +46,26 @@ making it pass.
   `<title>` in the old comment was matched by the title replacement — which
   mangled the document and left every injected meta tag *inside a comment*. The
   tags were in the HTML but not in the document.
-- **A real `/404` route** is emitted, so `try_files … /404.html` in the generated
-  Caddyfile has a file to serve.
+- **The `404` view is a `main` landmark**, so a document still has exactly one
+  when the page does not render `q-page`.
+
+## Also
+
+- **Type declarations are shipped.** `@simple-site-generator/templates` now has
+  a hand-written `types/` surface (the shared data contracts in full; components
+  typed as Vue's `Component`, since the TypeScript 7 native port has no
+  declaration build) and emits the declarations next to the built JavaScript, so
+  both `exports.types` resolution and a plain sibling `.d.ts` lookup succeed.
+  Consumers no longer need a local `declare module` shim.
+- **One `<main>` landmark.** `SiteShell` wrapped the page in a `<main>`, and the
+  page's `q-page` is also a `<main>`, so every real page had two. The shell now
+  renders the skip-link target as a plain `div` and the page's `q-page` is the
+  single landmark.
+- **`ssg.lang` now reaches `<html lang>`.** Quasar writes `<html lang>` from the
+  pack it loads, which previously always came out `en-US`; the template passes
+  `ssg.lang` through `vitrify.lang` so `<html lang>`, `og:locale` and the
+  JSON-LD `inLanguage` agree. `ssg.lang` must therefore be a Quasar pack id
+  (`en-US`, `en-GB`, `nl`, …) — documented in `AGENTS.md`.
+- **Unit tests for the verifier.** `checkSeoSurface` (comment handling, all-faults
+  reporting) and the `--ignore` filter now have regression tests.
+

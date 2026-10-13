@@ -46,9 +46,11 @@ const ssg = {
     info: '#31CCEC',
     warning: '#F2C037'
   },
-  // BCP-47 tag for <html lang> and og:locale. Change it here and the SSR
-  // pass applies it through Quasar's Meta plugin.
-  lang: 'en',
+  // BCP-47 tag for og:locale, JSON-LD `inLanguage`, and — through
+  // `vitrify.lang` below — the `<html lang>` that Quasar writes. It must name
+  // one of Quasar's language packs (node_modules/quasar/lang), e.g. `en-US`,
+  // `en-GB`, `nl`; a bare `en` has no pack and Quasar falls back to `en-US`.
+  lang: 'en-US',
   // MD3 derives its whole tonal palette from one source colour.
   sourceColor: '#22c92a',
   tags: {
@@ -101,11 +103,12 @@ export default async function ({
         site: {
           title: ssg.title,
           url: ssg.url,
+          description: ssg.description,
           favicon: ssg.favicon,
-          sourceColor: undefined,
+          lang: ssg.lang,
           extra: ssg.extra,
           jsonLd: ssg.jsonLd
-        } as never,
+        },
         pagesDir: new URL('./src/pages', import.meta.url).pathname,
         distDir: new URL('./dist', import.meta.url).pathname
       }),
@@ -162,6 +165,9 @@ export default async function ({
         }
       ],
       productName: title,
+      // Pass the BCP-47 tag to Quasar as well: Quasar writes `<html lang>`
+      // from its selected language pack, and vitrify forwards this value to it.
+      lang: ssg.lang,
       hooks: {
         onSetup: [new URL('src/setup.ts', import.meta.url)]
       },
