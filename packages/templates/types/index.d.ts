@@ -25,6 +25,8 @@ export { default as SiteFooter } from './components.js'
 export { default as SkipLink } from './components.js'
 export { default as CtaButton } from './components.js'
 export { default as Hero } from './components.js'
+export { default as HeroDemo } from './components.js'
+export { default as PrincipleGrid } from './components.js'
 export { default as ProofStrip } from './components.js'
 export { default as PageContent } from './components.js'
 
