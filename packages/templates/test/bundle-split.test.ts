@@ -13,13 +13,12 @@ import { describe, expect, it } from 'vitest'
  * of every template paid for markdown rendering even when it rendered no
  * markdown at all.
  *
- * `PageContent.vue` now loads both through `defineAsyncComponent`. This spec
- * asserts the resulting shape of the built package, which is the only seam that
- * can actually observe it: the entry chunk must be free of markdown code, and
- * markdown-it must live in a separate chunk that is only fetched on demand.
- *
- * The templates package is built before this spec runs — step 2's `(d2)`
- * command is `pnpm run build && pnpm --filter …/templates test`.
+ * `PageContent.vue` first moved both behind `defineAsyncComponent`, and now
+ * renders the build-time HTML directly (`vite-plugin-markdown` already produced
+ * it) instead of parsing it a second time on the client. The media player is
+ * still loaded on demand; the markdown parser is gone from the package
+ * entirely. This spec asserts the resulting shape of the built package, which
+ * is the only seam that can observe it.
  */
 const distDir = fileURLToPath(new URL('../dist', import.meta.url))
 
@@ -44,7 +43,7 @@ describe('built package splits markdown out of the entry chunk', () => {
     expect((await stat(entry)).isFile()).toBe(true)
   })
 
-  it('keeps markdown-it and the media player out of the entry chunk', async () => {
+  it('keeps markdown rendering and the media player out of the entry chunk', async () => {
     const entry = await readFile(join(distDir, 'docs.js'), 'utf8')
 
     expect(entry).not.toContain('markdown-it')
@@ -52,7 +51,7 @@ describe('built package splits markdown out of the entry chunk', () => {
     expect(entry).not.toContain('qmediaplayer')
   })
 
-  it('emits markdown-it as a separate lazy chunk', async () => {
+  it('does not ship a markdown parser at all', async () => {
     const chunks = (await listFiles(join(distDir, 'assets'))).filter((file) =>
       file.endsWith('.js')
     )
@@ -61,11 +60,15 @@ describe('built package splits markdown out of the entry chunk', () => {
       chunks.map(async (file) => ({ file, text: await readFile(file, 'utf8') }))
     )
 
-    const markdownChunk = contents.find(({ text }) =>
+    // The content is HTML by the time it reaches a page component, so nothing
+    // in this package needs to parse Markdown on the client. This assertion is
+    // what keeps it that way: reverting `v-html` to `QMarkdown` puts markdown-it
+    // back into a chunk and fails here.
+    const withParser = contents.filter(({ text }) =>
       text.includes('markdown-it')
     )
 
-    expect(markdownChunk).toBeDefined()
+    expect(withParser.map(({ file }) => file)).toEqual([])
   })
 
   it('keeps the entry chunk small enough to stay off the critical path', async () => {

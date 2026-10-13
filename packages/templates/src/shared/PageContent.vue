@@ -26,16 +26,22 @@
     </template>
 
     <!--
-      `QMarkdown` and `QMediaPlayer` are loaded lazily and only when the page
-      actually needs them. Importing them statically pulled markdown-it plus the
-      media player (~340 KB) into the entry chunk of every page, including pages
-      that render no markdown at all.
+      The content arrives as HTML: `vite-plugin-markdown` renders the Markdown
+      at build time, so the page module carries the rendered result. Rendering
+      it with `v-html` — inside the `q-markdown` class the preset's ported
+      markdown styles select — keeps the whole markdown toolchain out of the
+      client bundle. Feeding the HTML back through `QMarkdown` meant shipping
+      markdown-it to every visitor so it could parse what the build had already
+      parsed.
+
+      The content is authored in this repository, never by a visitor, which is
+      what makes `v-html` safe here.
     -->
-    <Suspense v-if="markdown">
-      <component :is="QMarkdown" class="ssg-prose" :src="markdown">
-        {{ markdown }}
-      </component>
-    </Suspense>
+    <div
+      v-if="content"
+      class="q-markdown ssg-prose ssg-content__markdown"
+      v-html="body"
+    />
 
     <Suspense v-if="videos">
       <component
@@ -73,12 +79,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { demoteHeadings } from './headings.js'
+import { demoteHeadings, demoteH1 } from './headings.js'
 import type { PageContentProps } from './types.js'
-
-const QMarkdown = defineAsyncComponent(() =>
-  import('@quasar/quasar-ui-qmarkdown').then((module) => module.QMarkdown)
-)
 
 const QMediaPlayer = defineAsyncComponent(() =>
   import('@quasar/quasar-ui-qmediaplayer').then((module) => module.QMediaPlayer)
@@ -91,15 +93,24 @@ const props = withDefaults(defineProps<PageContentProps>(), {
 const $q = useQuasar()
 
 /**
- * The hero or page header already renders the page's single `<h1>`, so markdown
- * headings are shifted down one level. Without this a markdown `#` produces a
- * second `<h1>` and Lighthouse's `heading-order` audit fails.
+ * The hero or page header already renders the page's single `<h1>`, so content
+ * headings are shifted down one level. Without this a Markdown `#` (or an
+ * `<h1>`) produces a second `<h1>` and Lighthouse's `heading-order` audit
+ * fails.
+ *
+ * Both forms are handled because both reach this component: the kit's own apps
+ * pass the HTML that `vite-plugin-markdown` rendered (where only an `h1` is a
+ * defect), while a hand-rolled page module may still pass Markdown (where the
+ * whole outline is shifted, since a `#` is the author's usual start).
  */
-const markdown = computed(() => {
+const body = computed(() => {
   if (!props.content) return ''
-  return props.demoteMarkdownHeadings
-    ? demoteHeadings(props.content)
-    : props.content
+
+  if (!props.demoteMarkdownHeadings) return props.content
+
+  return props.content.trimStart().startsWith('<')
+    ? demoteH1(props.content)
+    : demoteHeadings(props.content)
 })
 
 const slide = ref(props.images?.[0]?.name ?? '')

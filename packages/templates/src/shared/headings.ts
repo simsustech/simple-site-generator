@@ -35,3 +35,20 @@ export function demoteHeadings(markdown: string): string {
     })
     .join('\n')
 }
+
+/**
+ * The same guarantee for HTML, which is what `PageContent` actually receives:
+ * `vite-plugin-markdown` renders the Markdown at build time, so the page module
+ * carries HTML, not Markdown.
+ *
+ * An `h1` in the body is the whole defect — the shell already emits the
+ * document's single `<h1>` — so this only raises `h1` to `h2` and leaves the
+ * rest alone. Shifting *every* level would take an author's `##` to `h3` and
+ * skip a level, which fails the same audit from the other side.
+ */
+export function demoteH1(html: string): string {
+  return html.replace(
+    /<(\/?)h1(\s|>)/g,
+    (_, closing: string, tail: string) => `<${closing}h2${tail}`
+  )
+}
