@@ -1,7 +1,7 @@
 /**
  * Type entry for `@simple-site-generator/templates/seo`.
  *
- * Kept in sync with `../src/seo/` (the `seo.ts` entry), which is the source of
+ * Kept in sync with `../src/seo/` (the `build.ts` entry), which is the source of
  * truth. See `./shared.d.ts` for why these are hand-written.
  */
 import type { Plugin } from 'vite'

@@ -2,7 +2,7 @@
  * Type entry for `@simple-site-generator/templates/design`.
  *
  * The templates' design system, as UnoCSS configuration — no stylesheet. See
- * `../src/design/design.ts` for the values and the reasoning.
+ * `../src/design.ts` for the values and the reasoning.
  */
 import type { UserConfig } from 'unocss'
 

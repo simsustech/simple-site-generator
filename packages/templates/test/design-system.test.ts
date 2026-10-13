@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ssgShortcuts, ssgSafelist } from '../src/design/design.js'
+import { ssgShortcuts, ssgSafelist } from '../src/design.js'
 
 /**
  * Integrity of the shortcut table.

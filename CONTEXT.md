@@ -47,7 +47,7 @@ The three template modules (`docs`, `landing`, `business`) are thin compositions
 was consolidated there were five near-identical layouts, and every fix had to be applied five times and
 drifted. See `docs/adr/0002-shared-template-layer.md`.
 
-Styling is **UnoCSS configuration, not a stylesheet**: `src/design/design.ts` exports the type/spacing
+Styling is **UnoCSS configuration, not a stylesheet**: `src/design.ts` exports the type/spacing
 scale (as theme entries), the `ssg-*` shortcuts, the short list of preflights, and the safelist of the
 design system's class names. The generated app merges it into `vitrify.unocss` beside
 `unocss-preset-quasar`, and every component class in the markup resolves from there. There is no CSS
