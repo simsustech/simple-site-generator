@@ -33,7 +33,6 @@
       "types": "./dist/design.d.ts",
       "import": "./dist/design.js"
     },
-    "./*/css": "./dist/*.css",
     "./*": "./dist/*.js"
   },
   "typesVersions": {
