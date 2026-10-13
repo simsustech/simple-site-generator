@@ -39,9 +39,12 @@ Pages are Markdown in `src/pages/**` with YAML frontmatter. `ssg check` enforces
 | `noindex`                            | –        | excluded from the index and the sitemap                                                                            |
 | `noSsr`                              | –        | client-only render. **Avoid for content** — a `noSsr` page has no prerendered `<h1>` or body, so `verify` fails it |
 | `image`                              | –        | social card image (absolute or root-relative)                                                                      |
+| `headerImage`                        | –        | illustration behind the page title; distinct from `image`                                                          |
+| `lang`                               | –        | BCP-47 tag when this page is not in the site's language, e.g. `nl`                                                 |
+| `alternates`                         | –        | `[{ lang, path, label? }]` — the page's other languages, emitted as hreflang and shown as a header language switch |
 | `breadcrumbs`                        | –        | trail, outermost first; drives the visible trail _and_ `BreadcrumbList`                                            |
 | `faq`                                | –        | `[{ question, answer }]`; rendered and mirrored as `FAQPage`                                                       |
-| `cta`                                | –        | `{ message, route }` — the page's one primary action                                                               |
+| `cta`                                | –        | `{ message, route }` or `{ message, href }` for a `mailto:`/`tel:` action — the page's one primary action          |
 | `subpages`                           | –        | ids nested under this page in the navigation dropdown                                                              |
 | `cards`, `lists`, `images`, `videos` | –        | structured content rendered by the templates                                                                       |
 
@@ -70,6 +73,26 @@ the page and the crawler cannot disagree.
 `<html lang>` from the pack it loads, and the template passes `ssg.lang` through as `vitrify.lang`.
 Use `en-US`, `en-GB`, `nl`, `de`, … (see `node_modules/quasar/lang/`). A bare `en` has no pack and
 Quasar silently falls back to `en-US`, so `og:locale` and `<html lang>` would disagree.
+
+### A second language
+
+A translated page declares its own `lang` and the set of translations it belongs to. Per page:
+
+```yaml
+lang: nl
+alternates:
+  - { lang: en-GB, path: /, label: English }
+  - { lang: nl, path: /nl, label: Nederlands }
+```
+
+List the page itself too: a self-referencing hreflang is what makes the cluster valid. The header
+renders a language switch from `alternates`, filtered to the pages a visitor can actually reach, and
+a page without `alternates` shows no switch.
+
+Declaring this in every page is repetitive, and a page whose twin is missing is the bug that bites.
+Both are avoided by deriving `lang` and `alternates` in `src/router/routes.ts` from the page id —
+`simsustech/website` pairs `website` with `nl-website` there, so adding the translation is the only
+step needed.
 
 `ssg verify` checks, per page: exactly one `<title>`, exactly one canonical that is absolute and on the
 configured origin, a non-empty description, at least one parseable `application/ld+json` block, exactly
