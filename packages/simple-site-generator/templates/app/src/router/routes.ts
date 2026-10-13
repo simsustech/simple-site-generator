@@ -25,6 +25,22 @@ interface PageFrontmatter {
   /** Keep the page out of the index and the sitemap. */
   noindex?: boolean
   image?: string
+  /**
+   * BCP-47 tag when this page is not in the site's default language, e.g. `nl`.
+   * Drives `<html lang>`, `og:locale` and the JSON-LD `inLanguage`.
+   */
+  lang?: string
+  /**
+   * Other-language versions of this page: `{ lang, path, label? }`.
+   *
+   * Emitted as `rel="alternate"` hreflang links, and rendered as the language
+   * switch in the header (which hides the entry pointing at the current page,
+   * so a single-language site shows no switch at all).
+   *
+   * The pairing is app-specific — declare it per page, or derive it here as
+   * `simsustech/website` does for its `nl-`-prefixed pages.
+   */
+  alternates?: { lang: string; path: string; label?: string }[]
   breadcrumbs?: string[]
   tags?: string[]
   [key: string]: unknown
@@ -153,6 +169,8 @@ const routes: RouteRecordRaw[] = [
             description: attributes.description,
             noindex: attributes.noindex ?? false,
             image: attributes.image,
+            lang: attributes.lang,
+            alternates: attributes.alternates,
             breadcrumbs: attributes.breadcrumbs
           }
         } as RouteRecordRaw

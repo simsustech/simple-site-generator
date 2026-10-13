@@ -34,7 +34,7 @@
               -->
               <router-link
                 class="ssg-shell__drawer-link"
-                :to="`/${page.id}`"
+                :to="pathOf(page)"
                 @click="drawer = false"
               >
                 {{ page.label }}
@@ -78,12 +78,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue'
+import { computed, onUnmounted, ref, toRefs, useSSRContext, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import SkipLink from './SkipLink.vue'
 import SiteHeader from './SiteHeader.vue'
 import SiteFooter from './SiteFooter.vue'
-import { menuPagesOf } from './nav.js'
+import { menuPagesOf, pathOf } from './nav.js'
+import { withLang } from './html-lang.js'
 import { useSeo } from '../seo/useSeo.js'
 import type { LayoutProps, SeoContext, SeoPage } from './types.js'
 
@@ -136,4 +137,39 @@ const seoContext = computed<SeoContext>(() => ({
 }))
 
 useSeo(currentPage.value, seoContext.value, route.path)
+
+/**
+ * Keep `<html lang>` in step with the page's language.
+ *
+ * See `html-lang.ts` for why this is written through the SSR context instead of
+ * by swapping Quasar's language pack. On the server the tag is serialized once,
+ * so a prerendered Dutch page ships `lang="nl"`; in the browser the same watch
+ * fixes the attribute after a client-side navigation, and resets it to the site
+ * default on the way back.
+ *
+ * The server is detected by the absence of `document` rather than by
+ * `import.meta.env.SSR`: this package is prebuilt as a client bundle, so that
+ * constant is baked to `false` here and would always take the browser path.
+ */
+const ssrContext =
+  typeof document === 'undefined'
+    ? (useSSRContext() as { _meta?: { htmlAttrs?: string } } | undefined)
+    : undefined
+
+function applyHtmlLang(lang: string | undefined): void {
+  const value = lang ?? props.lang
+
+  if (!value) return
+
+  const meta = ssrContext?._meta
+
+  if (meta) {
+    meta.htmlAttrs = withLang(meta.htmlAttrs ?? '', value)
+    return
+  }
+
+  if (typeof document !== 'undefined') document.documentElement.lang = value
+}
+
+watch(() => currentPage.value?.lang, applyHtmlLang, { immediate: true })
 </script>
