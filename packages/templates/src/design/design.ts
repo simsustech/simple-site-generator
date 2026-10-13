@@ -344,11 +344,18 @@ export const ssgPreflights: Preflights = [
   left: 0;
 }
 
-/* The header is a brand bar. A utility cannot colour it: Quasar's own
-   q-header rule wins the cascade for the element, so the background is set
-   here where the specificity is explicit. */
-.q-header.ssg-header,
-.ssg-header.q-header {
+/* The header is a brand bar, painted with the primary role and its paired
+   on-colour. A utility cannot do it: Quasar's own q-header rule wins the
+   cascade for the element, so it is set here where the specificity is explicit.
+
+   The body element in the selector is not decoration. In dark mode Quasar also
+   matches this element with .body--dark .q-layout__section--marginal and paints
+   it with --q-on-surface — the colour of the *page*, not of a primary bar — and
+   at equal specificity the cascade decided against the brand colour: a measured
+   1.32:1, white-ish text on bright green. One extra element in the selector
+   outranks it in both modes. */
+body .q-header.ssg-header,
+body .ssg-header.q-header {
   background: var(--q-primary, #1976d2);
   color: var(--q-on-primary, #ffffff);
 }
