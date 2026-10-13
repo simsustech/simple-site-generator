@@ -96,6 +96,17 @@ const ELEVATION_1 = 'var(--q-elevation-level1)'
 const ELEVATION_2 = 'var(--q-elevation-level2)'
 const CARD_RADIUS = 'var(--q-card-radius)'
 
+/**
+ * The text measure, in one place.
+ *
+ * The prose column is a *container*, not a measure: running text is capped at
+ * this so a paragraph stays readable, but a figure is not. Holding the whole
+ * column to the measure is what shrank every 1200px illustration on the
+ * simsustech site to about 40% of its authored size, and it is not what a measure
+ * is for.
+ */
+const MEASURE = '68ch'
+
 export const ssgTheme: Theme = {
   fontSize: Object.fromEntries(
     Object.entries(STEP).map(([key, value]) => [`step-${key}`, value])
@@ -104,7 +115,7 @@ export const ssgTheme: Theme = {
     Object.entries(SPACE).map(([key, value]) => [`space-${key}`, value])
   ),
   borderRadius: { DEFAULT: '0.5rem' },
-  maxWidth: { measure: '68ch', content: '1120px' }
+  maxWidth: { measure: MEASURE, content: '1120px' }
 }
 
 /** Shared layout primitives, plus one entry per component class in the markup. */
@@ -117,7 +128,10 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-skip-link',
     'absolute left-[-9999px] top-0 z-3000 px-space-3 py-space-2 bg-white text-black font-600 underline'
   ],
-  ['ssg-prose', 'max-w-measure text-step-0 leading-[1.65]'],
+  // No `max-w-measure` here: the prose block is the *container*. Running text is
+  // capped at the measure by the preflight below, so a figure can use the width
+  // the column actually has.
+  ['ssg-prose', 'text-step-0 leading-[1.65]'],
   ['ssg-section', 'py-space-5'],
   ['ssg-section__inner', 'w-full max-w-content mx-auto px-space-3'],
   ['ssg-muted-surface', `bg-[${SURFACE_CONTAINER}]`],
@@ -229,7 +243,46 @@ export const ssgShortcuts: Shortcuts = [
     `text-[${PRIMARY}] inline-block mt-space-2 font-600 transition-opacity duration-200 hover:opacity-80`
   ],
 
-  // Proof section
+  // Principles — the numbered, ruled band of the rules the work follows.
+  //
+  // Ruled rather than tinted: the tiles already sit on the page surface, and a
+  // second tinted panel under the header band and the bento would read as three
+  // competing slabs. The number is decoration (`aria-hidden`); it is an `<ol>`,
+  // so the order is announced by the list itself.
+  ['ssg-principles', 'mt-space-5'],
+  ['ssg-principles__header', 'max-w-measure mb-space-4'],
+  [
+    'ssg-principles__heading',
+    `text-[${ON_SURFACE}] text-step-3 leading-[1.15] m-0`
+  ],
+  [
+    'ssg-principles__leading',
+    `text-[${ON_SURFACE_VARIANT}] text-step-1 mt-space-2 mb-0`
+  ],
+  [
+    'ssg-principles__list',
+    // Same reflow rule as the bento grid: `auto-fit` instead of a breakpoint, so
+    // four items are four columns when there is room and one column when there is
+    // not, with no intermediate step to get wrong.
+    'grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-space-4 m-0 p-0 [list-style:none]'
+  ],
+  [
+    'ssg-principles__item',
+    `relative p-space-4 rounded-[${CARD_RADIUS}] bg-[${SURFACE_LOWEST}] b b-solid b-[${OUTLINE_VARIANT}] shadow-[${ELEVATION_1}]`
+  ],
+  [
+    'ssg-principles__mark',
+    `inline-flex items-center justify-center min-w-[2rem] h-[2rem] rounded-[${CARD_RADIUS}] bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}] font-700`
+  ],
+  ['ssg-principles__title', `text-[${ON_SURFACE}] text-step-1 mt-space-3 mb-0`],
+  [
+    'ssg-principles__text',
+    `text-[${ON_SURFACE_VARIANT}] text-step-0 mt-space-2 mb-0 leading-[1.6]`
+  ],
+  [
+    'ssg-principles__note',
+    `text-[${ON_SURFACE_VARIANT}] text-step--1 mt-space-4 max-w-measure`
+  ],
   [
     'ssg-proof-section__heading',
     `text-[${ON_SURFACE}] text-step-3 m-0 mb-space-4`
@@ -322,7 +375,40 @@ export const ssgShortcuts: Shortcuts = [
   [
     'ssg-business__cards-heading',
     `text-[${ON_SURFACE}] text-step-2 m-0 mb-space-3`
-  ]
+  ],
+  [
+    'ssg-business__band-copy',
+    // The graphic is `hidden` below `lg`, so the copy only has to make room for
+    // it there — see the modifier below.
+    'relative'
+  ],
+  ['ssg-business__band-copy--narrow', 'lg:max-w-[58%]'],
+  [
+    'ssg-business__band-demo',
+    // Absolute in the band, which is already `relative overflow-hidden`. Below
+    // `lg` the band has no room for a graphic beside the copy, so it is hidden
+    // rather than shrunk — the labels are the point and they stop being legible
+    // first. `pointer-events-none` keeps it from swallowing the copy's links.
+    //
+    // `hidden` here only wins because `ssg-demo` does not also set a display
+    // value; see the note on that shortcut. Two equal-specificity classes each
+    // setting `display` would be resolved by stylesheet order, and this one lost
+    // — the graphic rendered on top of the headline on every phone.
+    'hidden lg:block pointer-events-none absolute top-space-3 right-space-3 w-[40%] max-w-[22rem]'
+  ],
+
+  // Hero demo — the animated process graphic (`shared/HeroDemo.vue`). Layout
+  // only: an SVG's paint properties and keyframes are not expressible as
+  // utilities, so they live in the preflight below.
+  //
+  // No `display` value here, deliberately. A `<figure>` is block by default, so
+  // `block` would be redundant — and harmful: this class is always applied
+  // alongside a variant (`ssg-business__band-demo`), and two single-class
+  // selectors that both set `display` are resolved by stylesheet order rather
+  // than by intent. That is how the graphic ended up painted over the headline on
+  // mobile, where the band variant asks for `hidden`.
+  ['ssg-demo', 'm-0 w-full'],
+  ['ssg-demo__svg', 'block w-full h-auto']
 ]
 
 /**
@@ -462,10 +548,53 @@ body .ssg-header.q-header {
   text-underline-offset: 0.16em;
 }
 
-/* Markdown images: content-width, rounded, and never wider than the column. */
+/*
+  Running text is capped at the measure; the column is not.
+
+  A measure is a readability constraint on prose, and applying it to the whole
+  block also constrained every illustration to it: the site's SVGs are authored at
+  1200px and were being drawn at about 40% of that, which is what "too small"
+  meant. Direct children only, so a list nested in a list is not re-capped.
+*/
+.ssg-prose {
+  --ssg-measure: ${MEASURE};
+}
+
+.ssg-prose > :where(p, ul, ol, dl, blockquote, h1, h2, h3, h4, h5, h6) {
+  max-width: var(--ssg-measure);
+}
+
+/*
+  A paragraph that holds nothing but an image is a figure, not running text.
+
+  Markdown wraps a standalone image in a paragraph tag, so capping paragraphs at
+  the measure caps every illustration with it — the image is 100% of its
+  block, and its containing block was the paragraph. This is the other half of
+  the fix: without it the widened column changes nothing, which is exactly what
+  the first attempt measured (illustration 680px, paragraph 680px).
+
+  The :has() selector degrades safely: where it is unsupported the rule is
+  dropped and the image is capped at the measure, which is the old behaviour
+  rather than a break.
+*/
+.ssg-prose > p:has(> img:only-child) {
+  max-width: none;
+}
+
+/*
+  Markdown images: rounded, and never stretched beyond their own size.
+
+  Markdown images: rounded, and never stretched beyond their own size.
+
+  Width is auto rather than 100% — a percentage upscales a small image to fill
+  the column, which is how a 240px diagram ends up blurry across 1100px. With
+  auto the file renders at its intrinsic size, and an SVG with a viewBox and no
+  explicit size reports the viewBox dimensions. Max-width is then the only cap.
+*/
 .ssg-prose :where(img) {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
   margin-block: ${SPACE['4']};
   border-radius: var(--q-card-radius, 0.5rem);
@@ -598,6 +727,99 @@ body .ssg-header.q-header {
   }
 }
 
+/*
+  The hero demo: a process drawn as a route with stops, animated CSS-only.
+
+  Paint on SVG elements is not expressible as a utility, and the keyframes have
+  nowhere else to live — there is no stylesheet — so both belong here.
+
+  Everything that moves is transform or geometry, never opacity. That is not
+  stylistic: an opacity animation on content failed the contrast gate once
+  already (see the reveal note above), and a low-vision reader who never scrolls
+  to the element keeps it permanently dimmed. The moving parts here are
+  decoration inside an element that carries its own accessible name, so the
+  contrast argument does not apply — but geometry is also the cheaper property,
+  and the no-opacity rule is worth keeping unconditional.
+
+  The reduced-motion preference needs no selector of its own: the blanket
+  override below collapses duration and iteration count, which is enough to stop
+  a keyframe animation. It would not be enough for a scroll-driven timeline,
+  which is why that one is listed explicitly.
+  below collapses duration and iteration count, which is enough to stop a
+  keyframe animation. It would not be enough for a scroll-driven timeline, which
+  is why that one is listed explicitly.
+*/
+.ssg-demo__grid-dot {
+  fill: var(--q-outline-variant, currentColor);
+}
+
+.ssg-demo__route {
+  fill: none;
+  stroke: var(--q-outline-variant, currentColor);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ssg-demo__pulse {
+  fill: none;
+  stroke: var(--q-primary, currentColor);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 14 100;
+  animation: ssg-demo-travel 3.6s linear infinite;
+}
+
+.ssg-demo__ring {
+  fill: none;
+  stroke: var(--q-primary, currentColor);
+  stroke-width: 1.5;
+  /* A scaled SVG child scales from the viewBox origin by default, which sends
+     the ring flying toward the corner. The fill-box value pins the origin to
+     element's own box, so it grows in place. */
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ssg-demo-ping 3.6s ease-out infinite;
+  animation-delay: calc(var(--i) * 0.45s);
+}
+
+.ssg-demo__dot {
+  fill: var(--q-primary, currentColor);
+}
+
+.ssg-demo__label {
+  fill: var(--q-on-surface-variant, currentColor);
+  font-size: 11px;
+  font-weight: 590;
+  letter-spacing: -0.01em;
+}
+
+@keyframes ssg-demo-travel {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    /* The period of the stroke-dasharray above, so exactly one dash crosses the
+       route per loop and the restart is invisible. The route also carries a
+       pathLength of 100, so this is percent-like rather than a pixel length
+       that would have to be measured. */
+    stroke-dashoffset: -114;
+  }
+}
+
+@keyframes ssg-demo-ping {
+  0%,
+  55%,
+  100% {
+    transform: scale(1);
+  }
+
+  28% {
+    transform: scale(1.8);
+  }
+}
+
 /* Respect the user's motion preference. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -642,10 +864,30 @@ export const ssgSafelist: string[] = ssgShortcuts.flatMap((shortcut) =>
     : []
 )
 
+/**
+ * Candidates that must never become CSS.
+ *
+ * UnoCSS reads a candidate out of markup, not only out of class attributes: the
+ * string `h1` is extracted from `<h1>` exactly as it is from `class="h1"`.
+ * `presetUno` answers it, because the bare `hN` form is a height shorthand
+ * (`h1` means `height: .25rem`) — so every site rendering an `<h1>` was shipping
+ * `.h1 { height: .25rem }` into its stylesheet.
+ *
+ * The byte cost is trivial; the collision is not. `h1` is a plausible *class*
+ * name — a CMS, a copy-pasted block, or a design system that names its heading
+ * levels that way will eventually use it — and the element would silently
+ * collapse to 4px tall with nothing in the source to explain why.
+ *
+ * `h-1` (with the dash) still works and is the real spelling, so this loses
+ * nothing. `h` on its own is not a height utility, so it can only ever be noise.
+ */
+const ssgBlocklist: (string | RegExp)[] = [/^h[1-6]$/]
+
 /** Convenience bundle for the app config. */
 export const ssgUnoConfig = {
   theme: ssgTheme,
   shortcuts: ssgShortcuts,
   preflights: ssgPreflights,
-  safelist: ssgSafelist
+  safelist: ssgSafelist,
+  blocklist: ssgBlocklist
 }

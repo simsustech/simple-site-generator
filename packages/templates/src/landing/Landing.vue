@@ -16,8 +16,19 @@
       :review-count="extra?.reviewCount"
       :review-source="extra?.reviewSource"
     >
-      <template v-if="heroImage" #aside>
-        <HeroImage :image="heroImage" />
+      <!--
+        The hero's visual, in order of preference: a real screenshot, then the
+        animated process graphic. A screenshot always wins — it is the product,
+        and the research is unambiguous that showing the real product in the
+        first scroll beats any drawn graphic. The demo is the honest fallback for
+        a service that has no screenshot to show.
+
+        The whole slot is conditional so `Hero` does not render an empty aside
+        column when a page declares neither.
+      -->
+      <template v-if="heroImage || demoSteps.length" #aside>
+        <HeroImage v-if="heroImage" :image="heroImage" />
+        <HeroDemo v-else :steps="demoSteps" :label="demo?.label ?? title" />
       </template>
     </Hero>
 
@@ -70,6 +81,7 @@ import { computed } from 'vue'
 import Hero from '../shared/Hero.vue'
 import HeroImage from './HeroImage.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
+import HeroDemo from '../shared/HeroDemo.vue'
 import ProofSection from '../shared/ProofSection.vue'
 import ProofStrip from '../shared/ProofStrip.vue'
 import FaqList from '../shared/FaqList.vue'
@@ -101,6 +113,14 @@ const heroImage = computed(() => {
 
   return first ? { src: first.src, alt: first.caption } : undefined
 })
+
+/**
+ * The animated hero graphic's stops, from `demo:` frontmatter.
+ *
+ * Empty on a page that declares none, which is what makes the aside fall back to
+ * nothing rather than to an empty graphic.
+ */
+const demoSteps = computed(() => props.demo?.steps ?? [])
 
 const cardsHeading = computed(
   () => props.extra?.cardsHeading as string | undefined
