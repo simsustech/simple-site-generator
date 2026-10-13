@@ -33,7 +33,11 @@ const DEPENDENCIES: Record<string, string> = {
   '@fastify/middie': '^9.0.1',
   '@fastify/static': '^8.0.3',
   '@quasar/extras': '^1.16.13',
-  '@quasar/quasar-ui-qmarkdown': '^4.2.1',
+  // No `@quasar/quasar-ui-qmarkdown`: the templates render the HTML that
+  // `vite-plugin-markdown` produced at build time, so the application never
+  // needs a Markdown parser in the browser. The prose styles still come from
+  // the preset's ported selectors, which `appExtensions: ['qmarkdown']` in
+  // `vitrify.config.ts` declares — that entry is a style name, not a package.
   '@quasar/quasar-ui-qmediaplayer': '^3.0.1',
   '@simple-site-generator/templates': '^0.1.19',
   quasar: '^2.32.3',
