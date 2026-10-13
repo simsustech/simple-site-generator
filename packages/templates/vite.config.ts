@@ -1,4 +1,3 @@
-import { existsSync, promises } from 'fs'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
@@ -9,31 +8,46 @@ import { QuasarResolver } from 'unplugin-vue-components/resolvers'
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 /**
- * One entry per template module, plus the package's own root.
+ * Build entries, stated rather than discovered.
  *
- * A directory counts as a template module only when it contains
- * `<name>/<name>.ts` — that keeps `shared/` and `seo/`, which are libraries
- * imported by the modules, out of the entry list instead of failing the build
- * by looking for `shared/shared.ts`.
+ * The previous version walked `src/` and accepted a directory as an entry when it
+ * contained `<name>/<name>.ts`. It was described as "one entry per template
+ * module" and that was wrong twice:
  *
- * `index.ts` is a *file*, so the directory walk never found it. The package
- * advertises `"."` in its `exports` map and ships `index.d.ts`, so
- * `import { CtaButton } from '@simple-site-generator/templates'` type-checked
- * everywhere and failed to resolve everywhere: `dist/index.js` was never built.
+ *   - half the entries are not templates. `index` is the package root, `design`
+ *     is the UnoCSS design system, and `seo` is the build-time SEO surface;
+ *   - the `shared/` directory the rule claimed to exclude was excluded only
+ *     because nobody had created `src/shared/shared.ts`. That is a plausible
+ *     barrel to add in a directory of twenty files, and it would silently have
+ *     become a seventh entry with nothing in `exports` pointing at it.
+ *
+ * `design` is no longer a folder: it was reshaped from `src/design.ts` into
+ * `src/design/design.ts` purely to satisfy that walk, which is a source tree bent
+ * to fit a glob.
+ *
+ * Why `design` and `seo` are entries at all, rather than being exported from the
+ * package root: both are loaded by build tooling, not app code. The root
+ * deliberately does not re-export the design system, so an app's runtime import
+ * cannot pull the UnoCSS/Quasar option tree into the client bundle; and `seo`
+ * must stay free of `.vue` and Quasar imports because a Node process loads it.
+ *
+ * The entry *keys* are the published subpaths, so they do not have to match the
+ * file names — `seo` is built from `seo/build.ts`, which is named for what it is
+ * rather than for the folder it sits in. `seo/index.ts` is the app-code barrel
+ * beside it and pulls in `useSeo`, which imports Vue.
  */
-const moduleEntries = (await promises.readdir(srcDir, { withFileTypes: true }))
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
-  .filter((name) => existsSync(join(srcDir, name, `${name}.ts`)))
-  .reduce(
-    (acc, name) => {
-      acc[name] = join(srcDir, name, `${name}.ts`)
-      return acc
-    },
-    {} as Record<string, string>
-  )
+const templateEntries = {
+  docs: join(srcDir, 'docs/docs.ts'),
+  landing: join(srcDir, 'landing/landing.ts'),
+  business: join(srcDir, 'business/business.ts')
+}
 
-const input = { index: join(srcDir, 'index.ts'), ...moduleEntries }
+const input = {
+  index: join(srcDir, 'index.ts'),
+  design: join(srcDir, 'design.ts'),
+  seo: join(srcDir, 'seo/build.ts'),
+  ...templateEntries
+}
 
 export default defineConfig({
   plugins: [
