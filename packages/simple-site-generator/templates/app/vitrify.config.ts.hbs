@@ -1,10 +1,11 @@
 import type { VitrifyConfig, VitrifyConfigAsync } from 'vitrify'
 import { QuasarPlugin, type QuasarPluginOptions } from 'vitrify/plugins'
+import type { QuasarIconSet } from 'quasar'
 // `QuasarPreset` is exported by the preset, NOT by vitrify. Importing it from
 // 'vitrify' fails at load time ("does not provide an export named
 // 'QuasarPreset'"), and since 0.7 the preset also refuses to run without a
 // style, so both the import and `style` below are required.
-import { QuasarPreset } from 'unocss-preset-quasar'
+import { QuasarPreset, quasarIconSet } from 'unocss-preset-quasar'
 import { MaterialDesign3 } from 'unocss-preset-quasar/styles'
 import { certificateFor } from 'devcert'
 import { plugin as mdPlugin } from 'vite-plugin-markdown'
@@ -69,6 +70,22 @@ const ssg = {
 
 const { template, templatePackage, title, url } = ssg
 
+/**
+ * Quasar's own icons, resolved to iconify classes.
+ *
+ * Handing Quasar the library *name* lets it pick its own font classes
+ * (`mdi mdi-menu-down`), and this app loads no icon font — so every icon the
+ * framework draws itself (the dropdown arrow, a select's chevron, a table's
+ * expander) renders as nothing. The rewritten set fixes that: each value is a
+ * class the preset emits CSS for.
+ *
+ * The resolution's `iconMapFn` is deliberately not passed — Vitrify serialises
+ * the Quasar config into the client bundle and a function does not survive, so
+ * passing it makes the arrow throw instead of render. Bare icon names need that
+ * mapper; write `i-mdi-*` names instead.
+ */
+const icons = quasarIconSet('mdi-v7')
+
 const quasarConf: QuasarPluginOptions = {
   framework: {
     components: [],
@@ -79,7 +96,9 @@ const quasarConf: QuasarPluginOptions = {
     // A Quasar icon-library name. The preset derives the nested icon set from
     // `quasar/dist/icon-set`, rewrites each value to its iconify class and
     // safelists them — so the ~200-line hand-written icon map is not needed.
-    iconSet: 'mdi-v7'
+    // The rewritten set is what Quasar renders from, above; the preset types it
+    // as `unknown`, so the assertion to Quasar's own type belongs here.
+    iconSet: icons.iconSet as QuasarIconSet
   },
   /*
    * Disable SASS if you use UnoCSS
@@ -178,7 +197,7 @@ export default async function ({
             style: MaterialDesign3,
             sourceColor: ssg.sourceColor,
             plugins: quasarConf.framework.plugins,
-            iconSet: quasarConf.framework.iconSet,
+            iconSet: 'mdi-v7',
             // Only the third-party Quasar UI libraries whose styles this app
             // needs contribute CSS; declaring them is what ports their
             // selectors. The prose styles are not among them: the design system
