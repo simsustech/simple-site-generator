@@ -8,6 +8,14 @@
         -->
         <h1 class="ssg-landing__title">{{ title }}</h1>
         <p v-if="description" class="ssg-landing__lede">{{ description }}</p>
+        <CtaButton
+          v-if="cta?.message"
+          class="ssg-page-header__cta"
+          :label="cta.message"
+          :route="cta.route"
+          :href="cta.href"
+          data-ssg="hero-cta"
+        />
       </header>
 
       <PageContent
@@ -23,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import type { PageProps } from '../shared/types.js'
 

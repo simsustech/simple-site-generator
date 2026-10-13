@@ -27,6 +27,11 @@ Express the templates' styling as UnoCSS configuration, and measure the site the
   template — including dark mode — from one source colour. The header background
   is set in a preflight because Quasar's own `q-header` rule wins the cascade for
   the element, so a utility cannot colour it.
+- **The page's primary action is in the title band.** If a page declares `cta:`
+  in frontmatter, the business, docs and landing page components render it as a
+  button beside the title, so the hero has one obvious next step instead of the
+  action being buried in the prose.
+
 - **Imagery is supported**: markdown images and blockquotes in the prose are
   styled (full column width, rounded, brand-rule pull quotes) and get no
   layout shift.
