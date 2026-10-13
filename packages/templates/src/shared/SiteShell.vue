@@ -41,6 +41,38 @@
               </router-link>
             </q-item-section>
           </q-item>
+
+          <!--
+            The contact page is tagged `contact`, not `menu`, because the header
+            renders it as its own button. That button lives in the desktop
+            navigation, which is hidden below `lg` — so without this the drawer
+            had no way to reach it, and a visitor on a phone could only arrive at
+            the contact page through a CTA somewhere in the content.
+
+            This mirrors the header's contact menu exactly: the same tagged
+            pages, under the same label, and each page's own icon rather than a
+            mail icon borrowed for all of them.
+          -->
+          <template v-if="contactPages.length">
+            <q-separator spaced />
+            <q-item-label header>
+              {{ tags?.contact?.label || 'Contact' }}
+            </q-item-label>
+            <q-item v-for="page in contactPages" :key="page.id" role="listitem">
+              <q-item-section v-if="page.icon" avatar>
+                <q-icon :name="page.icon.name" :color="page.icon.color" />
+              </q-item-section>
+              <q-item-section>
+                <router-link
+                  class="ssg-shell__drawer-link"
+                  :to="pathOf(page)"
+                  @click="drawer = false"
+                >
+                  {{ page.label }}
+                </router-link>
+              </q-item-section>
+            </q-item>
+          </template>
         </q-list>
       </nav>
     </q-drawer>
@@ -83,7 +115,7 @@ import { useRoute } from 'vue-router'
 import SkipLink from './SkipLink.vue'
 import SiteHeader from './SiteHeader.vue'
 import SiteFooter from './SiteFooter.vue'
-import { menuPagesOf, pathOf } from './nav.js'
+import { contactPagesOf, menuPagesOf, pathOf } from './nav.js'
 import { withLang } from './html-lang.js'
 import { useSeo } from '../seo/useSeo.js'
 import type { LayoutProps, SeoContext, SeoPage } from './types.js'
@@ -102,11 +134,13 @@ import type { LayoutProps, SeoContext, SeoPage } from './types.js'
  */
 const props = defineProps<LayoutProps>()
 
-const { pages } = toRefs(props)
+const { pages, tags } = toRefs(props)
 
 const drawer = ref(false)
 
 const menuPages = computed(() => menuPagesOf(pages.value))
+
+const contactPages = computed(() => contactPagesOf(pages.value))
 
 const route = useRoute()
 

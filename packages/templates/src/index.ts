@@ -19,7 +19,7 @@ export { default as ProofStrip } from './shared/ProofStrip.vue'
 export { default as PageContent } from './shared/PageContent.vue'
 
 // Pure helpers.
-export { demoteHeadings } from './shared/headings.js'
+export { demoteHeadings, demoteH1 } from './shared/headings.js'
 
 // Types.
 export type {
