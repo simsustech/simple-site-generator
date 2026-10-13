@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
-import { headerImageStyle } from '../design/design.js'
+import { headerImageStyle } from '../design.js'
 import type { PageProps } from '../shared/types.js'
 
 const props = defineProps<PageProps>()

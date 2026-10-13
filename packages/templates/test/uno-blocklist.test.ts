@@ -1,6 +1,6 @@
 import { createGenerator, presetUno } from 'unocss'
 import { describe, expect, it } from 'vitest'
-import { ssgUnoConfig } from '../src/design/design.js'
+import { ssgUnoConfig } from '../src/design.js'
 
 /**
  * Behavioural test for the design system's `blocklist`.
