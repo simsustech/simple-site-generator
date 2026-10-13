@@ -86,6 +86,11 @@ const SCRIPTS: Record<string, string> = {
   'build:ssr': 'vitrify build -m ssr',
   'build:ssg': 'vitrify build -m ssg',
   check: 'ssg check',
+  // Build, then serve the result the way production does — extensionless URLs
+  // and a real 404 — rather than `caddy file-server`, which has no `try_files`
+  // and answers 404 for every page URL.
+  preview:
+    'pnpm run build && caddy run --config build/Caddyfile.preview --adapter caddyfile',
   verify: 'ssg verify',
   test: 'vitrify test',
   lint: 'oxlint src',

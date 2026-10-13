@@ -1,0 +1,34 @@
+# Local preview of the built site — `pnpm preview`, or directly:
+#
+#   caddy run --config build/Caddyfile.preview --adapter caddyfile
+#
+# Why a Caddyfile rather than `caddy file-server`: the routes are extensionless
+# (`/about` serves `about.html`), and `file-server` has no `try_files` — it
+# answers 404 for every page URL. This mirrors the shape of `build/Caddyfile`,
+# which is what production runs, so what you check here is what ships.
+#
+# The port is overridable: PREVIEW_PORT=9000 pnpm preview
+:{$PREVIEW_PORT:8095} {
+	# `root` is relative to the directory the command runs in, which is this
+	# package — so it needs no absolute path and survives a different checkout.
+	root * ./dist/static
+
+	encode gzip
+
+	# The bundler fingerprints every asset as `name-<hash>.ext`; such a file is
+	# immutable, so the browser may keep it for a year without revalidating.
+	@hashed path_regexp hashed -[A-Za-z0-9_]{8,}\.(js|mjs|css|woff2|png|jpe?g|webp|svg)$
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	try_files {path}.html {path}
+	file_server
+
+	# A missing page answers 404 with the site's own error page, rather than
+	# ending `try_files` in a file (which would answer 200 — a soft 404).
+	handle_errors {
+		root * ./dist/static
+		@notFound expression {err.status_code} == 404
+		rewrite @notFound /404.html
+		file_server
+	}
+}
