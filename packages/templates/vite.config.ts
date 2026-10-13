@@ -5,8 +5,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { QuasarResolver } from 'unplugin-vue-components/resolvers'
-import UnoCSS from 'unocss/vite'
-import { presetUno } from 'unocss'
 
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
@@ -40,10 +38,25 @@ const input = { index: join(srcDir, 'index.ts'), ...moduleEntries }
 export default defineConfig({
   plugins: [
     vue(),
-    UnoCSS({
-      presets: [presetUno()],
-      mode: 'per-module'
-    }),
+    /*
+      No UnoCSS plugin here on purpose.
+
+      This package ships components and a design-system configuration; the
+      consuming app runs UnoCSS with the design system and owns the CSS. The
+      plugin used to run here with a bare `presetUno()`, which meant it extracted
+      utility candidates from this package's own source — prose comments, the
+      preflight CSS, and the shortcut definitions themselves — and emitted them
+      as per-module CSS files (`dist/business.css`, ...). The app imported those
+      files through `globalCss`, so every generated site shipped them: roughly
+      7 KB of duplicated, meaningless utilities, plus `.h1`/`.h2`/`.h3` height
+      rules picked up from `<h1>` tag names in Vue templates.
+
+      Removing it also removes the reason the package had a CSS export.
+
+      (Note for editors: `star-slash-css` cannot be written literally in this
+      comment. The slash-star-slash closes it, the same trap `routes.ts`
+      documents for globs.)
+    */
     Components({
       resolvers: [QuasarResolver()],
       dts: 'components.d.ts'

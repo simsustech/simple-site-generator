@@ -218,15 +218,24 @@ export default async function ({
           pipeline: {
             include: [
               /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
-              // The templates' components are code-split into their own chunks
-              // (`assets/SiteHeader-*.js`), so matching only the entry file
-              // misses every class and every `q-*` tag they render.
+              // The templates package IS scanned, and has to be: a template
+              // component renders `q-separator` and `i-mdi-phone` as readily as
+              // it renders an `ssg-*` class, and `unocss-preset-quasar` is what
+              // turns both into CSS. Measuring this include against the site's
+              // own sources showed 137 selectors that exist *only* because of
+              // it — `q-separator`, `q-card__actions--*`, `q-btn-group*` and the
+              // icons among them. Dropping it looks like a free 17 KB and is
+              // actually an unstyled drawer with missing icons.
+              //
+              // The shortcut names are safelisted separately (`ssgSafelist`), so
+              // it is not the shortcut CSS this supplies — it is the Quasar and
+              // icon classes. The noise that rides along with it is bounded by
+              // the design system's own `blocklist`.
               new RegExp(`${ssg.templatePackage}.*\\.js`)
             ]
           }
         }
       },
-      globalCss: [`${templatePackage}/${template}/css`],
       // No `sass.global` block: the media player's styles come from the preset's
       // `appExtensions`, and the old `QMarkdown.sass` path does not exist (the
       // file is `.scss`), so it only produced a resolution error.

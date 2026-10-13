@@ -111,6 +111,38 @@ describe('ssg init', () => {
     expect(config).toContain("template: 'landing'")
   })
 
+  it('keeps the templates package in the UnoCSS content scan', async () => {
+    const config = await fs.readFile(
+      join(target(), 'vitrify.config.ts'),
+      'utf8'
+    )
+
+    // Quasar component classes (`q-separator`, `q-card__actions--*`) and icon
+    // classes (`i-mdi-phone`) are emitted *only* because the templates package
+    // is scanned; the shortcut names are safelisted separately. Dropping this
+    // include looks like a free ~17 KB of CSS and is actually an unstyled drawer
+    // and missing icons, so it is pinned here.
+    // Matched structurally rather than by the literal text: the pattern is
+    // written with escaped backslashes, and a `toContain` of that text breaks on
+    // how many of them survive the template engine and the test literal.
+    expect(config).toMatch(
+      /content:\s*\{[\s\S]*?pipeline:[\s\S]*?new RegExp\([\s\S]*?ssg\.templatePackage/
+    )
+    expect(config).toContain('include')
+  })
+
+  it('does not import a CSS file from the templates package', async () => {
+    const config = await fs.readFile(
+      join(target(), 'vitrify.config.ts'),
+      'utf8'
+    )
+
+    // `globalCss` pulled in the templates package's own build output, which was
+    // the UnoCSS scanner's leavings — `.outline`, `.grid`, `.h1` — and nothing
+    // else. The package no longer builds CSS at all.
+    expect(config).not.toContain('globalCss')
+  })
+
   it('writes the site identity into the generated config', async () => {
     const config = await fs.readFile(
       join(target(), 'vitrify.config.ts'),
