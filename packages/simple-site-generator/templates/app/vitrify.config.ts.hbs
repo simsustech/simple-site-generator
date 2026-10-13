@@ -179,9 +179,12 @@ export default async function ({
             sourceColor: ssg.sourceColor,
             plugins: quasarConf.framework.plugins,
             iconSet: quasarConf.framework.iconSet,
-            // Only the third-party Quasar UI libraries this app actually uses
-            // contribute CSS; declaring them is what ports their selectors.
-            appExtensions: ['qmarkdown', 'qmediaplayer']
+            // Only the third-party Quasar UI libraries whose styles this app
+            // needs contribute CSS; declaring them is what ports their
+            // selectors. The prose styles are not among them: the design system
+            // styles the markdown output itself (`ssg-prose`), so no Markdown
+            // component or stylesheet is needed on either side.
+            appExtensions: ['qmediaplayer']
           })
         ],
         // The templates' design system: theme scale, shortcuts, preflights and
@@ -205,9 +208,9 @@ export default async function ({
         }
       },
       globalCss: [`${templatePackage}/${template}/css`],
-      // No `sass.global` block: the QMarkdown/QMediaPlayer styles now come from
-      // the preset's `appExtensions`, and the old `QMarkdown.sass` path does not
-      // exist (the file is `.scss`), so it only produced a resolution error.
+      // No `sass.global` block: the media player's styles come from the preset's
+      // `appExtensions`, and the old `QMarkdown.sass` path does not exist (the
+      // file is `.scss`), so it only produced a resolution error.
       ssr: {
         serverModules: ['vite-plugin-markdown']
       }
