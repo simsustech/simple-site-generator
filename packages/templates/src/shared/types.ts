@@ -59,6 +59,42 @@ export interface SitePage {
    * its background.
    */
   headerImage?: string
+  /**
+   * The hero's process graphic: a route with the given stops, drawn and
+   * animated as an inline SVG (`shared/HeroDemo.vue`).
+   *
+   * Declared on this type, not only in the page schema: Vue derives the runtime
+   * props from the type, so a field missing here is never exposed as a prop —
+   * the frontmatter value would land in `attrs` and the graphic would silently
+   * never render. That is the same trap `cta` and `headerImage` document above.
+   *
+   * Two stops are the minimum (a route needs something to run between) and five
+   * is about where the labels start to collide.
+   */
+  demo?: {
+    /** Stop labels, in order along the route. */
+    steps: string[]
+    /** Accessible name for the graphic; falls back to the stop labels. */
+    label?: string
+  }
+  /**
+   * The principles band: the rules the work follows, as numbered cards.
+   *
+   * Replaces what used to be an illustration. An image of text is not content —
+   * it cannot be selected, searched, translated or reflowed, and it is the one
+   * kind of figure that is guaranteed to be the wrong size for someone. Declared
+   * here for the same reason as `demo`: a field missing from the type never
+   * reaches the component as a prop.
+   */
+  principles?: {
+    /** Section heading, rendered as `<h2>`. */
+    heading?: string
+    /** One line under it, setting up why the list exists. */
+    leading?: string
+    items: { title: string; text: string }[]
+    /** A closing line — the consequence, not another rule. */
+    note?: string
+  }
   /** Rendered in the hero rather than the body. */
   page?: string
   [key: string]: unknown

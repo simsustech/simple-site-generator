@@ -26,6 +26,16 @@ images:
   - name: Landing
     src: images/landing/landing.png
     caption: A simple site generator project
+# The hero's animated process graphic — a route with named stops, drawn from
+# this list. Replace the stops with your own process; two to five read best.
+# `landing` shows it only when a page declares no hero image, and `business`
+# shows it in the page's title band instead of a background illustration.
+demo:
+  label: From Markdown to a deployed site
+  steps:
+    - Write Markdown
+    - Build
+    - Deploy
 ---
 
 ## Why use this

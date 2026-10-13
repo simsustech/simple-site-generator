@@ -48,6 +48,43 @@ export const pageFrontmatterSchema = z.object({
       route: z.string().min(1).optional()
     })
     .optional(),
+  /**
+   * The hero's animated process graphic (`shared/HeroDemo.vue`).
+   *
+   * Two stops minimum: the graphic draws a route between them, and one stop is a
+   * dot with a label, not a process. Rejected here rather than rendered badly,
+   * because the templates degrade silently — a malformed `demo` would just show
+   * nothing.
+   */
+  demo: z
+    .object({
+      steps: z.array(z.string().min(1)).min(2),
+      label: z.string().min(1).optional()
+    })
+    .optional(),
+  /**
+   * The principles band (`shared/PrincipleGrid.vue`).
+   *
+   * At least one item, and every item needs both halves: the component renders a
+   * heading and a body per card, so a title with no text is an empty box in the
+   * layout. Rejected here rather than rendered badly, because a malformed
+   * `principles` shows nothing at all.
+   */
+  principles: z
+    .object({
+      heading: z.string().min(1).optional(),
+      leading: z.string().min(1).optional(),
+      items: z
+        .array(
+          z.object({
+            title: z.string().min(1),
+            text: z.string().min(1)
+          })
+        )
+        .min(1),
+      note: z.string().min(1).optional()
+    })
+    .optional(),
   /** Ids of pages nested under this one in the navigation. */
   subpages: z.array(z.string().min(1)).optional(),
   lists: z.array(z.unknown()).optional(),

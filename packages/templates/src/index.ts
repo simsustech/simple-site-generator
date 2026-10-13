@@ -15,6 +15,8 @@ export { default as SiteFooter } from './shared/SiteFooter.vue'
 export { default as SkipLink } from './shared/SkipLink.vue'
 export { default as CtaButton } from './shared/CtaButton.vue'
 export { default as Hero } from './shared/Hero.vue'
+export { default as HeroDemo } from './shared/HeroDemo.vue'
+export { default as PrincipleGrid } from './shared/PrincipleGrid.vue'
 export { default as ProofStrip } from './shared/ProofStrip.vue'
 export { default as PageContent } from './shared/PageContent.vue'
 
