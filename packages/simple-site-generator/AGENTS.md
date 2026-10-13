@@ -91,7 +91,7 @@ a page without `alternates` shows no switch.
 
 Declaring this in every page is repetitive, and a page whose twin is missing is the bug that bites.
 Both are avoided by deriving `lang` and `alternates` in `src/router/routes.ts` from the page id —
-`simsustech/website` pairs `website` with `nl-website` there, so adding the translation is the only
+`simsustech/website` pairs `website` with `nl/website` there, so adding the translation is the only
 step needed.
 
 `ssg verify` checks, per page: exactly one `<title>`, exactly one canonical that is absolute and on the
