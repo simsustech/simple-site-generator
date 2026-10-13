@@ -28,20 +28,14 @@
     <!--
       The content arrives as HTML: `vite-plugin-markdown` renders the Markdown
       at build time, so the page module carries the rendered result. Rendering
-      it with `v-html` — inside the `q-markdown` class the preset's ported
-      markdown styles select — keeps the whole markdown toolchain out of the
-      client bundle. Feeding the HTML back through `QMarkdown` meant shipping
-      markdown-it to every visitor so it could parse what the build had already
-      parsed.
+      it with `v-html` keeps the whole markdown toolchain out of the client
+      bundle, and the design system styles the output itself (`ssg-prose`) — no
+      Markdown component and no ported stylesheet is involved.
 
       The content is authored in this repository, never by a visitor, which is
       what makes `v-html` safe here.
     -->
-    <div
-      v-if="content"
-      class="q-markdown ssg-prose ssg-content__markdown"
-      v-html="body"
-    />
+    <div v-if="content" class="ssg-prose ssg-content__markdown" v-html="body" />
 
     <Suspense v-if="videos">
       <component

@@ -414,6 +414,10 @@ body .ssg-header.q-header {
 
 .ssg-prose :where(a) {
   color: var(--q-primary, currentColor);
+  /* Lifted off the baseline a touch: an underline sitting on the descenders of
+     a 17px body face reads as a strikethrough. The value is carried over from
+     the ported QMarkdown stylesheet, which the templates no longer emit. */
+  text-underline-offset: 0.16em;
 }
 
 /* Markdown images: content-width, rounded, and never wider than the column. */
