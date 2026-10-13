@@ -60,7 +60,6 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@quasar/quasar-ui-qmarkdown": "^4.2.1",
     "@quasar/quasar-ui-qmediaplayer": "^3.0.1",
     "gray-matter": "^4.0.3",
     "import-meta-resolve": "^4.2.0",
