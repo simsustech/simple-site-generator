@@ -48,9 +48,17 @@ const SPACE = {
   '5': 'clamp(2.5rem, 2rem + 2.5vw, 4.5rem)'
 } as const
 
-/** MD3 role tokens published by `unocss-preset-quasar`. */
+/**
+ * MD3 role tokens published by `unocss-preset-quasar`.
+ *
+ * `primary` is an *accent*: it fills components whose size is a button or an
+ * icon, and MD3 gives it tone 80 in dark mode — bright by design, so it reads on
+ * a dark surface. Painting a full-width bar with it is the mistake that put a
+ * luminous green slab across the top of this site in dark mode. Layout surfaces
+ * use the surface and container families, which are toned for the job and move
+ * in the right direction in both modes.
+ */
 const PRIMARY = 'var(--q-primary)'
-const ON_PRIMARY = 'var(--q-on-primary)'
 const ON_SURFACE = 'var(--q-on-surface)'
 const ON_SURFACE_VARIANT = 'var(--q-on-surface-variant)'
 const SURFACE_LOW = 'var(--q-surface-container-low)'
@@ -59,6 +67,10 @@ const SURFACE_CONTAINER = 'var(--q-surface-container)'
 const SECONDARY_CONTAINER = 'var(--q-secondary-container)'
 const ON_SECONDARY_CONTAINER = 'var(--q-on-secondary-container)'
 const OUTLINE_VARIANT = 'var(--q-outline-variant)'
+
+/** Chrome: the page's own surface, one step brighter than the page in light. */
+const CHROME = SURFACE_LOWEST
+const ON_CHROME = ON_SURFACE
 const ELEVATION_1 = 'var(--q-elevation-level1)'
 const ELEVATION_2 = 'var(--q-elevation-level2)'
 const CARD_RADIUS = 'var(--q-card-radius)'
@@ -93,13 +105,15 @@ export const ssgShortcuts: Shortcuts = [
     'absolute w-1px h-1px p-0 m-[-1px] overflow-hidden [clip-path:inset(50%)] whitespace-nowrap b-0'
   ],
 
-  // Header — a solid brand bar, so the site reads as designed at a glance.
-  ['ssg-header', `bg-[${PRIMARY}] text-[${ON_PRIMARY}]`],
+  // Header — the chrome, on the surface role. The brand colour is carried by
+  // the title band below it, the logo, and every accent inside it, instead of
+  // by a full-width fill of the accent colour.
+  ['ssg-header', `bg-[${CHROME}] text-[${ON_CHROME}]`],
   ['ssg-header__inner', 'w-full max-w-content mx-auto px-space-3'],
   ['ssg-header__toolbar', 'gap-space-2'],
   [
     'ssg-header__brand',
-    `inline-flex items-center gap-space-2 no-underline text-[${ON_PRIMARY}] font-700 text-step-1`
+    `inline-flex items-center gap-space-2 no-underline text-[${ON_CHROME}] font-700 text-step-1`
   ],
   ['ssg-header__logo', 'block w-40px h-40px'],
   ['ssg-header__brand-name', 'whitespace-nowrap'],
@@ -108,11 +122,11 @@ export const ssgShortcuts: Shortcuts = [
   // Shell
   ['ssg-shell__drawer-link', 'block w-full text-inherit no-underline'],
 
-  // Footer — dark green, so the page is bookended by the brand rather than
-  // fading into white.
+  // Footer — a tonal container, so the page is bookended in the brand colour
+  // without a full fill of the accent role.
   [
     'ssg-footer',
-    `px-space-3 pt-space-4 pb-space-3 bg-[${PRIMARY}] text-[${ON_PRIMARY}]`
+    `px-space-3 pt-space-4 pb-space-3 bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}]`
   ],
   [
     'ssg-footer__inner',
@@ -121,7 +135,10 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-footer__nav', 'flex-[1_1_12rem] min-w-0'],
   ['ssg-footer__contact', 'flex-[1_1_12rem] min-w-0'],
   ['ssg-footer__social', 'flex-[1_1_12rem] min-w-0'],
-  ['ssg-footer__heading', `text-[${ON_PRIMARY}] text-step-0 m-0 mb-space-1`],
+  [
+    'ssg-footer__heading',
+    `text-[${ON_SECONDARY_CONTAINER}] text-step-0 m-0 mb-space-1`
+  ],
   [
     'ssg-footer__list',
     '[list-style-type:none] m-0 p-0 flex flex-col gap-space-1 text-step--1'
@@ -132,7 +149,7 @@ export const ssgShortcuts: Shortcuts = [
     // `min-h-[24px]` is the WCAG 2.2 target-size minimum (2.5.8). A footer
     // link is small text in a tight list, so without it two adjacent targets
     // sit inside each other's 24px circle and the audit fails the page.
-    `inline-flex items-center min-h-[24px] text-[${ON_PRIMARY}] underline transition-opacity duration-200 hover:opacity-80`
+    `inline-flex items-center min-h-[24px] text-[${ON_SECONDARY_CONTAINER}] underline transition-opacity duration-200 hover:opacity-80`
   ],
   ['ssg-footer__sr', 'ssg-sr-only'],
   [
@@ -347,20 +364,19 @@ export const ssgPreflights: Preflights = [
   left: 0;
 }
 
-/* The header is a brand bar, painted with the primary role and its paired
-   on-colour. A utility cannot do it: Quasar's own q-header rule wins the
-   cascade for the element, so it is set here where the specificity is explicit.
+/* The header is chrome, not an accent: it takes the surface role, with the
+   paired on-surface text. A utility cannot set the background — Quasar's own
+   q-header rule wins the cascade for the element — so it is set here.
 
-   The body element in the selector is not decoration. In dark mode Quasar also
-   matches this element with .body--dark .q-layout__section--marginal and paints
-   it with --q-on-surface — the colour of the *page*, not of a primary bar — and
-   at equal specificity the cascade decided against the brand colour: a measured
-   1.32:1, white-ish text on bright green. One extra element in the selector
-   outranks it in both modes. */
+   The body element in the selector keeps it above that rule without needing
+   !important. It also settles the colour in dark mode, where Quasar paints the
+   marginal sections with --q-on-surface: that is now the same value this
+   declares, so the two agree instead of fighting over a bar that used to be
+   green. */
 body .q-header.ssg-header,
 body .ssg-header.q-header {
-  background: var(--q-primary, #1976d2);
-  color: var(--q-on-primary, #ffffff);
+  background: var(--q-surface-container-lowest, #ffffff);
+  color: var(--q-on-surface, #1a1c19);
 }
 
 .ssg-header .q-btn,
@@ -383,7 +399,7 @@ body .ssg-header.q-header {
 }
 .ssg-header .q-btn-dropdown,
 .ssg-header .q-icon {
-  color: var(--q-on-primary, #ffffff);
+  color: inherit;
 }
 
 /* The layout already offsets for the header; the page container must not add it. */
