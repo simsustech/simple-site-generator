@@ -11,14 +11,19 @@ import { presetUno } from 'unocss'
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 /**
- * One entry per template module.
+ * One entry per template module, plus the package's own root.
  *
  * A directory counts as a template module only when it contains
  * `<name>/<name>.ts` — that keeps `shared/` and `seo/`, which are libraries
  * imported by the modules, out of the entry list instead of failing the build
  * by looking for `shared/shared.ts`.
+ *
+ * `index.ts` is a *file*, so the directory walk never found it. The package
+ * advertises `"."` in its `exports` map and ships `index.d.ts`, so
+ * `import { CtaButton } from '@simple-site-generator/templates'` type-checked
+ * everywhere and failed to resolve everywhere: `dist/index.js` was never built.
  */
-const input = (await promises.readdir(srcDir, { withFileTypes: true }))
+const moduleEntries = (await promises.readdir(srcDir, { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
   .filter((name) => existsSync(join(srcDir, name, `${name}.ts`)))
@@ -29,6 +34,8 @@ const input = (await promises.readdir(srcDir, { withFileTypes: true }))
     },
     {} as Record<string, string>
   )
+
+const input = { index: join(srcDir, 'index.ts'), ...moduleEntries }
 
 export default defineConfig({
   plugins: [
