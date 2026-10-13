@@ -247,6 +247,8 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-content__caption',
     'absolute top-0 inset-x-0 p-space-2 text-center text-white bg-[rgb(0_0_0_/_55%)]'
   ],
+  // The page's primary action, shown in the title band.
+  ['ssg-page-header__cta', 'mt-space-4'],
 
   // Landing
   [

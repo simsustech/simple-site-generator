@@ -10,6 +10,19 @@
         -->
         <h1 class="ssg-business__title">{{ title }}</h1>
         <p v-if="description" class="ssg-business__lede">{{ description }}</p>
+        <!--
+          The page's one primary action, above the fold. Research on conversion
+          is consistent that a hero converts on a single obvious next step; the
+          CTA lives here rather than buried in the prose.
+        -->
+        <CtaButton
+          v-if="cta?.message"
+          class="ssg-page-header__cta"
+          :label="cta.message"
+          :route="cta.route"
+          :href="cta.href"
+          data-ssg="hero-cta"
+        />
       </header>
 
       <PageContent
@@ -33,6 +46,7 @@
 import { computed } from 'vue'
 import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
+import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import type { PageProps } from '../shared/types.js'
 
