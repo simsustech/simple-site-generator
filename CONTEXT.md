@@ -85,6 +85,13 @@ fail. Accessibility, best-practices and SEO scores must be 100.
 - Quasar's runtime dominates the JavaScript budget. The measured gzipped transfer for the docs template
   is ~248 KB, which fits the 250 KB budget with almost no headroom — adding a Quasar component or plugin
   can push it over. This is the main thing standing between the templates and a comfortable margin.
+- Markdown rendering ships on **every** page. `PageContent` imports `QMarkdown` lazily, but vitrify's
+  built-in `vendor` chunk group matches all of `node_modules` and wins over an app-defined group in the
+  Rolldown version in use, so markdown-it (and its `linkify-it`/`mdurl`/`uc.micro` graph) is pulled back
+  onto the eager path — measured on the simsustech site: it is the bulk of the 134 KB gzipped `vendor`
+  chunk. `vitrify.chunks` has no effect on the client bundle. Fixing this needs a vitrify-side change to
+  how chunk-group priority is resolved; it is not an app-level workaround (and the project rule is not to
+  edit vitrify's plugin source for one app).
 - The generated app template (`packages/simple-site-generator/templates/app/`) has no `node_modules` and
   is in no `tsconfig` include: it is rendered into a project that installs its own dependencies. Editor
   diagnostics for it are therefore expected and resolved once generated.

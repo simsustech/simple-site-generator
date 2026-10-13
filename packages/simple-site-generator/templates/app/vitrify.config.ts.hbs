@@ -169,24 +169,6 @@ export default async function ({
       // Pass the BCP-47 tag to Quasar as well: Quasar writes `<html lang>`
       // from its selected language pack, and vitrify forwards this value to it.
       lang: ssg.lang,
-      // Markdown rendering (QMarkdown + markdown-it + prismjs) is imported
-      // lazily by the page renderer, but vitrify's default `vendor` group is a
-      // static chunk, so grouping all of node_modules pulled it back into the
-      // eager path — 100+ KB gzipped on every page, including pages with no
-      // markdown. A named group keeps it on the dynamic path.
-      chunks: {
-        markdown: [
-          'quasar-ui-qmarkdown',
-          'quasar-ui-qmediaplayer',
-          'markdown-it',
-          'linkify-it',
-          'mdurl',
-          'uc\\.micro',
-          'entities',
-          'argparse',
-          'prismjs'
-        ]
-      },
       hooks: {
         onSetup: [new URL('src/setup.ts', import.meta.url)]
       },
