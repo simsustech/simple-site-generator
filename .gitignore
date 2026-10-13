@@ -17,3 +17,8 @@
 # Playwright artifacts from `pnpm run test:e2e`.
 /test-results
 /playwright-report
+
+# Working notes, not source. The research and design analyses that inform the
+# template rewrite; kept out of the repo so they do not ship as documentation.
+/linear-design-analysis.md
+/startup-website-findings.md
