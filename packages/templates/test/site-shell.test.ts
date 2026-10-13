@@ -30,10 +30,14 @@ describe('shared site shell', () => {
     expect(skipAt).toBeLessThan(headerAt)
   })
 
-  it('renders exactly one main landmark', () => {
+  it('provides the skip-link target without adding a main landmark', () => {
     const wrapper = mountWithQuasar(SiteShell, { props: shellProps })
 
-    expect(wrapper.findAll('main')).toHaveLength(1)
+    // The page component renders `q-page`, which Quasar renders as a `main`
+    // element. If the shell also rendered one, every real page would carry two
+    // main landmarks. The shell only guarantees the `#main` target exists.
+    expect(wrapper.findAll('main')).toHaveLength(0)
+    expect(wrapper.find('#main').exists()).toBe(true)
   })
 
   it('names the brand so the navigation identifies the site', () => {

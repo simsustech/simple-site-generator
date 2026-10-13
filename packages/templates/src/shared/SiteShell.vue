@@ -47,14 +47,17 @@
 
     <q-page-container>
       <!--
-        The single `<main>` landmark that the skip link targets. Every template
-        renders its page content here, so `#main` is guaranteed to exist.
+        The skip link target. It is a plain `div`, deliberately NOT the `main`
+        landmark: the page component renders `q-page`, which Quasar renders as a
+        `main` element by itself, and a document must have exactly one. Keeping a
+        wrapper here means `#main` exists even on a page that renders no
+        `q-page` (the 404 page, or a custom page component).
       -->
-      <main id="main" tabindex="-1">
+      <div id="main" tabindex="-1">
         <router-view />
 
         <slot />
-      </main>
+      </div>
 
       <q-page-scroller
         position="bottom-right"

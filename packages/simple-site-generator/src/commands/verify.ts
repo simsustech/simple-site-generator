@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs'
-import { join, matchesGlob, relative } from 'node:path'
+import { join, relative } from 'node:path'
 import { appDir, distDir } from '../paths.js'
 import {
   DEFAULT_BUDGETS,
@@ -10,6 +10,7 @@ import {
   type Budgets
 } from '../verify/budgets.js'
 import { runLighthouse } from '../verify/lighthouse.js'
+import { isIgnored } from '../verify/ignore.js'
 import { checkSeoSurface } from '../verify/seo-surface.js'
 import { startStaticServer } from '../verify/serve.js'
 
@@ -98,7 +99,7 @@ export async function verify(
   const htmlFiles = (await collectHtml(outputDir)).filter((file) => {
     const page = relative(outputDir, file).replace(/\\/g, '/')
 
-    return !ignore.some((pattern) => matchesGlob(page, pattern))
+    return !isIgnored(page, ignore)
   })
 
   if (htmlFiles.length === 0) {

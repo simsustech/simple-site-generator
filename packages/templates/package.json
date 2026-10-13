@@ -5,23 +5,53 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node scripts/emit-types.mjs",
     "test": "vitest run"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js",
-    "./seo": "./dist/seo.js",
-    "./*/css": "./dist/*.css"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./seo": {
+      "types": "./dist/seo.d.ts",
+      "import": "./dist/seo.js"
+    },
+    "./docs": {
+      "types": "./dist/docs.d.ts",
+      "import": "./dist/docs.js"
+    },
+    "./landing": {
+      "types": "./dist/landing.d.ts",
+      "import": "./dist/landing.js"
+    },
+    "./business": {
+      "types": "./dist/business.d.ts",
+      "import": "./dist/business.js"
+    },
+    "./*/css": "./dist/*.css",
+    "./*": "./dist/*.js"
   },
   "typesVersions": {
     "*": {
+      "seo": [
+        "./dist/seo.d.ts"
+      ],
+      "docs": [
+        "./dist/docs.d.ts"
+      ],
+      "landing": [
+        "./dist/landing.d.ts"
+      ],
+      "business": [
+        "./dist/business.d.ts"
+      ],
       "*": [
-        "./dist/types/index.d.ts"
+        "./dist/index.d.ts"
       ]
     }
   },
-  "types": "./dist/types",
+  "types": "./dist/index.d.ts",
   "dependencies": {
     "@quasar/quasar-ui-qmarkdown": "^4.2.1",
     "@quasar/quasar-ui-qmediaplayer": "^3.0.1",
