@@ -31,17 +31,3 @@ const stars = computed(() => {
   return '★'.repeat(full) + '☆'.repeat(Math.max(0, 5 - full))
 })
 </script>
-
-<style scoped>
-.ssg-proof {
-  display: flex;
-  align-items: center;
-  gap: var(--ssg-space-1);
-  margin: var(--ssg-space-2) 0 0;
-  font-size: var(--ssg-step--1);
-}
-
-.ssg-proof__stars {
-  letter-spacing: 0.1em;
-}
-</style>

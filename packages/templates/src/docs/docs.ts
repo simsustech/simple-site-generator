@@ -1,6 +1,5 @@
 import Layout from './Layout.vue'
 import Page from './Page.vue'
-import '../shared/tokens.css'
 
 /**
  * Documentation template module.

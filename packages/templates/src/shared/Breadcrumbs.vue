@@ -70,28 +70,3 @@ const items = computed(() =>
   )
 )
 </script>
-
-<style scoped>
-.ssg-breadcrumbs {
-  font-size: var(--ssg-step--1);
-  margin-bottom: var(--ssg-space-2);
-}
-
-.ssg-breadcrumbs__list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ssg-space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ssg-breadcrumbs__item {
-  display: inline-flex;
-  gap: var(--ssg-space-1);
-}
-
-.ssg-breadcrumbs__link {
-  color: inherit;
-}
-</style>

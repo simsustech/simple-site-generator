@@ -25,7 +25,7 @@ layer**.
 
 `packages/templates/src/shared/` owns everything that was duplicated: `SiteShell` (header, drawer,
 footer, skip link, scroll-to-top), `Hero`, `BentoGrid`, `ProofSection`, `FaqList`, `Breadcrumbs`,
-`CtaButton`, `ProofStrip`, `PageContent`, `StickyCta`, `tokens.css`, and the pure helpers `nav.ts`
+`CtaButton`, `ProofStrip`, `PageContent`, `StickyCta`, and the pure helpers `nav.ts`
 (which pages are in the menu, subpage resolution) and `headings.ts` (markdown heading demotion).
 
 The three modules are thin compositions. A module may differ in _which_ sections it composes and in its

@@ -116,20 +116,3 @@ const carouselHeight = computed(() => {
   return Math.round(width / 1.6)
 })
 </script>
-
-<style scoped>
-.ssg-content__media {
-  width: 100%;
-  max-width: 1120px;
-}
-
-.ssg-content__caption {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  padding: var(--ssg-space-2);
-  text-align: center;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.55);
-}
-</style>

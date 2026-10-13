@@ -28,12 +28,3 @@ defineProps<{
   }
 }>()
 </script>
-
-<style scoped>
-.ssg-hero__image img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--ssg-radius);
-}
-</style>

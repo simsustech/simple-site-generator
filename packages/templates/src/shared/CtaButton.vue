@@ -45,15 +45,3 @@ withDefaults(
   }
 )
 </script>
-
-<style scoped>
-.ssg-cta--secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ssg-space-1);
-  font-size: var(--ssg-step-0);
-  font-weight: 600;
-  text-decoration: underline;
-  color: inherit;
-}
-</style>

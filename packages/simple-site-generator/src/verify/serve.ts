@@ -1,16 +1,26 @@
 import { createServer, type Server } from 'node:http'
 import { createReadStream } from 'node:fs'
-import { stat } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import { extname, join, normalize, resolve } from 'node:path'
+import { gzipSync } from 'node:zlib'
 
 /**
  * Minimal static file server for `ssg verify`.
  *
- * `verify` must measure the *built* site exactly as a static host would serve
- * it, so it serves `dist/static` on an ephemeral port rather than reusing a dev
+ * `verify` must measure the *built* site the way a real static host serves it,
+ * so it serves `dist/static` on an ephemeral port rather than reusing a dev
  * server (which would report dev transforms, not the deployed bytes).
+ *
+ * "The way a real static host serves it" includes the two things that move
+ * Lighthouse most and that a production host always does:
+ *
+ * - **compression** — Caddy (and every CDN) serves `encode gzip`; a verifier
+ *   that ships raw bytes makes every byte budget and every LCP look ~3× worse
+ *   than production, so the score is not a measurement of the site.
+ * - **caching** — fingerprinted assets are immutable, so a browser (and
+ *   Lighthouse's cache audit) must be told that. Without the header the
+ *   `cache-insight` audit fails for a site whose host would pass it.
  */
-
 const CONTENT_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -27,6 +37,30 @@ const CONTENT_TYPES: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
   '.xml': 'application/xml; charset=utf-8',
   '.woff2': 'font/woff2'
+}
+
+const COMPRESSIBLE = new Set([
+  'text/html; charset=utf-8',
+  'text/plain; charset=utf-8',
+  'text/css; charset=utf-8',
+  'text/javascript; charset=utf-8',
+  'application/json; charset=utf-8',
+  'application/xml; charset=utf-8',
+  'image/svg+xml'
+])
+
+/** Vite fingerprints assets as `name-<hash>.ext`; those are immutable. */
+const IMMUTABLE = /-[A-Za-z0-9_-]{8,}\.[a-z0-9]+$/
+
+function contentType(file: string): string {
+  return CONTENT_TYPES[extname(file)] ?? 'application/octet-stream'
+}
+
+function cacheControl(file: string, type: string): string {
+  if (IMMUTABLE.test(file)) return 'public, max-age=31536000, immutable'
+  if (type.startsWith('text/html')) return 'no-cache'
+
+  return 'public, max-age=3600'
 }
 
 export interface StaticServer {
@@ -53,6 +87,9 @@ export async function startStaticServer(root: string): Promise<StaticServer> {
 
   const server: Server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? '/', 'http://localhost').pathname
+    const acceptsGzip = /\bgzip\b/.test(
+      request.headers['accept-encoding'] ?? ''
+    )
 
     for (const candidate of candidatesFor(absoluteRoot, pathname)) {
       try {
@@ -60,11 +97,27 @@ export async function startStaticServer(root: string): Promise<StaticServer> {
 
         if (!info.isFile()) continue
 
-        response.writeHead(200, {
-          'content-type':
-            CONTENT_TYPES[extname(candidate)] ?? 'application/octet-stream',
-          'content-length': info.size
-        })
+        const type = contentType(candidate)
+        const headers: Record<string, string> = {
+          'content-type': type,
+          'cache-control': cacheControl(candidate, type),
+          vary: 'Accept-Encoding'
+        }
+
+        if (acceptsGzip && COMPRESSIBLE.has(type)) {
+          const body = gzipSync(await readFile(candidate))
+
+          response.writeHead(200, {
+            ...headers,
+            'content-encoding': 'gzip',
+            'content-length': body.length
+          })
+          response.end(body)
+
+          return
+        }
+
+        response.writeHead(200, { ...headers, 'content-length': info.size })
         createReadStream(candidate).pipe(response)
 
         return

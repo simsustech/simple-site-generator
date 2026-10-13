@@ -1,6 +1,5 @@
 import Layout from './Layout.vue'
 import Page from './Page.vue'
-import '../shared/tokens.css'
 
 /**
  * Business template module — a multi-page site for a local business: a home
