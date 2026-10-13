@@ -52,27 +52,21 @@
               auto-close
               split
               :label="page.label"
-              :to="`/${page.id}`"
+              :to="pathOf(page)"
             >
               <q-list>
                 <q-item
                   v-for="child in subpagesOfPage(page)"
                   :key="child.id"
                   clickable
-                  :to="`/${page.id}/${child.id}`"
+                  :to="pathOf(child)"
                 >
                   <q-item-section>{{ child.label }}</q-item-section>
                 </q-item>
               </q-list>
             </q-btn-dropdown>
 
-            <q-btn
-              v-else
-              flat
-              no-caps
-              :to="`/${page.id}`"
-              :label="page.label"
-            />
+            <q-btn v-else flat no-caps :to="pathOf(page)" :label="page.label" />
           </template>
           <q-btn
             v-if="contactPages.length"
@@ -86,7 +80,7 @@
                   v-for="page in contactPages"
                   :key="page.id"
                   clickable
-                  :to="`/${page.id}`"
+                  :to="pathOf(page)"
                 >
                   <q-item-section>{{ page.label }}</q-item-section>
                 </q-item>
@@ -94,6 +88,24 @@
             </q-menu>
           </q-btn>
         </nav>
+
+        <!--
+          Language switch. Rendered from the page's `alternates`, so it only
+          appears on pages that actually have another language, and it links to
+          the *counterpart* page rather than to another site's front page.
+          Desktop only: on small screens the same links live in the overflow
+          menu below, where there is room for them.
+        -->
+        <q-btn
+          v-for="alternate in otherAlternates"
+          :key="alternate.lang"
+          class="gt-sm ssg-header__language"
+          flat
+          dense
+          no-caps
+          :label="alternate.label ?? alternate.lang"
+          :to="alternate.path"
+        />
 
         <q-btn flat dense icon="i-mdi-more-vert" aria-label="More options">
           <q-menu auto-close>
@@ -115,6 +127,24 @@
                   {{ $q.dark.mode ? 'Light mode' : 'Dark mode' }}
                 </q-item-section>
               </q-item>
+
+              <template v-if="otherAlternates.length">
+                <q-separator />
+
+                <q-item
+                  v-for="alternate in otherAlternates"
+                  :key="alternate.lang"
+                  clickable
+                  :to="alternate.path"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="i-mdi-translate" aria-hidden="true" />
+                  </q-item-section>
+                  <q-item-section>
+                    {{ alternate.label ?? alternate.lang }}
+                  </q-item-section>
+                </q-item>
+              </template>
             </q-list>
           </q-menu>
         </q-btn>
@@ -126,8 +156,9 @@
 <script setup lang="ts">
 import { computed, toRefs } from 'vue'
 import { useQuasar } from 'quasar'
-import { contactPagesOf, menuPagesOf, subpagesOf } from './nav.js'
-import type { LayoutProps } from './types.js'
+import { useRoute } from 'vue-router'
+import { contactPagesOf, menuPagesOf, pathOf, subpagesOf } from './nav.js'
+import type { LayoutProps, SeoPage } from './types.js'
 
 /**
  * Desktop header. On small screens the drawer carries the navigation, so the
@@ -143,6 +174,20 @@ defineEmits<{ 'toggle-drawer': [] }>()
 
 const { pages, tags } = toRefs(props)
 const $q = useQuasar()
+const route = useRoute()
+
+/**
+ * The page's language alternates, minus the page being viewed.
+ *
+ * Hiding the current language is what keeps the switch honest: the remaining
+ * entries are the pages a visitor can actually go to, and a single-language
+ * site renders no switch at all.
+ */
+const otherAlternates = computed(() =>
+  ((route.meta as SeoPage | undefined)?.alternates ?? []).filter(
+    (alternate) => alternate.path !== route.path
+  )
+)
 
 const menuPages = computed(() => menuPagesOf(pages.value))
 

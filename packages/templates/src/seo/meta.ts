@@ -47,6 +47,12 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
   const description = page?.description ?? site.description ?? ''
   const image = page?.image ? absoluteUrl(site.url, page.image) : site.image
 
+  // A page may declare its own language. Without this a Dutch page on an
+  // English site ships `lang="en-GB"`, and because a declared language wins
+  // over a crawler's own detection, the page is then served to the wrong
+  // audience and the translation is never indexed as one.
+  const lang = page?.lang ?? site.lang
+
   const meta: Record<string, MetaTag> = {
     description: { name: 'description', content: description },
     // Explicit rather than implied: pages marked `noindex` (including the 404
@@ -71,10 +77,17 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
     }
   }
 
-  if (site.lang) {
+  if (lang) {
     meta.ogLocale = {
       property: 'og:locale',
-      content: site.lang.replace('-', '_')
+      content: lang.replace('-', '_')
+    }
+  }
+
+  for (const [index, alternate] of (page?.alternates ?? []).entries()) {
+    meta[`ogLocaleAlternate${index}`] = {
+      property: 'og:locale:alternate',
+      content: alternate.lang.replace('-', '_')
     }
   }
 
@@ -91,6 +104,17 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
     canonical: { rel: 'canonical', href: canonical }
   }
 
+  // `hreflang` alternates. The key is an identifier only, so each alternate
+  // needs its own: a repeated `alternate` key would overwrite the previous tag
+  // and silently reduce a two-language cluster to one link.
+  for (const [index, alternate] of (page?.alternates ?? []).entries()) {
+    link[`alternate${index}`] = {
+      rel: 'alternate',
+      hreflang: alternate.lang,
+      href: absoluteUrl(site.url, alternate.path)
+    }
+  }
+
   if (site.favicon) {
     link.icon = { rel: 'icon', href: site.favicon }
   }
@@ -99,7 +123,7 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
     title,
     meta,
     link,
-    htmlAttr: site.lang ? { lang: site.lang } : undefined,
+    htmlAttr: lang ? { lang } : undefined,
     script: {
       // Quasar writes `innerHTML` verbatim, so the JSON-LD is stringified here
       // and its own `</` sequences escaped.
