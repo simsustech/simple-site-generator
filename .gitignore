@@ -13,3 +13,7 @@
 
 # Lighthouse reports produced by `ssg verify`.
 /.lighthouseci
+
+# Playwright artifacts from `pnpm run test:e2e`.
+/test-results
+/playwright-report
