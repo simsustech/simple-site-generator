@@ -1,7 +1,10 @@
 <template>
   <q-page class="ssg-section">
     <article class="ssg-section__inner">
-      <header class="ssg-landing__header">
+      <header
+        class="ssg-landing__header"
+        :style="headerImageStyle(headerImage)"
+      >
         <!--
           The page owns the document's single <h1>; `PageContent` demotes markdown
           headings so the body starts at <h2> and the heading order stays valid.
@@ -33,6 +36,7 @@
 <script setup lang="ts">
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
+import { headerImageStyle } from '../design/design.js'
 import type { PageProps } from '../shared/types.js'
 
 /**

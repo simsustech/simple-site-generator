@@ -127,7 +127,10 @@ export const ssgShortcuts: Shortcuts = [
     '[list-style-type:none] m-0 p-0 flex flex-col gap-space-1 text-step--1'
   ],
   ['ssg-footer__list--inline', 'flex-row gap-space-3'],
-  ['ssg-footer__link', `text-[${ON_PRIMARY}] underline`],
+  [
+    'ssg-footer__link',
+    `text-[${ON_PRIMARY}] underline transition-opacity duration-200 hover:opacity-80`
+  ],
   ['ssg-footer__sr', 'ssg-sr-only'],
   [
     'ssg-footer__legal',
@@ -180,7 +183,10 @@ export const ssgShortcuts: Shortcuts = [
     `text-[${ON_SURFACE}] text-step-1 mt-space-2 mb-space-1`
   ],
   ['ssg-bento__tile-content', `text-[${ON_SURFACE_VARIANT}] m-0 leading-[1.6]`],
-  ['ssg-bento__link', `text-[${PRIMARY}] inline-block mt-space-2 font-600`],
+  [
+    'ssg-bento__link',
+    `text-[${PRIMARY}] inline-block mt-space-2 font-600 transition-opacity duration-200 hover:opacity-80`
+  ],
 
   // Proof section
   [
@@ -207,7 +213,10 @@ export const ssgShortcuts: Shortcuts = [
     `text-[${ON_SURFACE}] text-step-0 m-0 mb-space-2`
   ],
   ['ssg-proof-section__list', `text-[${ON_SURFACE_VARIANT}] m-0 text-step--1`],
-  ['ssg-proof-section__link', `text-[${PRIMARY}]`],
+  [
+    'ssg-proof-section__link',
+    `text-[${PRIMARY}] transition-opacity duration-200 hover:opacity-80`
+  ],
 
   // Proof strip
   ['ssg-proof', 'flex items-center gap-space-1 mt-space-2 mb-0 text-step--1'],
@@ -233,13 +242,12 @@ export const ssgShortcuts: Shortcuts = [
     'flex flex-wrap gap-space-1 m-0 p-0 [list-style-type:none]'
   ],
   ['ssg-breadcrumbs__item', 'inline-flex gap-space-1'],
-  ['ssg-breadcrumbs__link', `text-[${PRIMARY}]`],
+  [
+    'ssg-breadcrumbs__link',
+    `text-[${PRIMARY}] transition-opacity duration-200 hover:opacity-80`
+  ],
 
   // CTA
-  [
-    'ssg-cta--secondary',
-    `text-[${PRIMARY}] inline-flex items-center gap-space-1 text-step-0 font-600 underline`
-  ],
 
   // Page content
   ['ssg-content__media', 'w-full max-w-[1120px]'],
@@ -281,7 +289,32 @@ export const ssgShortcuts: Shortcuts = [
  * opens with colour and structure instead of a wall of white.
  */
 function pageHeader(): string {
-  return `bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
+  return `relative overflow-hidden bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
+}
+
+/**
+ * Inline style for the header band's background illustration.
+ *
+ * The geometry lives here instead of in the shortcut above because the preset
+ * defines neither `bg-no-repeat` nor `bg-right`: an unmatched utility is dropped
+ * silently, which is how the illustration ended up tiling across the whole band.
+ * Background properties are also the part UnoCSS cannot express for a per-page
+ * image URL, so they belong in the style binding either way.
+ */
+export function headerImageStyle(
+  headerImage?: string
+): Record<string, string> | undefined {
+  if (!headerImage) return undefined
+
+  return {
+    // A tinted gradient over the illustration: the band's text sits on the tint,
+    // and the illustration only reaches it in its own colour, so a long lede
+    // cannot end up reading across the dots.
+    backgroundImage: `linear-gradient(to right, ${SECONDARY_CONTAINER} 40%, transparent 75%), url('${headerImage}')`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right center, right center',
+    backgroundSize: '45% auto, 45% auto'
+  }
 }
 
 function pageTitle(): string {
@@ -321,6 +354,23 @@ export const ssgPreflights: Preflights = [
 }
 
 .ssg-header .q-btn,
+/* The split dropdown's arrow is a 28px pill with its own divider while the
+   label is a square flat button; side by side that reads as a stray
+   half-circle. Give the arrow the same shape as its label. */
+.ssg-header .q-btn-dropdown__arrow-container {
+  border-radius: 0;
+  border-left: 0;
+}
+
+/* One hover affordance for links, on any background: dim, don't recolour —
+   a colour that works on the green footer does not work on the light page. */
+.ssg-prose :where(a) {
+  transition: opacity 0.2s;
+}
+
+.ssg-prose :where(a):hover {
+  opacity: 0.8;
+}
 .ssg-header .q-btn-dropdown,
 .ssg-header .q-icon {
   color: var(--q-on-primary, #ffffff);

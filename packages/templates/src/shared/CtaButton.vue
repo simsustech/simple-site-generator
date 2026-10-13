@@ -1,16 +1,7 @@
 <template>
-  <a
-    v-if="href"
-    :href="href"
-    class="ssg-cta ssg-cta--secondary"
-    :data-ssg="dataSsg"
-  >
-    <q-icon v-if="icon" :name="icon" aria-hidden="true" />
-    <span>{{ label }}</span>
-  </a>
   <q-btn
-    v-else
     :to="route"
+    :href="href"
     :label="label"
     :icon="icon"
     :color="variant === 'primary' ? 'primary' : undefined"
@@ -31,7 +22,10 @@ withDefaults(
     label: string
     /** In-app route. Ignored when `href` is set. */
     route?: string
-    /** Absolute or `tel:`/`mailto:` destination — renders a plain anchor. */
+    /**
+     * Absolute or `tel:`/`mailto:` destination. Rendered by `q-btn`, so it keeps
+     * the button styling the variant asks for and is still a real link.
+     */
     href?: string
     icon?: string
     variant?: 'primary' | 'secondary' | 'ghost'
