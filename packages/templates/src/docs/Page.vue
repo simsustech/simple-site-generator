@@ -1,7 +1,7 @@
 <template>
   <q-page class="ssg-section">
     <article class="ssg-section__inner">
-      <header class="ssg-docs__header">
+      <header class="ssg-docs__header" :style="headerImageStyle(headerImage)">
         <!--
           The page owns the document's single <h1>; the markdown body below is
           demoted to start at <h2> by `PageContent`, which keeps the heading
@@ -34,6 +34,7 @@
 <script setup lang="ts">
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
+import { headerImageStyle } from '../design/design.js'
 import type { PageProps } from '../shared/types.js'
 
 const props = defineProps<PageProps>()
