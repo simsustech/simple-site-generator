@@ -129,7 +129,10 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-footer__list--inline', 'flex-row gap-space-3'],
   [
     'ssg-footer__link',
-    `text-[${ON_PRIMARY}] underline transition-opacity duration-200 hover:opacity-80`
+    // `min-h-[24px]` is the WCAG 2.2 target-size minimum (2.5.8). A footer
+    // link is small text in a tight list, so without it two adjacent targets
+    // sit inside each other's 24px circle and the audit fails the page.
+    `inline-flex items-center min-h-[24px] text-[${ON_PRIMARY}] underline transition-opacity duration-200 hover:opacity-80`
   ],
   ['ssg-footer__sr', 'ssg-sr-only'],
   [
