@@ -1,7 +1,6 @@
 import Layout from './Layout.vue'
 import Page from './Page.vue'
 import Landing from './Landing.vue'
-import '../shared/tokens.css'
 
 /**
  * Landing template module — a conversion-oriented single page plus supporting

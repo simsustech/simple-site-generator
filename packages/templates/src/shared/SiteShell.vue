@@ -137,28 +137,3 @@ const seoContext = computed<SeoContext>(() => ({
 
 useSeo(currentPage.value, seoContext.value, route.path)
 </script>
-
-<style scoped>
-.ssg-shell :deep(.q-page-container) {
-  padding-top: 0;
-}
-
-#main {
-  display: block;
-  /* Programmatic focus target for the skip link; no visible ring on mouse
-     interaction, but keep it for keyboard users. */
-  outline: none;
-}
-
-#main:focus-visible {
-  outline: 3px solid currentColor;
-  outline-offset: -3px;
-}
-
-.ssg-shell__drawer-link {
-  display: block;
-  width: 100%;
-  color: inherit;
-  text-decoration: none;
-}
-</style>

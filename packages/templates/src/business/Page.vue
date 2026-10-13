@@ -57,30 +57,3 @@ const tiles = computed(() =>
   }))
 )
 </script>
-
-<style scoped>
-.ssg-business__header {
-  margin-bottom: var(--ssg-space-4);
-}
-
-.ssg-business__title {
-  font-size: var(--ssg-step-3);
-  line-height: 1.15;
-  margin: 0;
-}
-
-.ssg-business__lede {
-  font-size: var(--ssg-step-1);
-  margin: var(--ssg-space-2) 0 0;
-  max-width: var(--ssg-measure);
-}
-
-.ssg-business__cards {
-  margin-top: var(--ssg-space-5);
-}
-
-.ssg-business__cards-heading {
-  font-size: var(--ssg-step-2);
-  margin: 0 0 var(--ssg-space-3);
-}
-</style>
