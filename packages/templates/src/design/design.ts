@@ -81,6 +81,17 @@ const OUTLINE_VARIANT = 'var(--q-outline-variant)'
  */
 const CHROME = SECONDARY_CONTAINER
 const ON_CHROME = ON_SECONDARY_CONTAINER
+
+/**
+ * The title band, and the mask that fades its illustration out behind the text.
+ *
+ * Named once because the two must be the same colour: the mask is a gradient in
+ * the band's own tone, and when they drift apart the illustration sits under a
+ * wash of the wrong colour — which is exactly what happened when the band moved
+ * off the brand tint while the mask stayed on it.
+ */
+const BAND = SURFACE_CONTAINER_HIGH
+const ON_BAND = ON_SURFACE
 const ELEVATION_1 = 'var(--q-elevation-level1)'
 const ELEVATION_2 = 'var(--q-elevation-level2)'
 const CARD_RADIUS = 'var(--q-card-radius)'
@@ -205,7 +216,7 @@ export const ssgShortcuts: Shortcuts = [
   ],
   [
     'ssg-bento__tile',
-    `p-space-4 rounded-[${CARD_RADIUS}] bg-[${SURFACE_LOWEST}] b b-solid b-[${OUTLINE_VARIANT}] shadow-[${ELEVATION_1}] transition-shadow duration-200 hover:shadow-[${ELEVATION_2}]`
+    `p-space-4 rounded-[${CARD_RADIUS}] bg-[${SURFACE_LOWEST}] b b-solid b-[${OUTLINE_VARIANT}] shadow-[${ELEVATION_1}] transition-[box-shadow,transform] duration-200 hover:shadow-[${ELEVATION_2}] hover:-translate-y-0.5`
   ],
   ['ssg-bento__icon', `text-[${PRIMARY}] text-step-3`],
   [
@@ -322,7 +333,7 @@ export const ssgShortcuts: Shortcuts = [
    carry the brand tint itself, but the header and footer now do — a band in the
    same tone as the header above it would read as one block. */
 function pageHeader(): string {
-  return `relative overflow-hidden bg-[${SURFACE_CONTAINER_HIGH}] text-[${ON_SURFACE}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
+  return `relative overflow-hidden bg-[${BAND}] text-[${ON_BAND}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
 }
 
 /**
@@ -340,10 +351,10 @@ export function headerImageStyle(
   if (!headerImage) return undefined
 
   return {
-    // A tinted gradient over the illustration: the band's text sits on the tint,
-    // and the illustration only reaches it in its own colour, so a long lede
-    // cannot end up reading across the dots.
-    backgroundImage: `linear-gradient(to right, ${SECONDARY_CONTAINER} 40%, transparent 75%), url('${headerImage}')`,
+    // A gradient in the band's own colour over the illustration: the band's text
+    // sits on the band, and the illustration only reaches it as its own tint, so
+    // a long lede cannot end up reading across the dots.
+    backgroundImage: `linear-gradient(to right, ${BAND} 40%, transparent 75%), url('${headerImage}')`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right center, right center',
     backgroundSize: '45% auto, 45% auto'
@@ -362,6 +373,10 @@ function pageLede(): string {
  * The rules a utility cannot express: `:where()`/descendant selectors,
  * `:focus` states and a media query. UnoCSS emits these as preflights, so they
  * travel with the configuration rather than a stylesheet.
+ *
+ * Each `getCSS` returns a template literal: a backtick anywhere inside one — in
+ * prose as much as in CSS — closes it early and breaks the build with a syntax
+ * error pointing at the comment rather than the cause.
  */
 export const ssgPreflights: Preflights = [
   {
@@ -522,6 +537,67 @@ body .ssg-header.q-header {
   }
 }
 
+/* Motion.
+
+   Two CSS-only touches: nothing on the critical path, no JavaScript, and no
+   layout shift.
+
+   - A scroll-driven reveal for the discrete blocks below the title band. Its
+     progress comes from the element's position, via the view() timeline, rather
+     than the clock, so a block already in view sits at its end state: no flash
+     of invisible content, no layout shift, and a browser without the feature
+     just shows the block.
+
+     It moves, it does not fade. Animating opacity was the first attempt and it
+     failed the accessibility gate: an element at 0.4 opacity has roughly 0.4 of
+     its contrast, so every tile below the fold was reported as unreadable — for
+     a low-vision reader, permanently so on any element they never scroll to.
+   - Cross-document view transitions, so a static site cross-fades between pages
+     instead of flashing white. Ignored where unsupported.
+
+   The title band is deliberately left out: its illustration is the largest paint
+   on the page and the LCP element. */
+@view-transition {
+  navigation: auto;
+}
+
+@supports (animation-timeline: view()) {
+  .ssg-bento__tile,
+  .ssg-proof-section,
+  .ssg-faq__item,
+  .ssg-content__media {
+    animation: ssg-reveal linear both;
+  }
+}
+
+@keyframes ssg-reveal {
+  from {
+    transform: translateY(0.75rem);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/*
+  The timeline needs its own rule, and it has to come after the keyframes:
+
+  - in the same rule the minifier folds these longhands into the shorthand,
+    producing an animation shorthand with view() in it, which this Chromium
+    parses as invalid and drops wholesale — the reveal then does nothing;
+  - the selector has to match the rule above exactly, because a :where() here
+    would have no specificity against it and the timeline would stay auto.
+*/
+@supports (animation-timeline: view()) {
+  .ssg-bento__tile,
+  .ssg-proof-section,
+  .ssg-faq__item,
+  .ssg-content__media {
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+}
+
 /* Respect the user's motion preference. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -531,6 +607,20 @@ body .ssg-header.q-header {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* A scroll-driven animation has no duration to shorten — its progress is the
+     scroll position — so it has to lose its timeline instead. The hover lift is
+     a transform the blanket rule above cannot reach either. */
+  .ssg-bento__tile,
+  .ssg-proof-section,
+  .ssg-faq__item,
+  .ssg-content__media {
+    animation: none !important;
+  }
+
+  .ssg-bento__tile:hover {
+    transform: none !important;
   }
 }
 `
