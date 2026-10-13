@@ -64,13 +64,23 @@ const ON_SURFACE_VARIANT = 'var(--q-on-surface-variant)'
 const SURFACE_LOW = 'var(--q-surface-container-low)'
 const SURFACE_LOWEST = 'var(--q-surface-container-lowest)'
 const SURFACE_CONTAINER = 'var(--q-surface-container)'
+const SURFACE_CONTAINER_HIGH = 'var(--q-surface-container-high)'
 const SECONDARY_CONTAINER = 'var(--q-secondary-container)'
 const ON_SECONDARY_CONTAINER = 'var(--q-on-secondary-container)'
 const OUTLINE_VARIANT = 'var(--q-outline-variant)'
 
-/** Chrome: the page's own surface, one step brighter than the page in light. */
-const CHROME = SURFACE_LOWEST
-const ON_CHROME = ON_SURFACE
+/**
+ * Chrome: a light tint of the brand colour itself.
+ *
+ * `secondary-container` is the tonal container of the same hue as `primary`
+ * (#d6e8cd light, #3c4b37 dark), which is what "a lighter version of the brand"
+ * should mean — the alternative, `primary-container`, is #75ff68, brighter than
+ * the accent it derives from and too loud for a bar that spans every page. The
+ * accent itself stays where it belongs: buttons, links, icons and the rule on the
+ * title band.
+ */
+const CHROME = SECONDARY_CONTAINER
+const ON_CHROME = ON_SECONDARY_CONTAINER
 const ELEVATION_1 = 'var(--q-elevation-level1)'
 const ELEVATION_2 = 'var(--q-elevation-level2)'
 const CARD_RADIUS = 'var(--q-card-radius)'
@@ -308,8 +318,11 @@ export const ssgShortcuts: Shortcuts = [
  * The page's title band: a tinted primary panel with an accent rule, so a page
  * opens with colour and structure instead of a wall of white.
  */
+/* The title band: a neutral panel with the brand rule down its side. It used to
+   carry the brand tint itself, but the header and footer now do — a band in the
+   same tone as the header above it would read as one block. */
 function pageHeader(): string {
-  return `relative overflow-hidden bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
+  return `relative overflow-hidden bg-[${SURFACE_CONTAINER_HIGH}] text-[${ON_SURFACE}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
 }
 
 /**
@@ -364,19 +377,17 @@ export const ssgPreflights: Preflights = [
   left: 0;
 }
 
-/* The header is chrome, not an accent: it takes the surface role, with the
-   paired on-surface text. A utility cannot set the background — Quasar's own
-   q-header rule wins the cascade for the element — so it is set here.
+/* The header is chrome: a brand tint, with its paired on-colour. A utility cannot
+   set the background — Quasar's own q-header rule wins the cascade for the
+   element — so it is set here.
 
    The body element in the selector keeps it above that rule without needing
-   !important. It also settles the colour in dark mode, where Quasar paints the
-   marginal sections with --q-on-surface: that is now the same value this
-   declares, so the two agree instead of fighting over a bar that used to be
-   green. */
+   !important, which also settles the text colour in dark mode, where Quasar
+   paints the marginal sections with --q-on-surface. */
 body .q-header.ssg-header,
 body .ssg-header.q-header {
-  background: var(--q-surface-container-lowest, #ffffff);
-  color: var(--q-on-surface, #1a1c19);
+  background: var(--q-secondary-container, #d6e8cd);
+  color: var(--q-on-secondary-container, #111f0f);
 }
 
 .ssg-header .q-btn,
