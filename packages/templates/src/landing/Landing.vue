@@ -143,14 +143,3 @@ const secondaryCta = computed(() => {
   }
 })
 </script>
-
-<style scoped>
-.ssg-landing__final-heading {
-  font-size: var(--ssg-step-3);
-  margin: 0 0 var(--ssg-space-3);
-}
-
-.ssg-landing__final-proof {
-  margin-top: var(--ssg-space-3);
-}
-</style>

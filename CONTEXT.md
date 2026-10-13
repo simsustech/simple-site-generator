@@ -40,12 +40,20 @@ The generated app is **Vitrify + Quasar + UnoCSS (`unocss-preset-quasar`)**, pre
 ## The shared layer
 
 `packages/templates/src/shared/` holds `SiteShell`, `SiteHeader`, `SiteFooter`, `Hero`, `CtaButton`,
-`ProofSection`, `BentoGrid`, `FaqList`, `Breadcrumbs`, `PageContent`, `StickyCta`, `tokens.css` and the
+`ProofSection`, `BentoGrid`, `FaqList`, `Breadcrumbs`, `PageContent`, `StickyCta` and the
 pure `nav.ts` / `headings.ts` helpers.
 
 The three template modules (`docs`, `landing`, `business`) are thin compositions over it. Before this
 was consolidated there were five near-identical layouts, and every fix had to be applied five times and
 drifted. See `docs/adr/0002-shared-template-layer.md`.
+
+Styling is **UnoCSS configuration, not a stylesheet**: `src/design/design.ts` exports the type/spacing
+scale (as theme entries), the `ssg-*` shortcuts, the short list of preflights, and the safelist of the
+design system's class names. The generated app merges it into `vitrify.unocss` beside
+`unocss-preset-quasar`, and every component class in the markup resolves from there. There is no CSS
+file to load — earlier the scale lived in a `tokens.css` that the build extracted into a separate file
+the consumer never imported, so every `var(--ssg-*)` resolved to nothing and the site rendered
+unstyled in both dev and production.
 
 ## Where the `<head>` comes from
 

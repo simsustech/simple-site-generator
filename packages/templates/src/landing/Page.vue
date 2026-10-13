@@ -33,21 +33,3 @@ import type { PageProps } from '../shared/types.js'
  */
 const props = defineProps<PageProps>()
 </script>
-
-<style scoped>
-.ssg-landing__header {
-  margin-bottom: var(--ssg-space-4);
-}
-
-.ssg-landing__title {
-  font-size: var(--ssg-step-3);
-  line-height: 1.15;
-  margin: 0;
-}
-
-.ssg-landing__lede {
-  font-size: var(--ssg-step-1);
-  margin: var(--ssg-space-2) 0 0;
-  max-width: var(--ssg-measure);
-}
-</style>

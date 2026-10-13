@@ -29,6 +29,10 @@
       "types": "./dist/business.d.ts",
       "import": "./dist/business.js"
     },
+    "./design": {
+      "types": "./dist/design.d.ts",
+      "import": "./dist/design.js"
+    },
     "./*/css": "./dist/*.css",
     "./*": "./dist/*.js"
   },
@@ -45,6 +49,9 @@
       ],
       "business": [
         "./dist/business.d.ts"
+      ],
+      "design": [
+        "./dist/design.d.ts"
       ],
       "*": [
         "./dist/index.d.ts"

@@ -32,30 +32,3 @@ withDefaults(
   { heading: 'Frequently asked questions' }
 )
 </script>
-
-<style scoped>
-.ssg-faq__heading {
-  font-size: var(--ssg-step-3);
-  margin: 0 0 var(--ssg-space-4);
-}
-
-.ssg-faq__list {
-  max-width: var(--ssg-measure);
-}
-
-.ssg-faq__item {
-  border-bottom: 1px solid rgb(0 0 0 / 12%);
-}
-
-.ssg-faq__question {
-  padding: var(--ssg-space-3) 0;
-  font-size: var(--ssg-step-1);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.ssg-faq__answer {
-  margin: 0 0 var(--ssg-space-3);
-  line-height: 1.65;
-}
-</style>
