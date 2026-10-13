@@ -103,6 +103,7 @@
           flat
           dense
           no-caps
+          icon="i-mdi-translate"
           :label="alternate.label ?? alternate.lang"
           :to="alternate.path"
         />
