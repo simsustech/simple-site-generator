@@ -1,12 +1,12 @@
 <template>
-  <div
+  <main
     class="fullscreen bg-primary text-white text-center q-pa-md flex flex-center"
   >
     <div>
       <!--
-        A real `<h1>`: the 404 page is a page like any other, and `ssg verify`
-        requires exactly one `<h1>` on every page. Using a styled `<div>` here
-        would make the site fail its own check.
+        A real `h1`: the 404 page is a page like any other, and `ssg verify`
+        requires exactly one `h1` on every page. Using a styled `div` here would
+        make the site fail its own check.
       -->
       <h1 class="ssg-404__code">404</h1>
 
@@ -22,7 +22,7 @@
         no-caps
       />
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">

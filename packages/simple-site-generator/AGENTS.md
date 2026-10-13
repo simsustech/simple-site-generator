@@ -66,6 +66,11 @@ jsonLd: { business: { type: 'Plumber', openingHours: [{ days: ['Mo'], opens: '08
 Those fields feed the visible proof section _and_ `LocalBusiness` structured data from one source, so
 the page and the crawler cannot disagree.
 
+`ssg.lang` must be a **Quasar language pack id**, not a bare language code: Quasar writes the
+`<html lang>` from the pack it loads, and the template passes `ssg.lang` through as `vitrify.lang`.
+Use `en-US`, `en-GB`, `nl`, `de`, … (see `node_modules/quasar/lang/`). A bare `en` has no pack and
+Quasar silently falls back to `en-US`, so `og:locale` and `<html lang>` would disagree.
+
 `ssg verify` checks, per page: exactly one `<title>`, exactly one canonical that is absolute and on the
 configured origin, a non-empty description, at least one parseable `application/ld+json` block, exactly
 one `<h1>`, and a `lang` on `<html>`. `noindex` pages are exempt from canonical/description/JSON-LD.
@@ -91,7 +96,9 @@ one `<h1>`, and a `lang` on `<html>`. `noindex` pages are exempt from canonical/
 | CSS        | 60 KB  |
 
 accessibility, best-practices and SEO scores **must be 100**; performance warns below 90. Override with
-`--js-budget <kb>` / `--css-budget <kb>`.
+`--js-budget <kb>` / `--css-budget <kb>`. Pass `--ignore <glob>` (repeatable) to leave non-page HTML
+out of the SEO surface check — a third-party drop-in such as a Google site-verification file ends in
+`.html` but has no title, canonical or structured data.
 
 Lighthouse needs a Chromium binary: set `CHROME_PATH`, or run `ssg verify --no-lighthouse` to check the
 deterministic half only (SEO surface + byte budgets) where no browser is available.
