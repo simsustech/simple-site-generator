@@ -135,9 +135,34 @@ const routes: RouteRecordRaw[] = [
 
           return import('virtual:ssg:template').then((module) => {
             const templates = module.default
-            return componentName && templates[componentName]
-              ? templates[componentName]
-              : module.Page
+
+            // No component named: the template's `Page` is the default, which is
+            // what most pages want.
+            if (!componentName) return module.Page
+
+            const component = templates[componentName]
+
+            // A named component that does not exist used to fall back to
+            // `module.Page` silently. That is the worst possible outcome for a
+            // field that decides a page's entire layout: the page renders, looks
+            // plausible, and is the wrong template.
+            //
+            // Thrown during prerender, so it fails the build rather than
+            // shipping.
+            if (!component) {
+              const available = Object.keys(templates)
+                .sort((a, b) => a.localeCompare(b))
+                .join(', ')
+
+              throw new Error(
+                `Unknown page template component "${componentName}" on page "${id}".\n` +
+                  `  \`page:\` names a component from the configured template module,\n` +
+                  `  which provides: ${available}. Most pages should omit \`page:\`\n` +
+                  `  entirely and get the template's default \`Page\`.`
+              )
+            }
+
+            return component
           })
         }
 
