@@ -5,6 +5,7 @@ import { gzipSync } from 'node:zlib'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   DEFAULT_BUDGETS,
+  budgetHeadroomWarnings,
   evaluateScores,
   evaluateTotals,
   formatBytes,
@@ -202,5 +203,55 @@ describe('formatBytes', () => {
   it('reports kilobytes to one decimal place', () => {
     expect(formatBytes(1024)).toBe('1.0 KB')
     expect(formatBytes(250 * 1024)).toBe('250.0 KB')
+  })
+})
+
+describe('budgetHeadroomWarnings', () => {
+  const budgets = { jsBytes: 250 * 1024, cssBytes: 60 * 1024 }
+
+  it('stays quiet when there is comfortable headroom', () => {
+    // 192.6 KB of a 250 KB ceiling, which is what the reference site measures.
+    expect(
+      budgetHeadroomWarnings({ js: 197_222, css: 31 * 1024 }, budgets)
+    ).toEqual([])
+  })
+
+  it('warns when JavaScript is within a tenth of the ceiling', () => {
+    const warnings = budgetHeadroomWarnings(
+      { js: 240 * 1024, css: 31 * 1024 },
+      budgets
+    )
+
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('JavaScript is within 10% of its budget')
+    expect(warnings[0]).toContain('10.0 KB left')
+  })
+
+  it('warns for CSS independently', () => {
+    const warnings = budgetHeadroomWarnings(
+      { js: 100 * 1024, css: 58 * 1024 },
+      budgets
+    )
+
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('CSS is within 10%')
+  })
+
+  it('does not warn about a zero total, which is a failed measurement', () => {
+    // `evaluateTotals` reports that as a failure; adding a headroom warning on
+    // top would be noise pointing the reader at the wrong thing.
+    expect(budgetHeadroomWarnings({ js: 0, css: 0 }, budgets)).toEqual([])
+  })
+
+  it('says nothing once the budget is exceeded, which is a failure instead', () => {
+    expect(
+      budgetHeadroomWarnings({ js: 260 * 1024, css: 31 * 1024 }, budgets)
+    ).toEqual([])
+  })
+
+  it('takes the fraction as a parameter, so it is not a magic 10%', () => {
+    expect(
+      budgetHeadroomWarnings({ js: 200 * 1024, css: 0 }, budgets, 0.25)
+    ).toHaveLength(1)
   })
 })

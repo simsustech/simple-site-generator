@@ -94,6 +94,45 @@ export function evaluateBudgets(
 }
 
 /** Scores below these are a warning, not a failure (see the tiering note above). */
+
+/**
+ * Warn when a measured total is within this fraction of its ceiling.
+ *
+ * A budget a site is always near is a cliff: everything passes until the day a
+ * dependency bump pushes it over, and then the failure looks sudden. A warning at
+ * 10% remaining turns "no headroom" into something visible on every run.
+ *
+ * Deliberately not a failure. Being inside the budget is not a defect, and the
+ * deterministic tier is reserved for things that are.
+ */
+export const HEADROOM_WARNING_FRACTION = 0.1
+
+export function budgetHeadroomWarnings(
+  totals: { js: number; css: number },
+  budgets: Budgets = DEFAULT_BUDGETS,
+  fraction: number = HEADROOM_WARNING_FRACTION
+): string[] {
+  const warnings: string[] = []
+
+  const check = (label: string, actual: number, limit: number): void => {
+    // A zero total is a failed measurement, which `evaluateTotals` already
+    // reports as a failure; warning about its headroom would be noise on top.
+    if (actual <= 0 || limit <= 0) return
+
+    const remaining = (limit - actual) / limit
+
+    if (remaining >= 0 && remaining <= fraction) {
+      warnings.push(
+        `${label} is within ${Math.round(fraction * 100)}% of its budget: ${formatBytes(actual)} of ${formatBytes(limit)}, ${formatBytes(limit - actual)} left`
+      )
+    }
+  }
+
+  check('JavaScript', totals.js, budgets.jsBytes)
+  check('CSS', totals.css, budgets.cssBytes)
+
+  return warnings
+}
 export const DEFAULT_SCORE_TARGETS = {
   /** Must equal `required` exactly — anything lower is a defect, not a trade-off. */
   required: { accessibility: 100, 'best-practices': 100, seo: 100 },
