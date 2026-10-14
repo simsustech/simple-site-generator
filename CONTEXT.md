@@ -48,12 +48,12 @@ was consolidated there were five near-identical layouts, and every fix had to be
 drifted. See `docs/adr/0002-shared-template-layer.md`.
 
 Styling is **UnoCSS configuration, not a stylesheet**: `src/design.ts` exports the type/spacing
-scale (as theme entries), the `ssg-*` shortcuts, the short list of preflights, and the safelist of the
-design system's class names. The generated app merges it into `vitrify.unocss` beside
-`unocss-preset-quasar`, and every component class in the markup resolves from there. There is no CSS
-file to load — earlier the scale lived in a `tokens.css` that the build extracted into a separate file
-the consumer never imported, so every `var(--ssg-*)` resolved to nothing and the site rendered
-unstyled in both dev and production.
+scale (as theme entries), the `ssg-*` shortcuts, the short list of preflights, the safelist of the
+design system's class names, and a blocklist for candidates the scanner reads out of tag names. The
+generated app merges it into `vitrify.unocss` beside `unocss-preset-quasar`, and every component class
+in the markup resolves from there. There is no CSS file to load, and no CSS export at all — see
+`docs/adr/0003-design-system-as-config.md` for why, and for what that costs (a class that fails to
+emit is silent everywhere else in the toolchain).
 
 ## Where the `<head>` comes from
 
@@ -67,13 +67,16 @@ nothing for exactly those pages. See `docs/adr/0001-seo-meta-production-point.md
 
 ## Verification
 
-`ssg verify` has two tiers, deliberately:
+`ssg verify` has two tiers, deliberately — see `docs/adr/0004-verify-two-tiers.md`:
 
 - **Hard failures** — everything deterministic: the SEO surface of each built page (exactly one
   `<title>`, one absolute canonical on the configured origin, a description, parseable JSON-LD, one
-  `<h1>`, `lang` on `<html>`), and gzipped byte budgets (JS ≤ 250 KB, CSS ≤ 60 KB) measured from the
-  build output.
-- **Warnings** — Lighthouse performance, which varies with the measuring machine. A gate that fails
+  `<h1>`, `lang` on `<html>`), gzipped byte budgets (JS ≤ 250 KB, CSS ≤ 60 KB) measured from the build
+  output, and **markup ↔ stylesheet coverage** — every `ssg-*` class a page uses must be styled by the
+  built CSS or be listed as a by-design hook. That last one exists because a class the design system
+  lost produces no CSS and no error anywhere else (ADR-0003).
+- **Warnings** — Lighthouse performance, which varies with the measuring machine, and a notice when a
+  budget is within 10% of its ceiling. A gate that fails
   randomly gets switched off, so only the deterministic half blocks.
 
 Byte budgets are measured **from disk**, not from Lighthouse: its `resource-summary` audit reports zero
@@ -82,19 +85,20 @@ fail. Accessibility, best-practices and SEO scores must be 100.
 
 ## Known constraints
 
-- Quasar's runtime dominates the JavaScript budget. The measured gzipped transfer for the docs template
-  is ~248 KB, which fits the 250 KB budget with almost no headroom — adding a Quasar component or plugin
-  can push it over. This is the main thing standing between the templates and a comfortable margin.
-- Markdown rendering ships on **every** page. `PageContent` imports `QMarkdown` lazily, but vitrify's
-  built-in `vendor` chunk group matches all of `node_modules` and wins over an app-defined group in the
-  Rolldown version in use, so markdown-it (and its `linkify-it`/`mdurl`/`uc.micro` graph) is pulled back
-  onto the eager path — measured on the simsustech site: it is the bulk of the 134 KB gzipped `vendor`
-  chunk. `vitrify.chunks` has no effect on the client bundle. Fixing this needs a vitrify-side change to
-  how chunk-group priority is resolved; it is not an app-level workaround (and the project rule is not to
-  edit vitrify's plugin source for one app).
-- The generated app template (`packages/simple-site-generator/templates/app/`) has no `node_modules` and
-  is in no `tsconfig` include: it is rendered into a project that installs its own dependencies. Editor
-  diagnostics for it are therefore expected and resolved once generated.
+- Quasar's runtime dominates the JavaScript budget. The reference site (`business`) measures
+  192.6 KB gzipped of the 250 KB ceiling — 77%, which leaves a real but not large margin. The
+  figure once quoted here for the docs template (~248 KB of 250 KB) predates removing the client
+  markdown parser and should be re-measured before it is used to justify anything. See
+  `docs/known-issues.md` KI-1.
+- Any large dependency is hard to move off the eager path: vitrify's built-in `vendor` chunk group
+  matches all of `node_modules` and wins over an app-defined group, so `vitrify.chunks` has no effect
+  on the client bundle. This is what made the markdown parser unavoidable while it was client-side.
+  It is a vitrify-side defect and the app-level workaround would fork the build pipeline from the one
+  the dev server uses. See `docs/known-issues.md` KI-2.
+- Nothing type-checks `packages/simple-site-generator/templates/app/`: it has no `node_modules` and is
+  in no `tsconfig` include, because it is rendered into a project that installs its own dependencies.
+  A syntax or logic error in it is invisible to `tsc`, `oxlint` and the test suite, and surfaces only
+  when a generated site is built. See `docs/known-issues.md` KI-3.
 - VitePress was evaluated for the docs template and rejected as a wholesale replacement (it would discard
   the shared Quasar layer and duplicate the build/verify loop). It remains an option as a separate
   default-theme build served under `/docs/`.
