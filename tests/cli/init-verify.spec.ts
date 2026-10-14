@@ -102,6 +102,34 @@ describe('ssg init', () => {
     }
   })
 
+  it('names the landing component only on a landing site', async () => {
+    // The scaffold's home page used to hardcode `page: Landing` whatever template
+    // was chosen. Only the `landing` module exports a `Landing`, so a `business`
+    // or `docs` site named a component that does not exist — and the router fell
+    // back to `Page` and silently rendered the wrong home page. That is a build
+    // failure now, so the scaffold itself has to be right.
+    const read = (dir: string) =>
+      fs.readFile(join(workspace, dir, 'src/pages/Index.md'), 'utf8')
+
+    for (const [template, expected] of [
+      ['landing', /^page: Landing$/m],
+      ['business', null],
+      ['docs', null]
+    ] as const) {
+      const dir = `site-${template}`
+      const { code } = await run(
+        ['init', join(workspace, dir), '--template', template, '--yes'],
+        workspace
+      )
+
+      expect(code).toBe(0)
+
+      const page = await read(dir)
+
+      if (expected) expect(page).toMatch(expected)
+      else expect(page).not.toMatch(/^page:/m)
+    }
+  })
   it('renders the chosen template into the generated config', async () => {
     const config = await fs.readFile(
       join(target(), 'vitrify.config.ts'),
