@@ -3,6 +3,7 @@ import { join, relative } from 'node:path'
 import { appDir, distDir } from '../paths.js'
 import {
   DEFAULT_BUDGETS,
+  budgetHeadroomWarnings,
   evaluateScores,
   evaluateTotals,
   formatBytes,
@@ -12,6 +13,7 @@ import {
 import { runLighthouse } from '../verify/lighthouse.js'
 import { isIgnored } from '../verify/ignore.js'
 import { checkSeoSurface } from '../verify/seo-surface.js'
+import { checkClassCoverage } from '../verify/class-coverage.js'
 import { startStaticServer } from '../verify/serve.js'
 
 export interface VerifyOptions {
@@ -122,6 +124,37 @@ export async function verify(
   // bytes when its trace captures no network activity, and a budget that
   // measures nothing is a gate that cannot fail.
   const assets = await measureBuildAssets(outputDir)
+
+  // --- Markup ↔ stylesheet coverage (deterministic, hard failure) ----------
+  //
+  // `ssg-*` classes come from the design system's UnoCSS configuration, and a
+  // class that resolves to nothing is invisible everywhere else: the build
+  // passes, the class is present in the markup, and the element is unstyled.
+  // This is the gate for that.
+  const stylesheets = assets.files.filter((file) => file.type === 'css')
+
+  if (stylesheets.length) {
+    const css = (
+      await Promise.all(
+        stylesheets.map((file) =>
+          fs.readFile(join(outputDir, file.file), 'utf8')
+        )
+      )
+    ).join('\n')
+
+    const pages = await Promise.all(
+      htmlFiles.map(async (file) => ({
+        page: relative(outputDir, file),
+        html: await fs.readFile(file, 'utf8')
+      }))
+    )
+
+    for (const issue of checkClassCoverage(pages, css)) {
+      issues.push(
+        `${issue.page}: "${issue.className}" is used in the markup but no stylesheet styles it — either the design system lost it or the class is a typo`
+      )
+    }
+  }
   const budgetResult = evaluateTotals(
     { js: assets.js, css: assets.css },
     budgets
@@ -134,6 +167,10 @@ export async function verify(
     warnings.push(
       `Byte budgets OK: JS ${formatBytes(budgetTotals.js)} / ${formatBytes(budgets.jsBytes)}, CSS ${formatBytes(budgetTotals.css)} / ${formatBytes(budgets.cssBytes)}`
     )
+
+    // A budget a site is always near is a cliff (KI-1 in docs/known-issues.md).
+    // Inside the budget is not a defect, so this informs rather than blocks.
+    warnings.push(...budgetHeadroomWarnings(budgetTotals, budgets))
   }
 
   if (assets.files.length) {
