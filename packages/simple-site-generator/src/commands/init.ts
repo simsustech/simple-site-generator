@@ -231,6 +231,13 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
 
   const templateVariables = {
     template: resolved.template,
+    // Only the `landing` module exports a `Landing` component, so only a landing
+    // site's home page may name it. This used to be hardcoded in the scaffold's
+    // `Index.md`, which meant a `business` or `docs` site shipped `page: Landing`
+    // too -- and the router, having no such component, fell back to the generic
+    // `Page` and rendered the wrong home page with no warning. Once an unknown
+    // `page:` became a build failure, that scaffold could not build at all.
+    landingPage: resolved.template === 'landing',
     name: resolved.name,
     productName: resolved.productName,
     url: resolved.url,
