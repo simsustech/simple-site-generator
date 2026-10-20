@@ -55,11 +55,12 @@ import { computed, toRefs } from 'vue'
 import { footerPagesOf } from './nav.js'
 import type { LayoutProps } from './types.js'
 
-const props = defineProps<Pick<LayoutProps, 'title' | 'pages' | 'extra'>>()
+const props =
+  defineProps<Pick<LayoutProps, 'title' | 'pages' | 'extra' | 'lang'>>()
 
 const { pages, extra } = toRefs(props)
 
-const footerPages = computed(() => footerPagesOf(pages.value))
+const footerPages = computed(() => footerPagesOf(pages.value, props.lang))
 
 const hasContact = computed(() =>
   Boolean(extra.value?.address || extra.value?.phone || extra.value?.email)

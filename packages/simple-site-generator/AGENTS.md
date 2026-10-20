@@ -18,7 +18,7 @@ ssg verify         # SEO surface + byte budgets + Lighthouse
 ```
 
 `init` is non-interactive with `--yes` (it never prompts when stdin is not a TTY). Templates:
-`docs`, `landing`, `business`.
+`docs`, `landing`, `business`, `plain`.
 
 **Do not deploy until `ssg verify` exits 0.** It is the only thing standing between "the agent says
 it built a site" and "the site is actually correct and fast".
@@ -31,6 +31,7 @@ Pages are Markdown in `src/pages/**` with YAML frontmatter. `ssg check` enforces
 | ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------ |
 | `id`                                 | yes      | route segment; defaults to the file path. `home` renders at `/`                                                    |
 | `title`                              | yes      | the page's `<h1>` and its `<title>`                                                                                |
+| `headTitle`                          | –        | document title verbatim, without the site-name suffix; the front page uses it for the site's own name              |
 | `description`                        | yes      | the meta description — a page without one is invisible to search                                                   |
 | `label`                              | –        | navigation label; falls back to `title`                                                                            |
 | `order`                              | –        | sort weight; the home page is always first                                                                         |
@@ -40,7 +41,7 @@ Pages are Markdown in `src/pages/**` with YAML frontmatter. `ssg check` enforces
 | `noSsr`                              | –        | client-only render. **Avoid for content** — a `noSsr` page has no prerendered `<h1>` or body, so `verify` fails it |
 | `image`                              | –        | social card image (absolute or root-relative)                                                                      |
 | `headerImage`                        | –        | illustration behind the page title; distinct from `image`                                                          |
-| `lang`                               | –        | BCP-47 tag when this page is not in the site's language, e.g. `nl`                                                 |
+| `lang`                               | –        | BCP-47 tag when this page is not in the site's language, e.g. `nl`; also the language whose menu the page shows    |
 | `alternates`                         | –        | `[{ lang, path, label? }]` — the page's other languages, emitted as hreflang and shown as a header language switch |
 | `breadcrumbs`                        | –        | trail, outermost first; drives the visible trail _and_ `BreadcrumbList`                                            |
 | `faq`                                | –        | `[{ question, answer }]`; rendered and mirrored as `FAQPage`                                                       |

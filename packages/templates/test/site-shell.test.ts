@@ -46,6 +46,26 @@ describe('shared site shell', () => {
     expect(wrapper.find('.ssg-header__brand-name').text()).toBe('Acme Corp')
   })
 
+  it('renders the navigation of the language being viewed', () => {
+    // `route.meta.lang` wins; with a route table that declares none (as this
+    // harness has) the site's own language is the fallback.
+    const wrapper = mountWithQuasar(SiteShell, {
+      props: {
+        ...shellProps,
+        lang: 'nl',
+        pages: [
+          { id: 'home', label: 'Home', tags: ['menu'] },
+          { id: 'services', label: 'Services', tags: ['menu'], lang: 'en-GB' },
+          { id: 'nl', label: 'Home', tags: ['menu'], lang: 'nl' },
+          { id: 'nl/services', label: 'Diensten', tags: ['menu'], lang: 'nl' }
+        ]
+      }
+    })
+
+    expect(wrapper.text()).toContain('Diensten')
+    expect(wrapper.text()).not.toContain('Services')
+  })
+
   it('gives every icon-only control an accessible name', () => {
     const wrapper = mountWithQuasar(SiteShell, { props: shellProps })
 

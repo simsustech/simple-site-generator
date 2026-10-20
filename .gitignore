@@ -22,3 +22,8 @@
 # template rewrite; kept out of the repo so they do not ship as documentation.
 /linear-design-analysis.md
 /startup-website-findings.md
+/rewrite.md
+
+# The coding agent's own cache (`fff` frecency, debug logs). Machine-local state,
+# never source, and it reappears after every session.
+/.pi
