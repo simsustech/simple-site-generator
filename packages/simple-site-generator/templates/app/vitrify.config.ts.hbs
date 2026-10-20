@@ -18,10 +18,12 @@ interface SimpleSiteGenerator {
   ssg: {
     title: string
     url: string
+    /** Site description: the sitemap's, and the fallback meta description. */
+    description: string
     template: string
+    templatePackage: string
     favicon: string
     lang: string
-    colors: Record<string, string>
     sourceColor: string
     tags: Record<string, { label: string }>
     extra?: Record<string, unknown>
@@ -29,31 +31,29 @@ interface SimpleSiteGenerator {
   }
 }
 
-const ssg = {
+// Annotated with the interface rather than left to inference: the three reads
+// of `ssg.description`, `ssg.extra` and `ssg.jsonLd` below happen on values a
+// bare object literal does not have, so an unannotated literal makes every
+// generated project start with five `Property … does not exist` errors.
+const ssg: SimpleSiteGenerator['ssg'] = {
   title: '{{ productName }}',
   url: '{{ url }}',
+  description: '{{ description }}',
   favicon: '/favicon-96.png',
   // Rendered from the `--template` value passed to `ssg init`. It selects which
   // template module the app imports, so it must be templated, not hardcoded.
   template: '{{ template }}',
   templatePackage: '@simple-site-generator/templates',
-  colors: {
-    primary: '#22c92a',
-    secondary: '#eece0cff',
-    accent: '#00a4e6ff',
-    text: '#3B352E',
-    dark: '#1D1D1D',
-    positive: '#21BA45',
-    negative: '#C10015',
-    info: '#31CCEC',
-    warning: '#F2C037'
-  },
   // BCP-47 tag for og:locale, JSON-LD `inLanguage`, and — through
   // `vitrify.lang` below — the `<html lang>` that Quasar writes. It must name
   // one of Quasar's language packs (node_modules/quasar/lang), e.g. `en-US`,
   // `en-GB`, `nl`; a bare `en` has no pack and Quasar falls back to `en-US`.
   lang: 'en-US',
-  // MD3 derives its whole tonal palette from one source colour.
+  // The only colour input. MD3 derives its whole tonal palette — every role
+  // token the design system reads, in light and dark mode — from this one value.
+  // A `colors` map beside it looks load-bearing and is not: it produced utility
+  // classes that drifted away from the templates' own tokens, so there is no
+  // second place to set a colour.
   sourceColor: '#22c92a',
   tags: {
     menu: {
@@ -68,7 +68,7 @@ const ssg = {
   }
 }
 
-const { template, templatePackage, title, url } = ssg
+const { template, templatePackage, title } = ssg
 
 /**
  * Quasar's own icons, resolved to iconify classes.
@@ -209,11 +209,7 @@ export default async function ({
         // The templates' design system: theme scale, shortcuts, preflights and
         // the safelist of its class names.
         ...ssgUnoConfig,
-        theme: {
-          // The templates' spacing/type scale, then this site's palette.
-          ...ssgUnoConfig.theme,
-          colors: ssg.colors
-        },
+        theme: ssgUnoConfig.theme,
         content: {
           pipeline: {
             include: [

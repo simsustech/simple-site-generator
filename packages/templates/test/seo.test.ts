@@ -55,14 +55,43 @@ describe('buildMeta', () => {
     )
   })
 
-  test('an inner page title is suffixed with the site name', () => {
+  test('an inner page title names the site first', () => {
     expect(
       buildMeta({
         page: { id: 'guides', title: 'Guides' },
         site,
         path: '/guides'
       }).title
-    ).toBe('Guides · Acme Plumbing')
+    ).toBe('Acme Plumbing | Guides')
+  })
+
+  test('a page can declare its own head title, used verbatim', () => {
+    // The front page: its `<h1>` is a sentence, its title in a tab is the site.
+    const { title, meta, script } = buildMeta({
+      page: {
+        id: 'home',
+        title: 'Emergency plumbing, answered the same day',
+        headTitle: 'Acme Plumbing'
+      },
+      site,
+      path: '/'
+    })
+
+    expect(title).toBe('Acme Plumbing')
+    // og:title and twitter:title carry the page's own name, so they follow the
+    // override instead of contradicting the document title.
+    expect(meta.ogTitle).toEqual({
+      property: 'og:title',
+      content: 'Acme Plumbing'
+    })
+    expect(meta.twitterTitle.content).toBe('Acme Plumbing')
+
+    // So does the WebPage entity, which is the same fact in structured data.
+    const webpage = JSON.parse(script.ldjson.innerHTML)['@graph'].find(
+      (node: Record<string, unknown>) => node['@type'] === 'WebPage'
+    ) as Record<string, string>
+
+    expect(webpage.name).toBe('Acme Plumbing')
   })
 
   test('emits meta tags as attribute objects, not bare strings', () => {

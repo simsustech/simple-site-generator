@@ -12,9 +12,16 @@ import type { UserConfig } from 'unocss'
  * Colour, elevation and radii are **not** hard-coded: they read the MD3 role
  * tokens that `unocss-preset-quasar` publishes (`--q-primary`,
  * `--q-secondary-container`, `--q-surface-container*`, `--q-outline-variant`,
- * `--q-elevation-level*`, `--q-card-radius`). The app sets one source colour and
- * the whole template re-themes — including dark mode, because those tokens
- * switch with `body--dark`.
+ * `--q-elevation-level*`, `--q-card-radius`). The app sets one source colour
+ * (`ssgSourceColor`, or its own hex) and the whole template re-themes —
+ * including dark mode, because those tokens switch with `body--dark`.
+ *
+ * There is deliberately no second way in. An app used to pass a nine-entry
+ * `colors` map as well (`primary`, `secondary`, `accent`, `text`, `dark`, …)
+ * which the scaffold spread into the UnoCSS `theme`. Nothing here read it: it
+ * only produced `bg-primary`-style utilities beside the role tokens, so a site
+ * could carry two palettes that disagreed, and moving the band in `design.ts`
+ * left the utilities behind on the old colours.
  *
  * The app wires it in beside `unocss-preset-quasar`:
  *
@@ -107,6 +114,17 @@ const CARD_RADIUS = 'var(--q-card-radius)'
  */
 const MEASURE = '68ch'
 
+/**
+ * The default source colour: the only colour input.
+ *
+ * `unocss-preset-quasar` derives every MD3 role token — and therefore every
+ * colour in every template — from this one value, in both light and dark mode.
+ * It is exported so a scaffolded site and this package cannot drift apart: the
+ * value here is the value `ssg init` writes into the new site's
+ * `vitrify.config.ts`.
+ */
+export const ssgSourceColor = '#22c92a'
+
 export const ssgTheme: Theme = {
   fontSize: Object.fromEntries(
     Object.entries(STEP).map(([key, value]) => [`step-${key}`, value])
@@ -153,6 +171,19 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-header__logo', 'block w-40px h-40px'],
   ['ssg-header__brand-name', 'whitespace-nowrap'],
   ['ssg-header__nav', 'hidden items-center gap-space-1 lg:flex'],
+  // Chrome the plain template asks for: how to reach the business, and the way
+  // into its own client environment. Both are guarded by `v-if` in the header,
+  // so a site that sets neither renders neither — see `SiteHeader`.
+  [
+    'ssg-header__phone',
+    `inline-flex items-center min-h-[24px] text-[14px] font-600 whitespace-nowrap text-[${ON_CHROME}] underline-offset-4 hover:underline`
+  ],
+  [
+    'ssg-header__login',
+    // A bordered button, not a filled one: the login leaves the site, and it is
+    // not the page's primary action — the CTA inside the page is.
+    `inline-flex items-center gap-[6px] min-h-[36px] px-[12px] rounded-[${CARD_RADIUS}] b b-solid b-[${OUTLINE_VARIANT}] text-[${ON_CHROME}] text-[14px] font-600 no-underline whitespace-nowrap hover:opacity-80`
+  ],
 
   // Shell
   ['ssg-shell__drawer-link', 'block w-full text-inherit no-underline'],
@@ -397,6 +428,215 @@ export const ssgShortcuts: Shortcuts = [
     'hidden lg:block pointer-events-none absolute top-space-3 right-space-3 w-[40%] max-w-[22rem]'
   ],
 
+  // Plain — the sober template: one service, one action, a price on the screen
+  // before anything else. The look came from a hand-written mockup stylesheet
+  // (`nuchter.css`); this is that stylesheet's layout and rhythm, expressed as
+  // shortcuts, because no `.vue` file in this package carries a `<style>` block
+  // and `ssg verify` refuses a class the built CSS does not define.
+  //
+  // What came over: the 8px spacing rhythm, the type scale (the shared `STEP`
+  // scale, with one literal for the section heading, which sits between two
+  // steps), the paper-to-line neutrals, the price card, the step list, the form
+  // and the tariff table. What did not: the mockup's colours. Every one of them
+  // is an MD3 role token here, so the whole template follows `sourceColor` and
+  // flips with `body--dark` without a rule of its own.
+  //
+  // The rhythm is written in pixels (`py-[24px]`, `gap-[16px]`) rather than the
+  // shared `SPACE` scale: the mockup is strictly 8-point (8/16/24/32/48/64/96)
+  // and `SPACE` is a fluid five-step scale built for the other templates. Adding
+  // steps to it would resize every existing site to fit one template.
+  // The offer block: heading, price, action, and the included-items table. One
+  // panel, so the whole argument of the page sits above the prose.
+  ['ssg-plain__offer', 'mb-[48px]'],
+  //
+  // The hero is two columns from `lg`: the argument on the left, the photograph
+  // on the right as a card. The card is a real `<figure>`/`<img>`, not a
+  // background: a background cannot be sized into a column without letterboxing
+  // or cropping whatever the page happens to declare, and it carries no alt.
+  [
+    'ssg-plain__offer-cols',
+    'grid gap-[48px] items-start lg:grid-cols-[minmax(0,1fr)_minmax(0,0.86fr)]'
+  ],
+  ['ssg-plain__intro', 'relative min-w-0'],
+  [
+    'ssg-plain__hero-media',
+    // `order-first`: the mockup opens the mobile page with the photograph and
+    // puts the heading under it, while the DOM keeps the text first so a screen
+    // reader — and the document outline — still gets the heading before the
+    // picture. From `lg` the two-column grid takes over and the media returns to
+    // its DOM position on the right.
+    `m-0 order-first overflow-hidden rounded-[${CARD_RADIUS}] bg-[${SURFACE_CONTAINER}] lg:order-none`
+  ],
+  ['ssg-plain__hero-img', 'block w-full h-auto'],
+  [
+    'ssg-plain__region',
+    `inline-flex items-center gap-[8px] text-[13.5px] text-[${ON_SURFACE_VARIANT}] m-0 mb-[16px]`
+  ],
+  [
+    // The hero heading: the scale's own top step, which is the 2.75rem the
+    // mockup measured, tracked in so a long Dutch compound word breaks where it
+    // should rather than at the container edge.
+    'ssg-plain__title',
+    `text-[${ON_SURFACE}] text-step-3 leading-[1.08] tracking-[-.03em] font-700 m-0 mb-[16px]`
+  ],
+  [
+    'ssg-plain__lede',
+    `text-[${ON_SURFACE_VARIANT}] text-[18px] leading-[1.55] m-0 mb-[32px] [max-width:40ch]`
+  ],
+  [
+    'ssg-plain__section-head',
+    // The measure sits on the heading block, not on the section: capping the
+    // container is what shrank every illustration in `ssg-prose`.
+    `[max-width:66ch] mb-[48px]`
+  ],
+  [
+    'ssg-plain__section-title',
+    // The one literal size in the template: 1.72rem sits between `step-1` and
+    // `step-2`, and the mockup's measured values are what the headings were
+    // designed against. Written once, here.
+    `text-[${ON_SURFACE}] text-[clamp(1.38rem,2.15vw,1.72rem)] leading-[1.18] tracking-[-.024em] font-700 m-0 mb-[16px]`
+  ],
+  ['ssg-plain__section-lede', `text-[${ON_SURFACE_VARIANT}] text-[17px] m-0`],
+
+  // The price card: a ruled band under the lede, label left and amount right.
+  // It is the first thing after the heading on purpose — the whole template
+  // exists because the site it replaces never named a price.
+  [
+    'ssg-plain__price',
+    // `b-t`/`b-b` set a width; the style has to be named per side. A bare
+    // `b-solid` styles all four sides, and the two that carry no width then
+    // paint at the CSS initial `medium` — 3px, which turns the band into a box.
+    `flex items-baseline gap-[10px] py-[24px] b-t b-b b-t-solid b-b-solid b-[${OUTLINE_VARIANT}]`
+  ],
+  [
+    'ssg-plain__price-label',
+    `text-[14px] text-[${ON_SURFACE_VARIANT}] flex-[0_0_auto]`
+  ],
+  [
+    'ssg-plain__price-value',
+    `text-[${ON_SURFACE}] text-[31px] font-700 tracking-[-.025em] leading-none`
+  ],
+  [
+    'ssg-plain__price-unit',
+    `text-[14px] font-400 text-[${ON_SURFACE_VARIANT}] tracking-normal ml-[6px]`
+  ],
+  [
+    'ssg-plain__price-note',
+    `mt-[16px] mb-0 text-[14px] text-[${ON_SURFACE_VARIANT}]`
+  ],
+
+  // The action. The button itself is the shared `CtaButton` (it owns its own
+  // styling and its link/route duality); this is only the row it sits in, so two
+  // actions would line up instead of stacking.
+  ['ssg-plain__actions', 'flex gap-[10px] flex-wrap mt-[32px]'],
+
+  // The four steps, as a ruled list. The number is decoration beside the title
+  // and is `aria-hidden` in the markup; it is an `<ol>`, so the order is
+  // announced by the list itself.
+  ['ssg-plain__steps', 'mt-[48px]'],
+  ['ssg-plain__steps-list', '[list-style:none] m-0 p-0'],
+  // The list and the drawing side by side, as the mockup had them. The drawing
+  // is decoration and the list is the content, so the list keeps the wider
+  // column and the pair stacks below `lg`.
+  [
+    'ssg-plain__steps-grid',
+    'grid gap-[32px] items-start lg:grid-cols-[1.1fr_.9fr]'
+  ],
+  [
+    'ssg-plain__step',
+    `grid grid-cols-[32px_1fr] gap-x-[16px] gap-y-[4px] py-[24px] b-t b-t-solid b-[${OUTLINE_VARIANT}]`
+  ],
+  [
+    'ssg-plain__step-number',
+    `text-[13px] font-600 text-[${PRIMARY}] leading-[1.9]`
+  ],
+  [
+    'ssg-plain__step-title',
+    'block text-[16.5px] font-600 tracking-[-.01em] mb-[3px]'
+  ],
+  [
+    'ssg-plain__step-text',
+    `block text-[${ON_SURFACE_VARIANT}] text-[15.5px] leading-[1.5]`
+  ],
+
+  // The quote form. Each field carries its own classes rather than relying on a
+  // descendant selector, so every class in the markup is a class in the
+  // stylesheet — which is what `ssg verify` checks.
+  ['ssg-plain__field', 'mb-[24px]'],
+  ['ssg-plain__label', 'block text-[14.5px] font-500 mb-[7px]'],
+  [
+    'ssg-plain__hint',
+    `font-400 text-[${ON_SURFACE_VARIANT}] text-[13.5px] ml-[6px]`
+  ],
+  [
+    'ssg-plain__input',
+    `w-full text-[16px] text-[${ON_SURFACE}] bg-[${SURFACE_LOWEST}] b b-solid b-[${OUTLINE_VARIANT}] rounded-[6px] px-[12px] py-[11px] min-h-[46px] placeholder:text-[${ON_SURFACE_VARIANT}] focus-visible:b-[${PRIMARY}]`
+  ],
+  [
+    'ssg-plain__check',
+    `grid grid-cols-[18px_1fr] gap-[10px] items-start mb-[24px] text-[14.5px] text-[${ON_SURFACE_VARIANT}] leading-[1.5]`
+  ],
+  ['ssg-plain__status', 'mt-[16px] mb-0 text-[14.5px] leading-[1.5]'],
+  ['ssg-plain__status--ok', `text-[${PRIMARY}]`],
+  [
+    'ssg-plain__status--error',
+    // `error` is an MD3 role; `negative` is Quasar's own semantic slot. Either
+    // is correct in both themes, and the fallback keeps the message readable if
+    // a preset version publishes only one of them.
+    'text-[var(--q-error,var(--q-negative))]'
+  ],
+  // A two-column row: label left, amount right. Separate from `ssg-plain__step`
+  // because that one reserves a numbered first column, and a summary row has
+  // nothing to put in it.
+  [
+    'ssg-plain__sum-row',
+    `grid grid-cols-[1fr_auto] gap-x-[16px] items-baseline py-[8px] text-[15px] b-t b-t-solid b-[${OUTLINE_VARIANT}]`
+  ],
+
+  // The calculator: an input panel and a result panel, side by side once there is
+  // room for both. The rule between them belongs to whichever panel is on top,
+  // which is why the output panel carries a top border below `lg` and a start
+  // border above it.
+  [
+    'ssg-plain__calc',
+    `grid border border-solid border-[${OUTLINE_VARIANT}] rounded-[${CARD_RADIUS}] overflow-hidden lg:grid-cols-[minmax(0,1fr)_24rem]`
+  ],
+  ['ssg-plain__calc-in', 'p-[32px]'],
+  [
+    'ssg-plain__calc-out',
+    `p-[32px] bg-[${SURFACE_CONTAINER}] border-t border-t-solid lg:border-t-0 lg:border-s lg:border-s-solid border-[${OUTLINE_VARIANT}]`
+  ],
+  // `accent-color` is the one property that styles a range input's track and
+  // thumb together; the pseudo-elements behind it differ per browser.
+  [
+    'ssg-plain__range',
+    `w-full h-[24px] [accent-color:${PRIMARY}] cursor-pointer`
+  ],
+
+  // The tariff table.
+  ['ssg-plain__table', 'w-full [border-collapse:collapse] text-[16px]'],
+  [
+    'ssg-plain__table-caption',
+    // The table's own name, read as a heading rather than as a footnote: the
+    // mockup labels the band before the rows, and a 14px muted line sitting
+    // directly under the action button read as its sub-label.
+    `text-left text-[17px] font-600 text-[${ON_SURFACE}] pt-[40px] pb-[16px]`
+  ],
+  [
+    'ssg-plain__table-head',
+    `text-left text-[14.5px] font-500 text-[${ON_SURFACE_VARIANT}] w-[34%] pr-[24px] py-[14px] b-b b-b-solid b-[${OUTLINE_VARIANT}] align-top leading-[1.45]`
+  ],
+  [
+    'ssg-plain__table-cell',
+    `text-left text-[${ON_SURFACE}] py-[14px] b-b b-b-solid b-[${OUTLINE_VARIANT}] align-top leading-[1.45]`
+  ],
+
+  // A value the owner has not delivered yet reads as unfilled — muted and
+  // tracked out — so an open place can never be mistaken for a fact. `tnum`
+  // keeps a column of prices and distances aligned.
+  ['ssg-plain__tbd', `text-[${ON_SURFACE_VARIANT}] tracking-[.06em]`],
+  ['ssg-plain__tnum', '[font-variant-numeric:tabular-nums]'],
+
   // Hero demo — the animated process graphic (`shared/HeroDemo.vue`). Layout
   // only: an SVG's paint properties and keyframes are not expressible as
   // utilities, so they live in the preflight below.
@@ -476,6 +716,32 @@ export const ssgPreflights: Preflights = [
 
 .ssg-skip-link:focus {
   left: 0;
+}
+
+/* The plain template's buttons carry the same corner as its photo card.
+
+   MD3's default button is a full pill, and next to a 6px card that reads as a
+   second, unrelated shape language. Scoped to this template's action row so the
+   other templates keep the pill their own mockups asked for.
+
+   Quasar paints the button's own background and outline on a pseudo-element, so
+   the corner has to be set there as well as on the button: setting only the
+   element leaves the visible shape a pill. */
+.ssg-plain__actions .ssg-cta,
+.ssg-plain__actions .ssg-cta::before {
+  border-radius: var(--q-card-radius);
+}
+
+/* The quiet action is a second button, not a second link. Quasar's outline
+   variant borrows the primary colour for text and border, which on this page
+   reads as an inline link beside the filled button; the mockup gives it ink
+   text and a hairline outline instead. */
+.ssg-plain__actions .ssg-cta.q-btn--outline {
+  color: var(--q-on-surface);
+}
+
+.ssg-plain__actions .ssg-cta.q-btn--outline::before {
+  border-color: var(--q-outline-variant);
 }
 
 /* The header is chrome: a brand tint, with its paired on-colour. A utility cannot

@@ -25,12 +25,12 @@ pnpm verify     # SEO surface, byte budgets, markup↔stylesheet, Lighthouse
 pnpm preview    # serve the build the way production does → :8095
 ```
 
-Three templates: `docs`, `landing` (conversion-oriented single page), `business` (multi-page local
-business).
+Four templates: `docs`, `landing` (conversion-oriented single page), `business` (multi-page local
+business), `plain` (one service, one action, the price on screen first).
 
 ---
 
-## The three templates
+## The four templates
 
 A "template" is a **module** in `@simple-site-generator/templates`, chosen once per site in
 `vitrify.config.ts`. It supplies the layout, the default page component, and optionally a special
@@ -40,9 +40,10 @@ landing page.
 | ---------- | ----------------------------------------------------------- | --------------------------- | ---------------- |
 | `business` | multi-page local business: services, opening hours, contact | `Layout`, `Page`            | _(omit `page:`)_ |
 | `landing`  | one conversion page plus support pages                      | `Layout`, `Page`, `Landing` | `page: Landing`  |
+| `plain`    | one service, one action, a price card and a quote form      | `Layout`, `Page`            | _(omit `page:`)_ |
 | `docs`     | documentation                                               | `Layout`, `Page`            | _(omit `page:`)_ |
 
-All three are thin compositions over one shared layer (ADR-0002). The shared components are
+All four are thin compositions over one shared layer (ADR-0002). The shared components are
 `SiteShell`, `SiteHeader`, `SiteFooter`, `SkipLink`, `CtaButton`, `Hero`, `HeroDemo`, `PrincipleGrid`,
 `ProofStrip`, `BentoGrid`, `ProofSection`, `FaqList`, `Breadcrumbs`, `PageContent`, `StickyCta`.
 
@@ -158,6 +159,7 @@ terminal instead of in production.
 | ------------------------------------ | -------- | -------------------------------------------------------------------- |
 | `id`                                 | yes      | the route. Unique; `home` is the root and is always first in the nav |
 | `title`                              | yes      | the `<h1>` and the document title                                    |
+| `headTitle`                          | no       | the document title verbatim, without the site-name suffix            |
 | `description`                        | yes      | the meta description. A page without one is invisible to search      |
 | `label`                              | no       | navigation label; falls back to `title`                              |
 | `order`                              | no       | sort weight in navigation                                            |
@@ -193,6 +195,18 @@ principles: # numbered cards, real text
   note: Each rule removes work later.
 ```
 
+**The card band's heading is a label, not content.** Both card bands (the business template's
+`Services` and the landing template's) take it from `extra.cardsHeading`, so a site that does not want
+the English word sets it rather than adding a field to every page that shows cards. It is a site-wide
+bag, so a multilingual site passes the right word per page from its route table.
+
+**A bilingual site's navigation follows the page, not the default language.** `tags` decides which
+nav surface a page appears in; `lang` decides whose. The menu, contact and footer resolution match
+each page's `lang` against the language of the page being viewed, so `/nl` gets the Dutch menu rather
+than the default language's — which is what a site with `nl/` pages otherwise shipped, and it meant a
+Dutch visitor's only route onward was the language switch. A page that declares no `lang` is neutral
+and stays in every menu, so a single-language site keeps exactly the menu it had.
+
 **The trap worth knowing:** a field missing from `SitePage` in
 `packages/templates/src/shared/types.ts` is **never exposed as a Vue prop**. Vue derives runtime props
 from the type, so the frontmatter value lands in `attrs` and the component renders without it —
@@ -218,6 +232,11 @@ it for `<head>` tags; the build reads it for the sitemap. There is no second pla
   frontmatter.
 - **The 404 route is a child of the layout**, so it renders inside the shell and gets head tags. As a
   sibling it had no header, no footer and no meta at all.
+- **One rule, two title fields.** `title` names the page: it is the `<h1>` and, with the site name
+  in front of it, the document title. `headTitle` replaces the document title outright, suffix and
+  all, for the page whose heading is a sentence but whose title in a tab is the site — the front
+  page. `og:title` and `twitter:title` follow whichever is set, so no page states two different
+  names for itself.
 
 ---
 

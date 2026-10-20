@@ -31,7 +31,7 @@ export function buildJsonLd({ page, site, path }: BuildJsonLdInput) {
     '@type': 'WebPage',
     '@id': `${canonical}#webpage`,
     url: canonical,
-    name: page?.title ?? site.title,
+    name: page?.headTitle ?? page?.title ?? site.title,
     inLanguage: page?.lang ?? site.lang ?? 'en',
     isPartOf: {
       '@type': 'WebSite',

@@ -10,19 +10,47 @@ import type { SitePage } from './types.js'
  * actually resolve — are the parts worth testing, and they are pure.
  */
 
+/**
+ * Whether a page belongs to the language being viewed.
+ *
+ * A page that declares no language is neutral: a site with one language declares
+ * none anywhere and gets exactly the menu it had before. Once pages do declare
+ * one, a page in another language drops out of the menu — otherwise a site that
+ * serves `nl/` pages shows a Dutch visitor an English "Services" that leads to
+ * the English page, with no way back from the menu at all.
+ */
+function inLanguage(page: SitePage, lang: string | undefined): boolean {
+  return !page.lang || !lang || page.lang === lang
+}
+
 /** Pages tagged `menu`, in the order the app supplied them. */
-export function menuPagesOf(pages: SitePage[] | undefined): SitePage[] {
-  return (pages ?? []).filter((page) => page.tags?.includes('menu'))
+export function menuPagesOf(
+  pages: SitePage[] | undefined,
+  lang?: string
+): SitePage[] {
+  return (pages ?? []).filter(
+    (page) => page.tags?.includes('menu') && inLanguage(page, lang)
+  )
 }
 
 /** Pages tagged `contact`. */
-export function contactPagesOf(pages: SitePage[] | undefined): SitePage[] {
-  return (pages ?? []).filter((page) => page.tags?.includes('contact'))
+export function contactPagesOf(
+  pages: SitePage[] | undefined,
+  lang?: string
+): SitePage[] {
+  return (pages ?? []).filter(
+    (page) => page.tags?.includes('contact') && inLanguage(page, lang)
+  )
 }
 
 /** Pages tagged `footer`. */
-export function footerPagesOf(pages: SitePage[] | undefined): SitePage[] {
-  return (pages ?? []).filter((page) => page.tags?.includes('footer'))
+export function footerPagesOf(
+  pages: SitePage[] | undefined,
+  lang?: string
+): SitePage[] {
+  return (pages ?? []).filter(
+    (page) => page.tags?.includes('footer') && inLanguage(page, lang)
+  )
 }
 
 /**

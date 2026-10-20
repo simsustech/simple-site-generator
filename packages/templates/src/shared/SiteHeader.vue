@@ -90,6 +90,36 @@
         </nav>
 
         <!--
+          How to reach the business, and the way into its own client
+          environment. Both come from the site's `extra` and both are guarded:
+          a site that sets neither — every site today except one — renders
+          neither, and nothing here is invented to fill the space.
+
+          `gt-sm` is the wide-screen placement only. On a narrow screen the
+          toolbar has no room beside the brand, so the login lives in the
+          overflow menu below, and the phone number is already in the footer and
+          in the sticky call bar.
+        -->
+        <a
+          v-if="phone"
+          class="gt-sm ssg-header__phone"
+          :href="`tel:${phone.replace(/\s+/g, '')}`"
+        >
+          {{ phone }}
+        </a>
+        <a
+          v-if="clientLoginUrl"
+          class="gt-sm ssg-header__login"
+          :href="clientLoginUrl"
+          target="_blank"
+          rel="noopener"
+          aria-label="Klant login (opent in een nieuwe tab, externe omgeving)"
+          data-ssg="client-login"
+        >
+          Klant login
+        </a>
+
+        <!--
           Language switch. Rendered from the page's `alternates`, so it only
           appears on pages that actually have another language, and it links to
           the *counterpart* page rather than to another site's front page.
@@ -129,6 +159,27 @@
                 </q-item-section>
               </q-item>
 
+              <template v-if="clientLoginUrl">
+                <q-separator />
+
+                <q-item
+                  clickable
+                  :href="clientLoginUrl"
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="Klant login (opent in een nieuwe tab, externe omgeving)"
+                  data-ssg="client-login"
+                >
+                  <q-item-section avatar>
+                    <q-icon
+                      name="i-mdi-account-circle-outline"
+                      aria-hidden="true"
+                    />
+                  </q-item-section>
+                  <q-item-section>Klant login</q-item-section>
+                </q-item>
+              </template>
+
               <template v-if="otherAlternates.length">
                 <q-separator />
 
@@ -159,15 +210,20 @@ import { computed, toRefs } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import { contactPagesOf, menuPagesOf, pathOf, subpagesOf } from './nav.js'
-import type { LayoutProps, SeoPage } from './types.js'
+import type { LayoutProps, SeoPage, SiteExtra } from './types.js'
 
 /**
  * Desktop header. On small screens the drawer carries the navigation, so the
  * header keeps only the brand, the menu toggle and the overflow menu.
  */
 const props = defineProps<
-  Pick<LayoutProps, 'title' | 'favicon' | 'pages' | 'tags'> & {
+  Pick<LayoutProps, 'title' | 'favicon' | 'pages' | 'tags' | 'lang'> & {
     drawer?: boolean
+    /**
+     * The site's own facts. `phone` and `clientLoginUrl` are the two the chrome
+     * renders; both are optional and neither is guessed at.
+     */
+    extra?: SiteExtra
   }
 >()
 
@@ -190,9 +246,39 @@ const otherAlternates = computed(() =>
   )
 )
 
-const menuPages = computed(() => menuPagesOf(pages.value))
+const menuPages = computed(() => menuPagesOf(pages.value, props.lang))
 
-const contactPages = computed(() => contactPagesOf(pages.value))
+const contactPages = computed(() => contactPagesOf(pages.value, props.lang))
+
+/**
+ * The phone number, as the chrome shows it.
+ *
+ * `extra` is an open bag (`SiteExtra`), so the value is checked rather than
+ * trusted: an empty string or a non-string would otherwise render `<a href="tel:">`
+ * — a link that looks like a phone number and dials nothing.
+ */
+const phone = computed(() => {
+  const value = props.extra?.phone
+
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+})
+
+/**
+ * The client environment, when the site has one.
+ *
+ * Absent is the normal state, not a misconfiguration: the address comes from
+ * the owner and the site ships before it arrives. A button that points nowhere
+ * is worse than no button, so nothing renders until the address is set.
+ */
+const clientLoginUrl = computed(() => {
+  const value = props.extra?.clientLoginUrl
+
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+})
 
 /** Resolve a menu page's `subpages` ids to pages (see `nav.ts`). */
 function subpagesOfPage(page: (typeof menuPages.value)[number]) {

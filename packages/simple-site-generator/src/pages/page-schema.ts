@@ -17,8 +17,16 @@ export type PageTag = (typeof PAGE_TAGS)[number]
 export const pageFrontmatterSchema = z.object({
   /** Route segment: `undefined`-free, because the router builds `/${id}` from it. */
   id: z.string().min(1, 'id must not be empty'),
-  /** Used verbatim as the `<h1>` and in the `<title>`. */
+  /** Used verbatim as the `<h1>`; the `<title>` unless `headTitle` overrides it. */
   title: z.string().min(1, 'title is required'),
+  /**
+   * The page's `<title>`, used verbatim.
+   *
+   * Without it the document title names the site as well — `<site> | <title>` —
+   * which is right for every page except the front page, whose head title is the
+   * site name and whose `<h1>` is a sentence.
+   */
+  headTitle: z.string().min(1, 'headTitle must not be empty').optional(),
   /** The meta description. Required: a page without one is invisible to search. */
   description: z.string().min(1, 'description is required'),
   /** Navigation label; falls back to `title` in the templates. */
@@ -45,7 +53,20 @@ export const pageFrontmatterSchema = z.object({
   cta: z
     .object({
       message: z.string().min(1),
-      route: z.string().min(1).optional()
+      route: z.string().min(1).optional(),
+      /**
+       * The quieter action beside the primary one, rendered as an outline.
+       *
+       * Validated here as well as typed, because a malformed second action is
+       * invisible: the template only checks that `message` is present, so a
+       * missing `message` would drop the button without a word.
+       */
+      secondary: z
+        .object({
+          message: z.string().min(1),
+          route: z.string().min(1).optional()
+        })
+        .optional()
     })
     .optional(),
   /**

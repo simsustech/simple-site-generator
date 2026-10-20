@@ -64,7 +64,7 @@
       />
 
       <section v-if="cards?.length" class="ssg-business__cards">
-        <h2 class="ssg-business__cards-heading">Services</h2>
+        <h2 class="ssg-business__cards-heading">{{ cardsHeading }}</h2>
         <BentoGrid :tiles="tiles" />
       </section>
 
@@ -117,5 +117,18 @@ const tiles = computed(() =>
         ? { message: card.cta.message, route: card.cta.route }
         : undefined
   }))
+)
+
+/**
+ * The heading above the card band.
+ *
+ * A label, not page content, so it comes from the site's `extra` — the same key
+ * `Landing.vue` reads for its own card band — and falls back to the English
+ * word. A site whose pages are not all in English sets the right one per page
+ * from its route table, which is why this is not a frontmatter field: the same
+ * word would then be typed into every page that shows cards.
+ */
+const cardsHeading = computed(
+  () => (props.extra?.cardsHeading as string | undefined) ?? 'Services'
 )
 </script>

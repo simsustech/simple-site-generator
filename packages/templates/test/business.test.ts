@@ -110,6 +110,23 @@ describe('business template page', () => {
     expect(wrapper.text()).toContain('Emergency repair')
   })
 
+  it('takes the card band heading from the site, per page', () => {
+    // A multilingual site supplies the word per page rather than accepting the
+    // English default — the heading is a label, not page content.
+    const wrapper = mountPageInShell(BusinessPage, {
+      ...pageProps,
+      extra: { cardsHeading: 'Diensten' }
+    })
+
+    expect(wrapper.find('.ssg-business__cards-heading').text()).toBe('Diensten')
+  })
+
+  it('falls back to the English card band heading', () => {
+    const wrapper = mountPageInShell(BusinessPage, pageProps)
+
+    expect(wrapper.find('.ssg-business__cards-heading').text()).toBe('Services')
+  })
+
   it('renders list content (opening hours, contact details)', () => {
     const wrapper = mountPageInShell(BusinessPage, {
       id: 'openingtimes',
@@ -144,6 +161,35 @@ const navPages: SitePage[] = [
 describe('navigation resolution', () => {
   it('selects only pages tagged for the menu', () => {
     expect(menuPagesOf(navPages).map((page) => page.id)).toEqual([
+      'home',
+      'services'
+    ])
+  })
+
+  it('keeps pages from another language out of the menu', () => {
+    // A site serving `nl/` pages: without this the Dutch page's menu is the
+    // English one, because `menu` is what the English pages carry.
+    const bilingual: SitePage[] = [
+      { id: 'home', label: 'Home', tags: ['menu'], lang: 'en-GB' },
+      { id: 'services', label: 'Services', tags: ['menu'], lang: 'en-GB' },
+      { id: 'nl', label: 'Home', tags: ['menu'], lang: 'nl' },
+      { id: 'nl/services', label: 'Diensten', tags: ['menu'], lang: 'nl' }
+    ]
+
+    expect(menuPagesOf(bilingual, 'nl').map((page) => page.id)).toEqual([
+      'nl',
+      'nl/services'
+    ])
+    expect(menuPagesOf(bilingual, 'en-GB').map((page) => page.id)).toEqual([
+      'home',
+      'services'
+    ])
+  })
+
+  it('keeps a page that declares no language in every menu', () => {
+    // The previous behaviour, deliberately: a single-language site declares no
+    // language anywhere, and its menu must not empty itself out.
+    expect(menuPagesOf(navPages, 'nl').map((page) => page.id)).toEqual([
       'home',
       'services'
     ])
