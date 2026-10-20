@@ -7,6 +7,8 @@
       :favicon="favicon"
       :pages="pages"
       :tags="tags"
+      :lang="navLang"
+      :extra="extra"
       :drawer="drawer"
       @toggle-drawer="drawer = !drawer"
     />
@@ -105,7 +107,7 @@
       </q-page-scroller>
     </q-page-container>
 
-    <SiteFooter :title="title" :pages="pages" :extra="extra" />
+    <SiteFooter :title="title" :pages="pages" :extra="extra" :lang="navLang" />
   </q-layout>
 </template>
 
@@ -138,11 +140,22 @@ const { pages, tags } = toRefs(props)
 
 const drawer = ref(false)
 
-const menuPages = computed(() => menuPagesOf(pages.value))
-
-const contactPages = computed(() => contactPagesOf(pages.value))
-
 const route = useRoute()
+
+/**
+ * The language the navigation is rendered in: the page's own, or the site's for
+ * a route that declares none (the 404 page is one file serving every language).
+ *
+ * Every page carries its language and every route carries its own, both derived
+ * in the app's route table — see `nav.ts` for what the two are matched into.
+ */
+const navLang = computed(
+  () => (route.meta as SeoPage | undefined)?.lang ?? props.lang
+)
+
+const menuPages = computed(() => menuPagesOf(pages.value, navLang.value))
+
+const contactPages = computed(() => contactPagesOf(pages.value, navLang.value))
 
 const currentPage = computed<SeoPage | undefined>(() => {
   // The route's own `meta` is authoritative: it is derived in `routes.ts` from

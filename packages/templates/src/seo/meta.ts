@@ -42,7 +42,22 @@ type LinkTag = Record<string, string>
 export function buildMeta({ page, site, path }: BuildMetaInput) {
   const canonical = absoluteUrl(site.url, path)
   const pageTitle = page?.title
-  const title = pageTitle ? `${pageTitle} · ${site.title}` : site.title
+  /**
+   * The page's own name, without the site suffix — what `og:title` and
+   * `twitter:title` carry.
+   */
+  const pageName = page?.headTitle ?? pageTitle ?? site.title
+  /**
+   * The document title. The site name goes first, so a tab, a bookmark or a
+   * search result names the site even when the page's own title is long enough
+   * to be truncated.
+   *
+   * `headTitle` replaces this outright, suffix and all. The suffix exists to
+   * name the site *inside* a page's title; the front page is the site, so for
+   * that one page the suffix would say it twice.
+   */
+  const title =
+    page?.headTitle ?? (pageTitle ? `${site.title} | ${pageTitle}` : site.title)
 
   const description = page?.description ?? site.description ?? ''
   const image = page?.image ? absoluteUrl(site.url, page.image) : site.image
@@ -61,7 +76,7 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
       name: 'robots',
       content: page?.noindex ? 'noindex, follow' : 'index, follow'
     },
-    ogTitle: { property: 'og:title', content: pageTitle ?? site.title },
+    ogTitle: { property: 'og:title', content: pageName },
     ogDescription: { property: 'og:description', content: description },
     ogType: { property: 'og:type', content: 'website' },
     ogUrl: { property: 'og:url', content: canonical },
@@ -70,7 +85,7 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
       name: 'twitter:card',
       content: image ? 'summary_large_image' : 'summary'
     },
-    twitterTitle: { name: 'twitter:title', content: pageTitle ?? site.title },
+    twitterTitle: { name: 'twitter:title', content: pageName },
     twitterDescription: {
       name: 'twitter:description',
       content: description

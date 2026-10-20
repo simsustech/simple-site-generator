@@ -2,13 +2,13 @@
  * Public surface of `@simple-site-generator/templates`.
  *
  * The template modules themselves are built as separate entries
- * (`./docs`, `./landing`, `./business`) and resolved by the generated app
- * through `virtual:ssg:template`. This module exports the shared layer and the
- * types those modules and the app both depend on.
+ * (`./docs`, `./landing`, `./business`, `./plain`) and resolved by the generated
+ * app through `virtual:ssg:template`. This module exports the shared layer and
+ * the types those modules and the app both depend on.
  */
 
 // Shared components — usable directly by an app that wants to compose its own
-// page instead of using one of the three templates.
+// page instead of using one of the four templates.
 export { default as SiteShell } from './shared/SiteShell.vue'
 export { default as SiteHeader } from './shared/SiteHeader.vue'
 export { default as SiteFooter } from './shared/SiteFooter.vue'

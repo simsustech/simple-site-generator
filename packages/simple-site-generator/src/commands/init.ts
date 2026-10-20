@@ -15,7 +15,7 @@ import { confirm, input, rawlist } from '@inquirer/prompts'
  * run it non-interactively and get the same project every time.
  */
 
-export const TEMPLATES = ['docs', 'landing', 'business'] as const
+export const TEMPLATES = ['docs', 'landing', 'business', 'plain'] as const
 
 export type TemplateName = (typeof TEMPLATES)[number]
 
@@ -167,7 +167,8 @@ export async function resolveInitOptions(
         choices: [
           { name: 'Documentation', value: 'docs' },
           { name: 'Landing page', value: 'landing' },
-          { name: 'Local business', value: 'business' }
+          { name: 'Local business', value: 'business' },
+          { name: 'Plain service', value: 'plain' }
         ]
       })
     )

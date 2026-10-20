@@ -29,6 +29,10 @@
       "types": "./dist/business.d.ts",
       "import": "./dist/business.js"
     },
+    "./plain": {
+      "types": "./dist/plain.d.ts",
+      "import": "./dist/plain.js"
+    },
     "./design": {
       "types": "./dist/design.d.ts",
       "import": "./dist/design.js"
@@ -48,6 +52,9 @@
       ],
       "business": [
         "./dist/business.d.ts"
+      ],
+      "plain": [
+        "./dist/plain.d.ts"
       ],
       "design": [
         "./dist/design.d.ts"

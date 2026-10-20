@@ -39,7 +39,8 @@ const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 const templateEntries = {
   docs: join(srcDir, 'docs/docs.ts'),
   landing: join(srcDir, 'landing/landing.ts'),
-  business: join(srcDir, 'business/business.ts')
+  business: join(srcDir, 'business/business.ts'),
+  plain: join(srcDir, 'plain/plain.ts')
 }
 
 const input = {
