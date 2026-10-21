@@ -131,11 +131,32 @@ describe('plain template layout', () => {
 
     expect(buttons.length).toBeGreaterThan(0)
     expect(buttons[0].attributes('href')).toBe(login)
-    // A new tab, and an accessible name that says the environment is external —
-    // the button leaves the site, which a screen-reader user cannot see.
+    // A new tab, and the site's own words as the accessible name. The label is
+    // the site's because the shared chrome does not know what language the site
+    // speaks; the link still leaves the site, which `target` announces.
     expect(buttons[0].attributes('target')).toBe('_blank')
     expect(buttons[0].attributes('rel')).toBe('noopener')
-    expect(buttons[0].attributes('aria-label')).toMatch(/extern/i)
+    expect(buttons[0].attributes('aria-label')).toBe('Client login')
+  })
+
+  it('takes the chrome labels from the site', () => {
+    // The theme switch and the login are the only strings in the shared chrome
+    // that are not a page's own, so a site in another language has to be able to
+    // name them. English stays the fallback, asserted above and below.
+    const wrapper = mountWithQuasar(PlainLayout, {
+      props: {
+        ...siteProps,
+        extra: {
+          clientLoginUrl: login,
+          labels: { clientLogin: 'Klant login' }
+        }
+      }
+    })
+
+    const button = wrapper.get('[data-ssg="client-login"]')
+
+    expect(button.text()).toBe('Klant login')
+    expect(button.attributes('aria-label')).toBe('Klant login')
   })
 
   it('renders no client login link when the address is empty', () => {

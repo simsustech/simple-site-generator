@@ -165,6 +165,13 @@
         :images="images"
       />
 
+      <!--
+        Service cards, when the page declares them. The same shared grid the
+        `business` template uses, placed after the prose: a visitor who scrolled
+        past the argument still gets the site's own routes as destinations.
+      -->
+      <BentoGrid v-if="tiles.length" :heading="cardsHeading" :tiles="tiles" />
+
       <slot />
     </article>
   </q-page>
@@ -175,6 +182,7 @@ import { computed } from 'vue'
 import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
+import BentoGrid from '../shared/BentoGrid.vue'
 import type { PageProps } from '../shared/types.js'
 
 /**
@@ -240,5 +248,28 @@ const stepsHeading = computed(
 
 const stepsLede = computed(
   () => props.stepsLede ?? (props.extra?.stepsLede as string | undefined)
+)
+
+/**
+ * The service cards, mapped onto the shared grid's tile shape.
+ *
+ * A card without a route and a message is a heading over dead text, so the CTA
+ * is dropped unless both halves are present — the same rule `business` applies.
+ */
+const tiles = computed(() =>
+  (props.cards ?? []).map((card) => ({
+    header: card.header,
+    content: card.content,
+    icon: card.icon,
+    cta:
+      card.cta?.route && card.cta.message
+        ? { message: card.cta.message, route: card.cta.route }
+        : undefined
+  }))
+)
+
+/** The band's heading, from the site's `extra` so it is typed once. */
+const cardsHeading = computed(
+  () => props.extra?.cardsHeading as string | undefined
 )
 </script>
