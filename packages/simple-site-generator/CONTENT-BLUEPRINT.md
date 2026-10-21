@@ -43,6 +43,23 @@ Every page follows the same skeleton so an agent can produce it reliably:
 
 Target 600–1,200 words for a service page. Length is not the goal; _answered_ is the goal.
 
+### A CTA that opens a dialog
+
+`cta.route` navigates; `cta.href` does not. When the action is a form the site
+shows in a dialog rather than on its own page, point the button at the dialog's
+hash and let the app own the behaviour:
+
+```yaml
+cta:
+  message: Offerte aanvragen
+  href: '#offerte'
+```
+
+`#offerte` is the convention the iseeyou site uses: a real anchor, so the button
+is a link before any script runs, plus one delegated listener in the app shell
+that opens the form instead of jumping. The page declares the hash and nothing
+else — no component name, no JavaScript in frontmatter.
+
 ## 3. Headings and keywords
 
 - Headings describe the section, not the keyword. `## What a leak repair costs in Amsterdam` beats

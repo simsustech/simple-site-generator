@@ -172,6 +172,22 @@ export interface SiteExtra {
    * instead (see the simsustech site's `routes.ts`).
    */
   cardsHeading?: string
+  /**
+   * Chrome labels, for a site that is not in English.
+   *
+   * The header's two built-in controls — the theme switch and the customer-login
+   * link — are the only strings in the shared chrome that are not already the
+   * site's own: every other label comes from a page's `tags`. Hardcoded English
+   * in a Dutch header reads as a template left half-translated, so these travel
+   * the same way `cardsHeading` does: from the site's own configuration.
+   */
+  labels?: {
+    /** Names the action: shown while the light theme is active. */
+    dark?: string
+    /** Names the action: shown while the dark theme is active. */
+    light?: string
+    clientLogin?: string
+  }
   [key: string]: unknown
 }
 
