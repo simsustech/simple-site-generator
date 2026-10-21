@@ -1,7 +1,6 @@
 ---
 'simple-site-generator': minor
 '@simple-site-generator/templates': minor
-'create-simple-site-generator': minor
 ---
 
 Rewrite the project as an agent-focused site-generation kit.
@@ -56,7 +55,14 @@ Also adds a `./seo` entry with the pure SEO builders (`buildMeta`, `buildJsonLd`
 - Accessibility: a skip link, a single `<main>`, real `<h1>`s, and accessible names on icon-only
   controls.
 
-## `create-simple-site-generator` — retired
+## `create-simple-site-generator` — removed from the workspace
 
-Replaced by `ssg init`. The package is deprecated; its app template moved to
+Replaced by `ssg init`. Its app template moved to
 `simple-site-generator/templates/app`.
+
+The package is no longer a workspace package, so it is deliberately **not** named
+in this changeset's frontmatter: a changeset may only version packages that
+exist, and `changeset version` fails outright on an unknown name ("Found
+changeset … for package … which is not in the workspace"). Its last published
+version therefore stays on the registry and simply receives no further releases.
+Its users switch to `ssg init`.
