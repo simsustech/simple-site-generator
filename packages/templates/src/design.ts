@@ -815,6 +815,23 @@ body .ssg-header.q-header {
 }
 
 /*
+  A link in a table cell is not prose, so it inherited nothing but the user
+  agent's own link colour, which is 7.5:1 on white and 1.8:1 on the dark
+  dark surface. The light-mode contrast audit passed it and dark mode did not.
+  Tables are how the plain template shows contact details, so this is the one
+  place an unstyled anchor was guaranteed to appear.
+*/
+.ssg-plain__table :where(a) {
+  color: var(--q-primary, currentColor);
+  text-underline-offset: 0.16em;
+  transition: opacity 0.2s;
+}
+
+.ssg-plain__table :where(a):hover {
+  opacity: 0.8;
+}
+
+/*
   Running text is capped at the measure; the column is not.
 
   A measure is a readability constraint on prose, and applying it to the whole
