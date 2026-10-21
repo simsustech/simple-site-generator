@@ -113,10 +113,10 @@
           :href="clientLoginUrl"
           target="_blank"
           rel="noopener"
-          aria-label="Klant login (opent in een nieuwe tab, externe omgeving)"
+          :aria-label="loginLabel"
           data-ssg="client-login"
         >
-          Klant login
+          {{ loginLabel }}
         </a>
 
         <!--
@@ -143,7 +143,7 @@
             <q-list>
               <q-item
                 clickable
-                aria-label="Toggle dark mode"
+                :aria-label="themeLabel"
                 @click="$q.dark.toggle()"
               >
                 <q-item-section avatar>
@@ -155,7 +155,7 @@
                   />
                 </q-item-section>
                 <q-item-section>
-                  {{ $q.dark.mode ? 'Light mode' : 'Dark mode' }}
+                  {{ themeLabel }}
                 </q-item-section>
               </q-item>
 
@@ -167,7 +167,7 @@
                   :href="clientLoginUrl"
                   target="_blank"
                   rel="noopener"
-                  aria-label="Klant login (opent in een nieuwe tab, externe omgeving)"
+                  :aria-label="loginLabel"
                   data-ssg="client-login"
                 >
                   <q-item-section avatar>
@@ -176,7 +176,7 @@
                       aria-hidden="true"
                     />
                   </q-item-section>
-                  <q-item-section>Klant login</q-item-section>
+                  <q-item-section>{{ loginLabel }}</q-item-section>
                 </q-item>
               </template>
 
@@ -279,6 +279,24 @@ const clientLoginUrl = computed(() => {
     ? value.trim()
     : undefined
 })
+
+/**
+ * The theme switch, naming the action rather than the current state.
+ *
+ * "Donker" while the page is light is what a visitor is looking for. Taken from
+ * the site's own `labels` because the shared chrome has no business deciding
+ * what language a site speaks; the English words are the fallback, not the rule.
+ */
+const themeLabel = computed(() =>
+  $q.dark.mode
+    ? (props.extra?.labels?.light ?? 'Light mode')
+    : (props.extra?.labels?.dark ?? 'Dark mode')
+)
+
+/** The customer-login label, likewise from the site's configuration. */
+const loginLabel = computed(
+  () => props.extra?.labels?.clientLogin ?? 'Client login'
+)
 
 /** Resolve a menu page's `subpages` ids to pages (see `nav.ts`). */
 function subpagesOfPage(page: (typeof menuPages.value)[number]) {
