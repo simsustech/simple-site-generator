@@ -113,8 +113,67 @@ export const pageFrontmatterSchema = z.object({
   /** Ids of pages nested under this one in the navigation. */
   subpages: z.array(z.string().min(1)).optional(),
   lists: z.array(z.unknown()).optional(),
-  cards: z.array(z.unknown()).optional(),
-  images: z.array(z.unknown()).optional(),
+  /**
+   * The card band (`shared/BentoGrid.vue`).
+   *
+   * Validated here rather than left as `unknown` because every half of a card is
+   * load-bearing in a way nothing else checks: a card without `header` renders a
+   * tile with no name, one without `content` renders a heading over nothing, and an
+   * `image` with no `alt` gives a screen reader a picture with no name — the
+   * fallback is the header, which is why the header is required first.
+   */
+  cards: z
+    .array(
+      z.object({
+        header: z.string().min(1),
+        content: z.string().min(1),
+        icon: z.string().min(1).optional(),
+        /**
+         * A photo above the card's heading. `width`/`height` are the photo's own
+         * size: the grid reserves that ratio before the bytes arrive, so a portrait
+         * product photo is neither cropped nor a source of layout shift.
+         */
+        image: z
+          .object({
+            src: z.string().min(1),
+            alt: z.string().min(1).optional(),
+            width: z.number().int().positive().optional(),
+            height: z.number().int().positive().optional(),
+            /**
+             * `cover` (default) crops the photo to the plate; `contain` shows it
+             * whole inside it. A typo here would silently do nothing — the
+             * component compares the string — so it is rejected rather than
+             * passed through.
+             */
+            fit: z.enum(['cover', 'contain']).optional()
+          })
+          .optional(),
+        cta: z
+          .object({
+            message: z.string().min(1),
+            route: z.string().min(1)
+          })
+          .optional()
+      })
+    )
+    .optional(),
+  images: z
+    .array(
+      z.object({
+        /** The slide's name; the carousel keys off it and falls back to it for a caption. */
+        name: z.string().min(1),
+        src: z.string().min(1),
+        caption: z.string().min(1).optional(),
+        /**
+         * The photo's own size. `HeroImage` reserves the hero's box from it, and
+         * the first image is the hero on a landing page: a portrait photo under a
+         * landscape default reflows the whole page when it lands.
+         */
+        width: z.number().int().positive().optional(),
+        height: z.number().int().positive().optional()
+      })
+    )
+    .optional(),
   videos: z.array(z.unknown()).optional(),
   extra: z.record(z.string(), z.unknown()).optional()
 })

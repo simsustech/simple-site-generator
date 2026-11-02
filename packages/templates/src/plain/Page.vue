@@ -261,6 +261,7 @@ const tiles = computed(() =>
     header: card.header,
     content: card.content,
     icon: card.icon,
+    image: card.image,
     cta:
       card.cta?.route && card.cta.message
         ? { message: card.cta.message, route: card.cta.route }

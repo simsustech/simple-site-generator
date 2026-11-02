@@ -403,6 +403,28 @@ describe('business landing page', () => {
     expect(image.attributes('fetchpriority')).toBe('high')
   })
 
+  it("reserves the hero photo's own ratio, not a landscape default", () => {
+    // The default pair is 1200×750 — landscape. A portrait hero under that
+    // default reserves a box the wrong way round, and everything below the band
+    // jumps when the file lands. A site that declares the photo's size gets a
+    // box of that shape instead.
+    const wrapper = mountPageInShell(Landing, {
+      ...landingProps,
+      images: [
+        {
+          name: 'Hero',
+          src: '/images/hero.webp',
+          width: 1000,
+          height: 1333
+        }
+      ]
+    })
+    const image = wrapper.find('.ssg-hero__image img')
+
+    expect(image.attributes('width')).toBe('1000')
+    expect(image.attributes('height')).toBe('1333')
+  })
+
   it('renders one card per service with its action', () => {
     const wrapper = mountPageInShell(Landing, landingProps)
 
