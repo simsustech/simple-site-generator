@@ -90,10 +90,19 @@
               Decorative: the heading and the lede beside it already say what the
               photograph shows, so a screen reader gains nothing from a second
               telling of it.
+
+              `width`/`height` are the photo's own size, and they are the whole
+              point of this element: without them the figure is 0px tall until
+              the bytes arrive, and everything below it jumps down when they do
+              (measured: 190px at 360 wide, 300px at 1280, CLS 0.157 and 0.016).
+              They reserve the box from the ratio, and `w-full h-auto` keeps that
+              ratio while the photo scales into it — no crop, no reflow.
             -->
             <img
               class="ssg-plain__hero-img"
               :src="headerImage"
+              :width="heroSize.width"
+              :height="heroSize.height"
               alt=""
               decoding="async"
               fetchpriority="high"
@@ -183,6 +192,7 @@ import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
+import { headerImageSize } from '../design.js'
 import type { PageProps } from '../shared/types.js'
 
 /**
@@ -219,6 +229,17 @@ const props = defineProps<
     region?: string
   }
 >()
+
+/**
+ * The box the hero reserves before the photo arrives.
+ *
+ * The page declares its photograph's own size; without those numbers the
+ * figure is 0px tall until the image decodes and everything below it moves
+ * when it lands. `headerImageSize` supplies the shared landscape fallback.
+ */
+const heroSize = computed(() =>
+  headerImageSize(props.headerImageWidth, props.headerImageHeight)
+)
 
 /**
  * The delivery area, as one line above the heading.

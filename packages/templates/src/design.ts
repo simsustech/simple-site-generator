@@ -186,7 +186,14 @@ export const ssgShortcuts: Shortcuts = [
     // are on the right site. It shrinks with the viewport (`clamp`) and wraps
     // onto a second line before it truncates: at 360px a fixed 20px face cut
     // "Hondenvakantieboerderij Nicky" to "Hondenvakanti…".
-    'min-w-0 text-[clamp(15px,4.2vw,20px)] line-clamp-3 [line-height:1.15]'
+    //
+    // The clamp is written as arbitrary properties, not as `line-clamp-3`. That
+    // utility belongs to the default preset chain and this design system ships
+    // without it — a site wires in `unocss-preset-quasar` alone — so the utility
+    // was dropped at build time with one `[unocss] unmatched utility` warning and
+    // the name, with no clamp, was cut off mid-word by the brand's own
+    // `overflow-hidden` instead of ellipsized after three lines.
+    'min-w-0 text-[clamp(15px,4.2vw,20px)] [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] [overflow:hidden] [line-height:1.15]'
   ],
   // Geen ruimte tussen de items: elk item is een knop met eigen padding, dus de
   // tussenruimte kwam bovenop die padding en kostte ~40px op een rij die het
@@ -867,6 +874,30 @@ export function headerImageStyle(
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right center, right center',
     backgroundSize: '45% auto, 45% auto'
+  }
+}
+
+/**
+ * The box the plain template's hero photograph reserves before its bytes arrive.
+ *
+ * An `<img>` with no `width`/`height` is 0px tall until it decodes, so the page
+ * below it jumps down when it lands: measured with the photo held back 1.2s, the
+ * figure went from 0px to 190px at 360 wide and to 300px at 1280, for CLS 0.157
+ * and 0.016. With the box reserved from the photo's own size, both are 0.
+ *
+ * Undeclared falls back to a landscape 1200x750, the numbers `HeroImage` uses. A
+ * photo of another shape then settles to its own height when it arrives — a
+ * smaller jump than a collapsed hero, but still a jump, so a site that knows the
+ * size should declare `headerImageWidth` and `headerImageHeight`. This is the
+ * floor, not the fix.
+ */
+export function headerImageSize(
+  width?: number,
+  height?: number
+): { width: number; height: number } {
+  return {
+    width: typeof width === 'number' && width > 0 ? width : 1200,
+    height: typeof height === 'number' && height > 0 ? height : 750
   }
 }
 
