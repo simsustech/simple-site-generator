@@ -107,6 +107,43 @@ describe('business template page', () => {
     expect(wrapper.find('[data-ssg="breadcrumbs"]').exists()).toBe(false)
   })
 
+  // `cta` was a dead field here: the band rendered it, the band was cut back to
+  // a title, and every page that declared one silently lost its button. The
+  // reference site's contact page ended up with no action at all.
+  it('renders the page action the frontmatter declares', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'contact',
+      title: 'Contact',
+      cta: { message: 'Email us', href: 'mailto:hi@example.com' }
+    })
+    const action = wrapper.find('[data-ssg="page-cta"]')
+
+    expect(action.exists()).toBe(true)
+    expect(action.text()).toContain('Email us')
+    expect(action.attributes('href')).toBe('mailto:hi@example.com')
+  })
+
+  it('renders an in-app route instead of a link', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'services',
+      title: 'Services',
+      cta: { message: 'Ask for a quote', route: '/contact' }
+    })
+
+    expect(wrapper.find('[data-ssg="page-cta"]').attributes('href')).toBe(
+      '/contact'
+    )
+  })
+
+  it('renders no action when the page declares none', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'about',
+      title: 'About'
+    })
+
+    expect(wrapper.find('[data-ssg="page-cta"]').exists()).toBe(false)
+  })
+
   it('renders service cards as tiles', () => {
     const wrapper = mountPageInShell(BusinessPage, pageProps)
 
