@@ -15,15 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Creating .npmrc
-        run: |
-          cat > $\{{env.working-directory}}.npmrc << EOF
-            @simsustech:registry=https://npm.simsus.tech
-            //npm.simsus.tech/:_authToken=$SIMSUSTECH_NPM_TOKEN
-          EOF
-        env:
-          SIMSUSTECH_NPM_TOKEN: $\{{ secrets.SIMSUSTECH_NPM_TOKEN }}
-
       - name: Install pnpm
         # generated projects have no packageManager field, so set the version here
         uses: pnpm/action-setup@v6
@@ -50,9 +41,3 @@ jobs:
           remote_host: $\{{ secrets.DEPLOY_HOST }}
           remote_user: $\{{ secrets.DEPLOY_USER }}
           remote_key: $\{{ secrets.DEPLOY_KEY }}
-
-      - name: Remove .npmrc
-        # run even if an earlier step failed: this file holds registry tokens
-        if: always()
-        # -f: the file may legitimately be gone already
-        run: rm -f $\{{env.working-directory}}.npmrc
