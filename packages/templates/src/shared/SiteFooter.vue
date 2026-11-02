@@ -87,6 +87,15 @@
     </div>
 
     <p class="ssg-footer__legal">© {{ year }} {{ title }}</p>
+    <!--
+      Who built the site, when the site says so.
+
+      The kit's own legal line names the business; a site that credited its maker
+      in that line — "© simsustech a client site" on the old a client site site — lost the credit when the shell moved into the kit. A credit is
+      the site owner's decision, not the template's, so it is a separate line that
+      renders only when `extra.credit` is set.
+    -->
+    <p v-if="credit" class="ssg-footer__credit">{{ credit }}</p>
   </footer>
 </template>
 
@@ -157,4 +166,18 @@ const socialLinks = computed(() => {
 })
 
 const year = new Date().getFullYear()
+
+/**
+ * The builder's credit, when the site carries one.
+ *
+ * Trimmed and empty-checked like every other string the chrome reads from
+ * `extra`: the bag is open, and an empty `<p>` still takes the footer's spacing.
+ */
+const credit = computed(() => {
+  const value = extra.value?.credit
+
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : undefined
+})
 </script>
