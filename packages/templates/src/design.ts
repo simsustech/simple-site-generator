@@ -209,6 +209,12 @@ export const ssgShortcuts: Shortcuts = [
     // the chrome colour, so the row was coloured inconsistently by accident.
     // The current-page marker is a separate rule with higher specificity (see
     // the preflight below), so `no-underline` does not remove its bar.
+    //
+    // `min-h-[40px]` does not survive on its own: it is one class against the
+    // preset's `.q-item`, which is also one class and is emitted later, so the
+    // row was 56px (the MD3 list height) and the header taller than the height
+    // Quasar reserves for it. The preflight below restates this 40px with the
+    // specificity to win — change the two together.
     'min-h-[40px] px-space-2 rounded-[8px] text-step-0 font-500 cursor-pointer text-inherit no-underline'
   ],
 
@@ -940,6 +946,32 @@ body .q-header.ssg-header,
 body .ssg-header.q-header {
   background: var(--q-secondary-container, #d6e8cd);
   color: var(--q-on-secondary-container, #111f0f);
+}
+
+/* A nav row is a bar row, not a list row.
+
+   The navigation is built from q-item, because that is the component that owns
+   router state (see the ssg-header__nav-item shortcut above). q-item also sizes
+   itself to the MD3 one-line list container — min-height:
+   var(--q-item-min-height), which is 56px — so the tallest child of the header
+   is 56px, and the header is a flex bar that grows to it.
+
+   Quasar reserves the header's height for the page container at SSR time, and
+   with no browser to measure with it writes a constant: 50px, the toolbar's own
+   minimum. The prerendered padding-top: 50px therefore disagrees with the 56px
+   the client measures, and on mount the layout rewrites the reservation — which
+   moves everything below the header down by 6px, once. Lighthouse scores it
+   CLS 0.0044 at 1280px and 0.0000 below that, so the shift is desktop-only and
+   never shows up in a score.
+
+   The nav-item shortcut already asks for a 40px row, but min-h-[40px] and the
+   preset's .q-item are single-class selectors: equal specificity, so the rule
+   emitted later wins, and that is the preset's. Two classes settle it, and on
+   40px the header is the 50px the reservation expected, so nothing is corrected
+   and nothing moves. The preset's item padding is 8px a side, so the row keeps
+   its padding and does not clip its label. */
+.ssg-header__nav .q-item {
+  min-height: 40px;
 }
 
 .ssg-header .q-btn,

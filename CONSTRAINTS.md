@@ -32,18 +32,24 @@ has already paid for it. Every entry here came from a defect that shipped once.
 7. **Markup class → shortcut.** Every class in template markup is an `ssg-*` shortcut in `design.ts`;
    `ssg verify` fails otherwise. No inline `<style>` in a template except a single drawing that belongs
    to one page.
+8. **A utility ties with a preset's single-class rule.** `min-h-[40px]` and the preset's `.q-item` are both
+   one class, so the preset wins on emission order and the utility is silently inert: the header nav row
+   stayed at the 56 px MD3 list height, the header grew 6 px taller than the height Quasar reserves for it
+   at SSR time, and everything below it moved once on load (CLS 0.0044 at 1280 px, 0 below it). Override a
+   preset class from a preflight with two classes (`.ssg-header__nav .q-item`) and keep the shortcut's value
+   and the preflight's in step — `test/header-height.test.ts` fails if they disagree.
 
 ## Environment
 
-8. **pnpm needs two variables here.** `npm_config_manage_package_manager_versions=false` (the pinned
+9. **pnpm needs two variables here.** `npm_config_manage_package_manager_versions=false` (the pinned
    12.4.1 cannot be installed; `~/.local/share/pnpm` is read-only) and a writable
    `npm_config_store_dir` on every invocation — otherwise pnpm leaves a `.pnpm-store/` at the discovered
    workspace root (once 619 MB).
-9. **The git hooks shell out to pnpm.** `pre-commit` runs oxlint and oxfmt and `commit-msg` runs
-   commitlint, both through pnpm, so the variable above is needed to _commit_, not only to install.
-   Read the hook before the first commit in a repo; never `--no-verify`.
-10. **A `file:` dependency is a hardlinked copy.** After changing the kit: `pnpm run build` here, then
+10. **The git hooks shell out to pnpm.** `pre-commit` runs oxlint and oxfmt and `commit-msg` runs
+    commitlint, both through pnpm, so the variable above is needed to _commit_, not only to install.
+    Read the hook before the first commit in a repo; never `--no-verify`.
+11. **A `file:` dependency is a hardlinked copy.** After changing the kit: `pnpm run build` here, then
     `pnpm install` in the consuming site. Skipping the reinstall silently keeps the old behaviour.
-11. **Template literals in `getCSS()` are JavaScript.** A backtick anywhere inside one — in prose as much
+12. **Template literals in `getCSS()` are JavaScript.** A backtick anywhere inside one — in prose as much
     as in CSS — terminates it and breaks the build with an error pointing at the comment. A hole in a
     `/* … */` inside one is parsed as CSS and fails as `Unknown word`.
