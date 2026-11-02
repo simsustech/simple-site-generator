@@ -66,6 +66,11 @@ Pick the template that matches the old one:
 - `one-page` → `landing`
 - `documentation` → `docs`
 
+`business` also exports `Landing` now, so the old `small-business-v2` home page — the gradient hero,
+the pitch card, the quality marks, a card per service — has a home again: put `page: Landing` on the
+front page and its first `images:` entry becomes the hero. The Dibevo-style marks moved from the page
+to the site: `extra.qualityMarks` renders them in the footer of every page.
+
 ### 2. Merge the design system — the one change that matters
 
 In `vitrify.config.ts`, this is the whole migration:
@@ -80,12 +85,16 @@ vitrify: {
     theme: { ...ssgUnoConfig.theme, colors: ssg.colors },
     content: {
       pipeline: {
-        include: [
-          /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
           // NOT optional: the templates render Quasar and icon classes
           // (`q-separator`, `i-mdi-phone`) that exist only because the built
           // package is scanned. Measured: 137 selectors depend on this.
-          new RegExp(`${ssg.templatePackage}.*\\.js`)
+          //
+          // Matched by path, not by package name: Vite resolves a `link:`ed
+          // dependency to where it really lives, so a kit checked out beside the
+          // site arrives as `…/packages/templates/dist/*.js` and a name-only
+          // matcher scans nothing — silently, leaving an unstyled drawer, no
+          // Quasar component CSS and missing icons.
+          new RegExp('templates/dist/.*\\.js')
         ]
       }
     }

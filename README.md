@@ -38,7 +38,7 @@ landing page.
 
 | module     | for                                                         | exports                     | a page may say   |
 | ---------- | ----------------------------------------------------------- | --------------------------- | ---------------- |
-| `business` | multi-page local business: services, opening hours, contact | `Layout`, `Page`            | _(omit `page:`)_ |
+| `business` | multi-page local business: services, opening hours, contact | `Layout`, `Page`, `Landing` | `page: Landing`  |
 | `landing`  | one conversion page plus support pages                      | `Layout`, `Page`, `Landing` | `page: Landing`  |
 | `plain`    | one service, one action, a price card and a quote form      | `Layout`, `Page`            | _(omit `page:`)_ |
 | `docs`     | documentation                                               | `Layout`, `Page`            | _(omit `page:`)_ |
@@ -58,10 +58,11 @@ const ssg = {
 
 Two things must move with it, and both fail loudly now if they do not:
 
-1. **`page:` frontmatter.** `page: Landing` resolves only in the `landing` module. Naming a component
+1. **`page:` frontmatter.** `page: Landing` resolves only in the modules that export it — `landing`,
+   and `business` since a local business's front page stopped being a service page. Naming a component
    that does not exist throws during prerender, naming the page, the value, and what the module
    actually provides. _(It used to fall back to `Page` silently — a wrong-looking-right home page. This
-   is also why the scaffold's `page: Landing` is now emitted only for the `landing` template.)_
+   is also why the scaffold's `page: Landing` is emitted only for the two templates that have one.)_
 2. **The `Layout`/`Page` swap is automatic** — both come from `virtual:ssg:template`, so nothing in
    `src/` imports a template component directly.
 
@@ -168,6 +169,7 @@ terminal instead of in production.
 | `noSsr`                              | no       | render client-side only                                              |
 | `page`                               | no       | template component to render. Must exist in the configured module    |
 | `image`                              | no       | social-card image                                                    |
+| `alias`                              | no       | extra paths that resolve to the page; see the note below             |
 | `headerImage`                        | no       | illustration behind the page's title band                            |
 | `breadcrumbs`                        | no       | trail, outermost first; also emits `BreadcrumbList`                  |
 | `faq`                                | no       | question/answer pairs, mirrored into `FAQPage` structured data       |
@@ -199,6 +201,31 @@ principles: # numbered cards, real text
 `Services` and the landing template's) take it from `extra.cardsHeading`, so a site that does not want
 the English word sets it rather than adding a field to every page that shows cards. It is a site-wide
 bag, so a multilingual site passes the right word per page from its route table.
+
+**An `alias` is a client-side alias, not a second URL.** The prerenderer builds its file list from
+`routesToPaths` in Vitrify, which reads a route's `path` and ignores `alias` — so an alias writes no
+HTML of its own and a static host answers it with the 404 page. It still earns its place: the dev
+server and in-app navigation resolve the old path, and the pairing lives next to the page that owns
+it. A renamed page needs a redirect where the site is served as well; on Caddy:
+
+```caddyfile
+redir /about /over-ons permanent
+```
+
+That is the same choice as the home page's `redir /home / permanent`: one URL per page in the index,
+and everyone who follows an old link still lands on it.
+
+**The chrome's own strings are configuration too.** The skip link, the drawer, its page list, the
+overflow menu, the scroll-to-top button and the footer's two headings are invented by the shared
+shell, so a site cannot supply them from a page. `extra.labels` carries all of them — `skipToContent`,
+`openNavigation`, `primary`, `navigation`, `sections`, `footer`, `contact`, `follow`,
+`moreOptions`, `backToTop`, plus the theme and client-login words — and every one falls back to the
+English string, so a site that sets none of them renders exactly what it rendered before.
+
+**Trust marks live in `extra.qualityMarks`.** Each entry is `{ name, imageUrl, url? }` and the shared
+footer renders one linked image per mark, on every page. The name is the image's alt text, because a
+mark is a picture of a word; an entry without an image is dropped rather than rendering a broken
+image icon.
 
 **A bilingual site's navigation follows the page, not the default language.** `tags` decides which
 nav surface a page appears in; `lang` decides whose. The menu, contact and footer resolution match
@@ -255,7 +282,7 @@ vitrify: {
     theme: { ...ssgUnoConfig.theme, colors: ssg.colors },
     content: { pipeline: { include: [
       /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
-      new RegExp(`${ssg.templatePackage}.*\\.js`)      // NOT optional — see below
+      new RegExp('templates/dist/.*\\.js')             // NOT optional — see below
     ] } }
   }
 }
@@ -277,6 +304,11 @@ Colour comes from the preset's MD3 role tokens (`--q-primary`, `--q-surface-cont
 for ~17 KB of CSS — but measuring it against a site's own sources showed **137 selectors that exist only
 because of it**: the Quasar component classes (`q-separator`, `q-card__actions--*`) and icon classes
 (`i-mdi-phone`) that template components render. Removing it is an unstyled drawer and missing icons.
+It is matched **by path** (`templates/dist/*.js`), not by package name. Vite resolves a `link:`ed
+dependency to where it really lives, so a kit checked out beside the site arrives as
+`…/packages/templates/dist/business.js` — an `@simple-site-generator/templates` matcher scans nothing,
+reports nothing, and the only symptom is that same unstyled drawer and a CSS file roughly 65 KB lighter
+than it should be (measured on the simsustech reference site, 2026-11-02).
 
 ### The failure mode, and the guards around it
 
