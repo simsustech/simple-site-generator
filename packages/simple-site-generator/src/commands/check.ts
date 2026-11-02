@@ -3,6 +3,7 @@ import { join, relative } from 'node:path'
 import matter from 'gray-matter'
 import { appDir, pagesDir } from '../paths.js'
 import {
+  bodyWarnings,
   validateCollection,
   validatePage,
   type PageIssue
@@ -17,6 +18,15 @@ export interface CheckResult {
   ok: boolean
   pages: number
   issues: PageIssue[]
+  /**
+   * Findings that do not fail the run.
+   *
+   * Kept apart from `issues` on purpose: a warning is something to look at, an
+   * issue is something that must be fixed before the build. Folding them
+   * together would either fail a build over a style question or make the exit
+   * code meaningless.
+   */
+  warnings: PageIssue[]
 }
 
 async function collectMarkdown(dir: string): Promise<string[]> {
@@ -56,21 +66,28 @@ export async function check(options: CheckOptions = {}): Promise<CheckResult> {
 
   const files = await collectMarkdown(root)
   const issues: PageIssue[] = []
+  const warnings: PageIssue[] = []
   const pages: { file: string; data: unknown }[] = []
 
   for (const file of [...files].sort((a, b) => a.localeCompare(b))) {
     const relativePath = relative(root, file)
     const source = await fs.readFile(file, 'utf8')
-    const { data } = matter(source)
+    const { data, content } = matter(source)
     // `id` defaults to the path so a page that omits it still gets a useful
     // error against the id the router would actually generate.
     const dataWithId = { id: idFromPath(relativePath), ...data }
 
     pages.push({ file: relativePath, data: dataWithId })
     issues.push(...validatePage(relativePath, dataWithId))
+    warnings.push(...bodyWarnings(relativePath, content, dataWithId))
   }
 
   issues.push(...validateCollection(pages))
 
-  return { ok: issues.length === 0, pages: pages.length, issues }
+  return {
+    ok: issues.length === 0,
+    pages: pages.length,
+    issues,
+    warnings
+  }
 }
