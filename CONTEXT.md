@@ -55,6 +55,31 @@ in the markup resolves from there. There is no CSS file to load, and no CSS expo
 `docs/adr/0003-design-system-as-config.md` for why, and for what that costs (a class that fails to
 emit is silent everywhere else in the toolchain).
 
+### Native first
+
+A component, prop or class that Quasar already ships wins over hand-written markup or CSS. The header
+navigation is the case that made the rule: it was a row of `q-btn`, and `q-btn` has no active props at
+all — only `to`, `replace`, `href` and `target` — so no button could ever mark the current page. A
+`q-item` with `to` does it natively: Quasar adds `q-router-link--active`, and the design system styles
+that class. The drawer keyed off `router-link-active` (Vue Router's own class) and marked the home link
+on every route until it was switched to `exact-active-class`.
+
+Before adding a rule, check whether the component already owns the behaviour, using the Quasar API dumps
+in `node_modules/quasar/dist/api/` rather than memory. The same rule explains several shapes in this
+kit: `q-menu` for the page and contact menus, `q-drawer` for the mobile navigation, and the gutter
+variable on `.ssg-page` as the single owner of page spacing.
+
+Two exceptions, both load-bearing:
+
+- **Semantics.** A `q-item` with `to` renders an `<a>`; inside a `q-list` whose role is `list` that
+  breaks `aria-required-children`, so the drawer keeps a `q-item` (a `listitem`) with the anchor inside
+  it and takes the active state from Vue Router's `exact-active-class`.
+- **Platform HTML that is already better.** `FaqList` uses `<details>`/`<summary>` and `Breadcrumbs`
+  uses `<ol>`/`aria-current`, both deliberately. `QExpansionItem` renders its content lazily, so the
+  answers would leave the prerendered HTML and the FAQ structured data, and `QBreadcrumbs` would trade
+  a real list for a `div`. Native first means the component that owns the behaviour, not the component
+  with a matching name.
+
 ## Where the `<head>` comes from
 
 `SiteShell` calls `useSeo(page, site, path)`, which builds Quasar `Meta` options from the current page's
