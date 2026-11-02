@@ -34,6 +34,36 @@ export interface SitePage {
     header: string
     content: string
     icon?: string
+    /**
+     * A photo for the card, rendered above its heading.
+     *
+     * A catalogue card is a picture of a thing — a plant, a room, a dish — and an
+     * icon cannot stand in for it. `width` and `height` are the photo's own size:
+     * the grid reserves the space from that ratio before the bytes arrive, so a
+     * portrait product photo is not cropped to a landscape box and nothing below
+     * it moves. Omitted, a 4:3 box is reserved and the photo is cropped to fill it.
+     *
+     * Declared on this type for the reason `cta` and `headerImage` document above:
+     * a field Vue's runtime props do not know about never reaches the component.
+     */
+    image?: {
+      src: string
+      /** Accessible name. Falls back to `header`, which is what the card says it is. */
+      alt?: string
+      width?: number
+      height?: number
+      /**
+       * How the photo fills the plate `width`/`height` reserve.
+       *
+       * `cover` (default) crops to the plate edges — right for a photo that is
+       * decoration and for a source whose ratio already matches. `contain` shows
+       * the photo whole inside the plate, letterboxed on the card's own surface —
+       * what a catalogue wants when its photos were not shot at one ratio, because
+       * a cropped branch and a row of cards whose heights disagree are both worse
+       * than a band of the card's background.
+       */
+      fit?: 'cover' | 'contain'
+    }
     cta?: { message: string; route?: string }
   }[]
   lists?: {
@@ -54,7 +84,22 @@ export interface SitePage {
     }[]
   }[]
   videos?: { src: string; type: string }[]
-  images?: { name: string; src: string; caption?: string }[]
+  images?: {
+    name: string
+    src: string
+    caption?: string
+    /**
+     * The photo's own size, in pixels.
+     *
+     * The hero is the one place where this is load-bearing rather than
+     * decoration: `HeroImage` renders a plain `<img>` with `fetchpriority="high"`
+     * and reserves the box from these numbers, because a portrait photo on a hero
+     * declared as 1200×750 is a hero that reflows the whole page when it lands.
+     * Omitted, the component falls back to a landscape 1200×750.
+     */
+    width?: number
+    height?: number
+  }[]
   subpages?: string[]
   tags?: string[]
   /** Sort weight; the home page is always first. */

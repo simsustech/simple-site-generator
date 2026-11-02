@@ -16,6 +16,31 @@
           :key="tile.header"
           class="ssg-bento__tile"
         >
+          <!--
+            The photo, when the card has one, before everything else: it is the
+            card's subject and the heading only names it. The wrapper carries the
+            ratio, so the space is reserved before the file arrives and nothing
+            below the tile moves when it does.
+          -->
+          <div
+            v-if="tile.image?.src"
+            class="ssg-bento__media"
+            :style="mediaStyle(tile.image)"
+          >
+            <img
+              class="ssg-bento__image"
+              :class="{
+                'ssg-bento__image--contain': tile.image.fit === 'contain'
+              }"
+              :src="tile.image.src"
+              :alt="tile.image.alt ?? tile.header"
+              :width="tile.image.width"
+              :height="tile.image.height"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+
           <q-icon
             v-if="tile.icon"
             class="ssg-bento__icon"
@@ -39,7 +64,7 @@
 
 <script setup lang="ts">
 /**
- * Modular tile grid for services or value propositions.
+ * Modular tile grid for services, value propositions or a product catalogue.
  *
  * Tiles reflow via `auto-fit` instead of collapsing to a single column at a
  * breakpoint, so the section stays scannable at every width, and each tile is a
@@ -54,9 +79,29 @@ withDefaults(
       header: string
       content: string
       icon?: string
+      image?: {
+        src: string
+        alt?: string
+        width?: number
+        height?: number
+        fit?: 'cover' | 'contain'
+      }
       cta?: { message: string; route: string }
     }[]
   }>(),
   { muted: false }
 )
+
+/**
+ * The ratio a tile reserves for its photo.
+ *
+ * Authored `width`/`height` win, so a portrait catalogue photo is shown whole
+ * rather than cropped to a landscape box. Without them the design system's 4:3
+ * default applies, which is what a service-card photo usually wants.
+ */
+function mediaStyle(image: { width?: number; height?: number } | undefined) {
+  const { width, height } = image ?? {}
+
+  return width && height ? { aspectRatio: `${width} / ${height}` } : undefined
+}
 </script>

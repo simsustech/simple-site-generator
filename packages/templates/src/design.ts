@@ -353,6 +353,23 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-bento__tile',
     `p-space-4 rounded-[${CARD_RADIUS}] bg-[${SURFACE_LOWEST}] b b-solid b-[${OUTLINE_VARIANT}] shadow-[${ELEVATION_1}] transition-[box-shadow,transform] duration-200 hover:shadow-[${ELEVATION_2}] hover:-translate-y-0.5`
   ],
+  // The card's photo, bled to the tile's edges: an inset thumbnail inside
+  // `p-space-4` reads as a sticker on the card rather than as the card's own
+  // picture. The negative margins widen the wrapper to the tile's full width, so
+  // no `calc()` is needed, and the top corners take the tile's radius.
+  // `overflow-hidden` is what keeps the image inside that radius; the ratio
+  // itself comes from the image's own size (`mediaStyle` in `BentoGrid.vue`), with
+  // 4:3 here as the fallback for a photo that has none.
+  [
+    'ssg-bento__media',
+    `-mx-space-4 -mt-space-4 mb-space-3 overflow-hidden rounded-t-[${CARD_RADIUS}] bg-[${SURFACE_CONTAINER}] [aspect-ratio:4/3]`
+  ],
+  ['ssg-bento__image', 'block w-full h-full [object-fit:cover]'],
+  // `fit: contain` on a card photo: shown whole inside the plate, with the card's
+  // own surface filling the difference. A catalogue whose photos were not shot at
+  // one ratio needs this — the alternative is cropping a branch in half, or a row
+  // of cards whose heights disagree because each photo's ratio set its own.
+  ['ssg-bento__image--contain', '[object-fit:contain]'],
   ['ssg-bento__icon', `text-[${PRIMARY}] text-step-3`],
   [
     'ssg-bento__tile-header',

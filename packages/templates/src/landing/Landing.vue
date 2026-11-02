@@ -114,7 +114,14 @@ const phoneLabel = computed(() => props.extra?.phone ?? undefined)
 const heroImage = computed(() => {
   const first = props.images?.[0]
 
-  return first ? { src: first.src, alt: first.caption } : undefined
+  return first
+    ? {
+        src: first.src,
+        alt: first.caption,
+        width: first.width,
+        height: first.height
+      }
+    : undefined
 })
 
 /**
@@ -134,6 +141,7 @@ const tiles = computed(() =>
     header: card.header,
     content: card.content,
     icon: (card as { icon?: string }).icon,
+    image: card.image,
     cta:
       card.cta?.route && card.cta.message
         ? { message: card.cta.message, route: card.cta.route }

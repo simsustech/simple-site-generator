@@ -108,6 +108,101 @@ describe('page frontmatter schema', () => {
       })
     ).toEqual([])
   })
+  it('accepts a hero image that declares its own size', () => {
+    expect(
+      validatePage('Index.md', {
+        ...minimal,
+        images: [
+          {
+            name: 'Landing',
+            src: '/images/landing/landing.webp',
+            caption: 'Patio rozen in de kas',
+            width: 1000,
+            height: 1333
+          }
+        ]
+      })
+    ).toEqual([])
+  })
+
+  it('rejects an image with no name, which the carousel keys off', () => {
+    expect(
+      validatePage('Index.md', {
+        ...minimal,
+        images: [{ src: '/images/landing/landing.webp' }]
+      })
+    ).not.toEqual([])
+  })
+
+  it('accepts a card band with a photo and its own size', () => {
+    expect(
+      validatePage('Assortiment.md', {
+        ...minimal,
+        cards: [
+          {
+            header: 'Rosa Grand Select',
+            content: 'VBN 324091 · Rood · 70-80 · Apr-Mei',
+            image: {
+              src: '/images/assortiment/patio-rozen/rosa-grand-select.webp',
+              alt: 'Rosa Grand Select',
+              width: 675,
+              height: 900
+            }
+          }
+        ]
+      })
+    ).toEqual([])
+  })
+
+  it('accepts a card photo with no alt, which falls back to the header', () => {
+    expect(
+      validatePage('Assortiment.md', {
+        ...minimal,
+        cards: [
+          { header: 'Rosa Navy', content: 'Paars.', image: { src: 'x.webp' } }
+        ]
+      })
+    ).toEqual([])
+  })
+
+  it('rejects a card with no heading, which names nothing — not even its photo', () => {
+    expect(
+      validatePage('Assortiment.md', {
+        ...minimal,
+        cards: [{ content: 'VBN 324091', image: { src: 'x.webp' } }]
+      })
+    ).not.toEqual([])
+  })
+
+  it('rejects a card photo with no source', () => {
+    expect(
+      validatePage('Assortiment.md', {
+        ...minimal,
+        cards: [
+          {
+            header: 'Rosa Navy',
+            content: 'Paars.',
+            image: { alt: 'Rosa Navy' }
+          }
+        ]
+      })
+    ).not.toEqual([])
+  })
+
+  it('rejects a non-positive photo size, which reserves no space', () => {
+    expect(
+      validatePage('Assortiment.md', {
+        ...minimal,
+        cards: [
+          {
+            header: 'Rosa Navy',
+            content: 'Paars.',
+            image: { src: 'x.webp', width: 0 }
+          }
+        ]
+      })
+    ).not.toEqual([])
+  })
 
   it('rejects a page with no id, which has no route', () => {
     const issues = validatePage('Index.md', {
