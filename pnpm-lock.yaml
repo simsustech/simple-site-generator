@@ -163,9 +163,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@simple-site-generator/templates': workspace:*
   typescript: ^6.0.3
-  vue: ^3.5.43
+  vue: ^3.5.44
 
 importers:
 
@@ -232,7 +231,7 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(happy-dom@21.0.4)(vite@8.3.5(@types/node@26.6.6)(jiti@2.7.0)(sass@1.107.1)(terser@5.51.2)(yaml@2.9.1))
       vue:
-        specifier: ^3.5.43
+        specifier: ^3.5.44
         version: 3.5.44(typescript@6.0.3)
 
   packages/simple-site-generator:
@@ -284,7 +283,7 @@ importers:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@26.6.6)(jiti@2.7.0)(sass@1.107.1)(terser@5.51.2)(yaml@2.9.1)
       vue:
-        specifier: ^3.5.43
+        specifier: ^3.5.44
         version: 3.5.44(typescript@6.0.3)
 
   packages/templates:
@@ -339,7 +338,7 @@ importers:
         specifier: ^0.31.0
         version: 0.31.0(@fastify/static@10.1.8)(@opentelemetry/api@1.10.0)(@oxc-project/types@0.156.0)(@pinia/colada@1.4.9(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.44(typescript@6.0.3)))(vue@3.5.44(typescript@6.0.3)))(@types/node@26.6.6)(animate.css@4.1.1)(fastify@5.12.8)(jiti@2.7.0)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.44(typescript@6.0.3)))(quasar@2.35.2)(rollup@4.67.4)(srvx@1.0.8)(supports-color@8.1.1)(terser@5.51.2)(typescript@6.0.3)(vue-router@5.4.0(@pinia/colada@1.4.9(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.44(typescript@6.0.3)))(vue@3.5.44(typescript@6.0.3)))(@vue/compiler-sfc@3.5.44)(pinia@4.1.0(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.44(typescript@6.0.3)))(rolldown@1.2.16)(rollup@4.67.4)(vite@8.3.5(@types/node@26.6.6)(jiti@2.7.0)(sass@1.107.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)))(vue@3.5.44(typescript@6.0.3))(workbox-build@7.4.1(supports-color@8.1.1))(yaml@2.9.1)
       vue:
-        specifier: ^3.5.43
+        specifier: ^3.5.44
         version: 3.5.44(typescript@6.0.3)
       vue-router:
         specifier: ^5.4.0
@@ -1871,7 +1870,7 @@ packages:
     resolution: {integrity: sha512-3kMNQYjSTfFmyiqfE8CTDv2giY1I76j5ZbijhFI4+rnkEBA79PLBPqUKNILACC53Py/XL8jPACeO5jWyXQn51Q==}
     peerDependencies:
       pinia: ^2.2.6 || ^3.0.0 || ^4.0.2
-      vue: ^3.5.43
+      vue: ^3.5.44
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
@@ -2401,7 +2400,7 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
-      vue: ^3.5.43
+      vue: ^3.5.44
 
   '@vitest/mocker@5.1.0':
     resolution: {integrity: sha512-5umB9/jlWcqVS6fsrFmv5Gdnpu6wAUio/lEOwAmvB7v+lFo/IW2B9FhAD0p19GCULTgMzLCdUmuCDCnAzWgppQ==}
@@ -2425,7 +2424,7 @@ packages:
     resolution: {integrity: sha512-/5Fv+6DgIcM9ajY05ZmKBv+LMX1M9A0X+IUwDRVdt67ciw8OV9bvG2r34p3RiEadlsQybjhKPRKNXDC8Bp23cw==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
-      vue: ^3.5.43
+      vue: ^3.5.44
     peerDependenciesMeta:
       vue:
         optional: true
@@ -2471,7 +2470,7 @@ packages:
     peerDependencies:
       '@vue/compiler-dom': 3.x
       '@vue/server-renderer': 3.x
-      vue: ^3.5.43
+      vue: ^3.5.44
     peerDependenciesMeta:
       '@vue/server-renderer':
         optional: true
@@ -4116,7 +4115,7 @@ packages:
     peerDependencies:
       '@vue/devtools-api': ^8.2.1
       typescript: ^6.0.3
-      vue: ^3.5.43
+      vue: ^3.5.44
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -4790,7 +4789,7 @@ packages:
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@nuxt/kit': ^3.2.2 || ^4.0.0
-      vue: ^3.5.43
+      vue: ^3.5.44
     peerDependenciesMeta:
       '@nuxt/kit':
         optional: true
@@ -4965,7 +4964,7 @@ packages:
       fastify: ^5.12.8
       pinia: ^4.1.0
       quasar: ^2.35.2
-      vue: ^3.5.43
+      vue: ^3.5.44
       vue-router: ^5.4.0
 
   vue-component-type-helpers@3.3.14:
@@ -4978,7 +4977,7 @@ packages:
       '@vue/compiler-sfc': ^3.5.34 || ^4.0.0
       pinia: ^3.0.4 || ^4.0.2
       vite: ^7.3.0 || ^8.0.0
-      vue: ^3.5.43
+      vue: ^3.5.44
     peerDependenciesMeta:
       '@pinia/colada':
         optional: true
