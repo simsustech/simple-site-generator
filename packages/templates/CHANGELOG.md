@@ -1,5 +1,104 @@
 # @simple-site-generator/templates
 
+## 0.4.0
+
+### Minor Changes
+
+- a457581: Let a card carry a photo, so a product catalogue is frontmatter.
+
+  `cards` could say `header`, `content`, `icon` and `cta` — everything except the one thing a
+  catalogue card actually is: a picture of the thing being sold. A plant, a room, a dish cannot be
+  replaced by an icon, so a site with a catalogue had no way to express it and the alternative was a
+  site-local page component the kit does not own.
+
+  `image: { src, alt?, width?, height?, fit? }` renders the photo above the tile's heading, bled to the
+  card's edges, and fills the plate `width`/`height` reserve — cropped (`fit: cover`, the default) or
+  shown whole inside it (`fit: contain`).
+
+  `fit: contain` is what a catalogue needs when its photos were not shot at one ratio. Without it a site
+  has only one honest option — author each photo's own ratio — and each card's height then follows its
+  photo, so a row of a portrait and a landscape shot leaves a card half empty. Measured on the
+  vanhemertflowers catalogue: four landscape product photos next to portrait ones produced rows with a
+  170px blank area inside the shorter cards. Cropping instead destroys a branch shot (the reason
+  `contain` exists), so the choice belongs in the frontmatter where the author can make it. The wrapper carries the ratio, so the
+  space is reserved from the numbers rather than measured after the bytes arrive: a grid of forty
+  portrait photos does not reflow as it loads, and a portrait photo is not cropped to a landscape box —
+  `width`/`height` are the photo's own size, with 4:3 reserved when they are absent. Everything is
+  `loading="lazy"` and `decoding="async"`; `alt` falls back to the card's `header`, because that is
+  what the card says the picture is, and an empty `alt` would mark a catalogue photo as decoration.
+
+  `ssg check` now validates the card band, which it previously skipped entirely (`cards` was
+  `z.array(z.unknown())`): every card needs a `header` and `content`, a photo needs a `src`, and a
+  declared `width`/`height` has to be a positive integer. A card with no heading is the case that
+  matters most — it names nothing, and there is nothing for a photo's `alt` to fall back to.
+
+  An entry in `images` takes `width`/`height` for the same reason, and the landing templates now pass
+  them to `HeroImage`. The hero is the LCP element and reserves its box from those numbers; with no way
+  to declare a size, every portrait hero was reserved at the component's landscape 1200×750 fallback
+  and jumped to shape when the file landed. `ssg check` validates `images` as well: a slide without a
+  `name` is a carousel slide with no key and no caption fallback.
+
+- 1587ced: Let a site credit the people who built it.
+
+  The shell's legal line names the business — `© <year> <title>` — and that was the
+  only place a credit could live once the footer moved into the kit. A site that
+  put its maker in that line lost it silently in the migration: the van Hemert
+  Flowers site went from "© simsustech van Hemert Flowers" on every page to the
+  business alone, and nothing anywhere reported the change.
+
+  `extra.credit` is a second line under the legal one, off by default. It is
+  plain text on purpose: the old credit was not a link either, and the kit has no
+  business inventing a URL for whoever built the site.
+
+- c171c79: Reserve the plain template's hero photograph, and stop dropping its clamp.
+
+  **The hero.** `plain/Page.vue` rendered `headerImage` as a bare `<img>` with no `width`/`height`, so the figure was 0 px tall until the photo decoded and everything below it jumped down when it landed. Measured on a built site with the photo held back 1.2 s: the figure went from 0 to 190 px at 360 wide and to 300 px at 1280, for CLS 0.157 and 0.016 — thirty-five times the header-height shift this kit fixed last. With the box reserved, both are 0 and the image is in place at first paint.
+
+  The numbers come from two new optional frontmatter fields, `headerImageWidth` and `headerImageHeight`. Unset, the hero reserves a landscape 1200×750 — the fallback `HeroImage` already uses — which trades a collapsed hero for a smaller settle if the photo is another shape. A site that knows its photo's size declares it, and the reserved box is the photo's own ratio: no crop, no reflow, `w-full h-auto` keeps the ratio while the image scales.
+
+  Deliberately not a `QSkeleton`: the photo's size is known when the page is authored, so the box can be reserved before the bytes arrive. A placeholder would need that same reserved space to avoid shifting, would swap content in front of the visitor, and would put the real image behind a JS-driven reveal — a worse LCP for the same result.
+
+  The size is a sibling field rather than an object in `headerImage` because sites copy this markup: a client site's own `HomePagina.vue` renders the same hero, and when `headerImage` briefly became `{ src, width, height }` its `<img>` lost its `src` and the hero vanished. `headerImage` stays the URL it always was; `test/hero-reservation.test.ts` pins both shapes.
+
+  **The clamp.** `ssg-header__brand-name` asked for `line-clamp-3`, which belongs to the default preset chain — this design system ships without it, so the utility was dropped at build time with one `[unocss] unmatched utility` warning and the name was cut off mid-word by the brand's own `overflow-hidden` instead of ellipsized after three lines. The clamp is now written as arbitrary properties, which any preset chain emits.
+
+### Patch Changes
+
+- 5531589: Render a page's `cta` in the business template.
+
+  `cta` was a dead field there. The band used to render it beside the title; when the band was cut
+  back to a title and a decoration, the action went with it, and every page that declared one kept
+  declaring it into nothing — the reference site's contact page ended up with no action at all, after
+  its quick-pick list was removed and the prose's link was the only way left to write to it.
+
+  The action closes the page instead, after the prose and the cards it belongs to, where a reader who
+  has just been convinced needs it. `href` carries `mailto:` and `tel:` as well as `route` carries an
+  in-app path, so a contact page can ask for the email without a form. It is still not in the band: an
+  action repeated above the fold on every page is what made that block the loudest on ten pages in a
+  row.
+
+- 60f6bdb: Make the header the height Quasar reserves for it.
+
+  At 1280 px and above the header measured 56 px while the prerendered page container reserved 50, so
+  the layout corrected the reservation on mount and everything below the header moved down 6 px, once.
+  Lighthouse reports it as CLS 0.0044 on a 1280 px viewport and 0.0000 below that — the shift never
+  shows up in a score, and a visitor sees the content settle.
+
+  The two numbers were both accidental. 50 px is Quasar's SSR default: with no browser to measure with,
+  `QLayout` writes the toolbar's own minimum into `padding-top`. 56 px is the header's tallest child —
+  the navigation is a `q-item`, and the MD3 one-line list container is 56 px. The nav-item shortcut
+  already asked for a 40 px row, and that request was inert: `min-h-[40px]` and the preset's `.q-item`
+  are both one class, so the preset's rule wins on emission order.
+
+  The preflight now restates the 40 px with two classes (`.ssg-header__nav .q-item`), which the preset
+  cannot out-rank. The header is 50 px at every width, exactly what the reservation says, so nothing is
+  corrected and nothing moves; below 1280 px the nav is hidden and nothing changes at all. Desktop nav
+  rows are 40 px rather than the accidental 56 — the height this design system asked for in the first
+  place — with the preset's 8 px item padding intact and no clipped labels.
+
+  `test/header-height.test.ts` pins the rule and the value it shares with the shortcut, because a header
+  one pixel taller than its reservation produces exactly this shift and no other gate looks at it.
+
 ## 0.3.0
 
 ### Minor Changes
