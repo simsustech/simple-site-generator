@@ -3,7 +3,42 @@
     <article class="ssg-section__inner">
       <Breadcrumbs v-if="breadcrumbs?.length" :trail="breadcrumbs" />
 
-      <header class="ssg-business__header" :style="bandStyle">
+      <!--
+        The page title, and nothing else. The band that used to sit here carried a
+        description and an action; the description was the meta description and
+        the action was repeated on every page, which made one block the loudest
+        thing on ten pages in a row. A page that wants an action says so in its
+        own prose; the fixed bar carries booking and calling on a phone.
+      -->
+      <header
+        class="ssg-business__header"
+        :class="{ 'ssg-business__header--decorated': decorated }"
+        :style="bandStyle"
+      >
+        <!--
+          The copy comes first in the DOM and the graphic second: the band is a
+          row from `lg` (`justify-content: space-between`), so source order is
+          what puts the title on the left and the picture on the right. It also
+          puts the document's `<h1>` before the figure, which is the order a
+          screen reader should hear them in — the graphic is `role="img"` with a
+          name of its own, and it is not the page's subject.
+        -->
+        <div
+          class="ssg-business__band-copy"
+          :class="{ 'ssg-business__band-copy--narrow': demoSteps.length > 0 }"
+        >
+          <!--
+            The page owns the document's single <h1>. `PageContent` demotes markdown
+            headings so the body starts at `<h2>` and the outline stays valid.
+
+            Title only. The frontmatter `description` is the page's meta
+            description — the sentence a search result shows — and printing it
+            under the title promoted it to a subtitle. A page that wants an intro
+            says so in its own markdown, where prose belongs.
+          -->
+          <h1 class="ssg-business__title">{{ title }}</h1>
+        </div>
+
         <!--
           The band's decoration is either the animated process graphic or a
           background illustration, never both: they want the same right-hand
@@ -16,31 +51,6 @@
           :steps="demoSteps"
           :label="demo?.label ?? title"
         />
-
-        <div
-          class="ssg-business__band-copy"
-          :class="{ 'ssg-business__band-copy--narrow': demoSteps.length > 0 }"
-        >
-          <!--
-            The page owns the document's single <h1>. `PageContent` demotes markdown
-            headings so the body starts at `<h2>` and the outline stays valid.
-          -->
-          <h1 class="ssg-business__title">{{ title }}</h1>
-          <p v-if="description" class="ssg-business__lede">{{ description }}</p>
-          <!--
-            The page's one primary action, above the fold. Research on conversion
-            is consistent that a hero converts on a single obvious next step; the
-            CTA lives here rather than buried in the prose.
-          -->
-          <CtaButton
-            v-if="cta?.message"
-            class="ssg-page-header__cta"
-            :label="cta.message"
-            :route="cta.route"
-            :href="cta.href"
-            data-ssg="hero-cta"
-          />
-        </div>
       </header>
 
       <PageContent
@@ -48,6 +58,7 @@
         :lists="lists"
         :videos="videos"
         :images="images"
+        :labels="(extra as SiteExtra | undefined)?.labels"
       />
 
       <!--
@@ -77,12 +88,11 @@
 import { computed } from 'vue'
 import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
-import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import HeroDemo from '../shared/HeroDemo.vue'
 import PrincipleGrid from '../shared/PrincipleGrid.vue'
 import { headerImageStyle } from '../design.js'
-import type { PageProps } from '../shared/types.js'
+import type { PageProps, SiteExtra } from '../shared/types.js'
 
 /**
  * Business/multi-page template page.
@@ -105,6 +115,17 @@ const demoSteps = computed(() => props.demo?.steps ?? [])
  */
 const bandStyle = computed(() =>
   demoSteps.value.length ? undefined : headerImageStyle(props.headerImage)
+)
+
+/**
+ * Whether the header carries decoration behind its copy.
+ *
+ * A plain title row is the default; a page that asks for a `demo` or a
+ * `headerImage` gets the panel back, because both are painted behind the title
+ * and need a surface of their own to be legible.
+ */
+const decorated = computed(
+  () => demoSteps.value.length > 0 || Boolean(props.headerImage)
 )
 
 const tiles = computed(() =>

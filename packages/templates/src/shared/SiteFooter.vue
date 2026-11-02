@@ -1,7 +1,7 @@
 <template>
   <footer class="ssg-footer" role="contentinfo">
     <div class="ssg-footer__inner">
-      <nav class="ssg-footer__nav" aria-label="Footer">
+      <nav class="ssg-footer__nav" :aria-label="footerLabel">
         <ul class="ssg-footer__list">
           <li v-for="page in footerPages" :key="page.id">
             <router-link class="ssg-footer__link" :to="`/${page.id}`">
@@ -11,12 +11,52 @@
         </ul>
       </nav>
 
+      <!--
+        Trust marks — a trade association or certification a visitor can verify.
+        The image is the mark, so its name is the alt text; a mark that links to
+        the issuing body is wrapped in an anchor, and one that does not is left
+        as an image rather than pointing somewhere invented.
+      -->
+      <div v-if="qualityMarks.length" class="ssg-footer__marks">
+        <ul class="ssg-footer__list ssg-footer__list--inline">
+          <li v-for="mark in qualityMarks" :key="mark.name">
+            <a
+              v-if="mark.url"
+              class="ssg-footer__mark"
+              :href="mark.url"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <img
+                class="ssg-footer__mark-image"
+                :src="mark.imageUrl"
+                :alt="mark.name"
+                :width="mark.width ?? 112"
+                :height="mark.height ?? 48"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
+            <img
+              v-else
+              class="ssg-footer__mark-image"
+              :src="mark.imageUrl"
+              :alt="mark.name"
+              :width="mark.width ?? 112"
+              :height="mark.height ?? 48"
+              loading="lazy"
+              decoding="async"
+            />
+          </li>
+        </ul>
+      </div>
+
       <div v-if="hasContact" class="ssg-footer__contact">
-        <h2 class="ssg-footer__heading">Contact</h2>
+        <h2 class="ssg-footer__heading">{{ contactLabel }}</h2>
         <ul class="ssg-footer__list">
           <li v-if="extra?.address">{{ extra.address }}</li>
           <li v-if="extra?.phone">
-            <a class="ssg-footer__link" :href="`tel:${extra.phone}`">
+            <a class="ssg-footer__link" :href="telHref(extra.phone)">
               {{ extra.phone }}
             </a>
           </li>
@@ -29,7 +69,7 @@
       </div>
 
       <div v-if="socialLinks.length" class="ssg-footer__social">
-        <h2 class="ssg-footer__heading">Follow</h2>
+        <h2 class="ssg-footer__heading">{{ followLabel }}</h2>
         <ul class="ssg-footer__list ssg-footer__list--inline">
           <li v-for="link in socialLinks" :key="link.href">
             <a
@@ -54,6 +94,7 @@
 import { computed, toRefs } from 'vue'
 import { footerPagesOf } from './nav.js'
 import type { LayoutProps } from './types.js'
+import { telHref } from './tel.js'
 
 const props =
   defineProps<Pick<LayoutProps, 'title' | 'pages' | 'extra' | 'lang'>>()
@@ -64,6 +105,33 @@ const footerPages = computed(() => footerPagesOf(pages.value, props.lang))
 
 const hasContact = computed(() =>
   Boolean(extra.value?.address || extra.value?.phone || extra.value?.email)
+)
+
+/**
+ * The two headings and the navigation's accessible name.
+ *
+ * Invented by this component rather than declared by a page, so they cannot come
+ * from `tags`: `Contact` here is a column heading, not the label of the contact
+ * menu. A site that speaks another language sets them in `extra.labels`, and the
+ * English words remain the fallback.
+ */
+const footerLabel = computed(() => extra.value?.labels?.footer ?? 'Footer')
+const contactLabel = computed(() => extra.value?.labels?.contact ?? 'Contact')
+const followLabel = computed(() => extra.value?.labels?.follow ?? 'Follow')
+
+/**
+ * The marks, checked rather than trusted: `extra` is an open bag, and a mark
+ * without an image would render an empty `img` — a broken-image icon in the
+ * footer of every page.
+ */
+const qualityMarks = computed(() =>
+  (extra.value?.qualityMarks ?? []).filter(
+    (mark) =>
+      typeof mark?.name === 'string' &&
+      mark.name.trim().length > 0 &&
+      typeof mark?.imageUrl === 'string' &&
+      mark.imageUrl.trim().length > 0
+  )
 )
 
 const socialLinks = computed(() => {

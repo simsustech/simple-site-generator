@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import { buildJsonLd } from '../src/seo/jsonld.js'
 import { absoluteUrl, buildMeta } from '../src/seo/meta.js'
 import { buildRobots, buildSitemap } from '../src/seo/sitemap.js'
@@ -300,5 +300,53 @@ describe('buildRobots', () => {
     expect(buildRobots({ site, disallow: ['/draft'] })).toContain(
       'Disallow: /draft'
     )
+  })
+})
+
+describe('the social card image', () => {
+  const context = {
+    title: 'Acme',
+    url: 'https://acme.test',
+    image: '/images/social-card.jpg'
+  }
+
+  it('makes the site-wide image absolute on every page', () => {
+    // `og:image` must be an absolute URL. The site default used to be emitted
+    // exactly as configured, so every page of a site that set one shared a
+    // relative path that no crawler or chat client resolves.
+    const { meta } = buildMeta({
+      page: { id: 'home', title: 'Home' },
+      site: context,
+      path: '/'
+    })
+
+    expect(meta.ogImage.content).toBe(
+      'https://acme.test/images/social-card.jpg'
+    )
+    expect(meta.twitterImage.content).toBe(
+      'https://acme.test/images/social-card.jpg'
+    )
+    expect(meta.twitterCard.content).toBe('summary_large_image')
+  })
+
+  it('lets a page override it, and still absolutises that', () => {
+    const { meta } = buildMeta({
+      page: { id: 'home', title: 'Home', image: '/images/other.png' },
+      site: context,
+      path: '/'
+    })
+
+    expect(meta.ogImage.content).toBe('https://acme.test/images/other.png')
+  })
+
+  it('emits no image tags when neither the page nor the site declares one', () => {
+    const { meta } = buildMeta({
+      page: { id: 'home', title: 'Home' },
+      site: { title: 'Acme', url: 'https://acme.test' },
+      path: '/'
+    })
+
+    expect(meta.ogImage).toBeUndefined()
+    expect(meta.twitterCard.content).toBe('summary')
   })
 })

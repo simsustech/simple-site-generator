@@ -60,7 +60,14 @@ export function buildMeta({ page, site, path }: BuildMetaInput) {
     page?.headTitle ?? (pageTitle ? `${site.title} | ${pageTitle}` : site.title)
 
   const description = page?.description ?? site.description ?? ''
-  const image = page?.image ? absoluteUrl(site.url, page.image) : site.image
+  // Both sources go through `absoluteUrl`: `og:image` has to be an absolute URL,
+  // and the site-wide default used to be emitted exactly as configured —
+  // `/images/social-card.jpg` on every page, which no crawler or chat client
+  // resolves.
+  const configuredImage = page?.image ?? site.image
+  const image = configuredImage
+    ? absoluteUrl(site.url, configuredImage)
+    : undefined
 
   // A page may declare its own language. Without this a Dutch page on an
   // English site ships `lang="en-GB"`, and because a declared language wins

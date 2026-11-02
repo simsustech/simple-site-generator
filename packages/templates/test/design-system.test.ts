@@ -106,4 +106,52 @@ describe('design system shortcut table', () => {
     expect(bodyOf('ssg-business__band-demo')).toMatch(/(^|\s)hidden(\s|$)/)
     expect(bodyOf('ssg-business__band-demo')).toMatch(/(^|\s)lg:block(\s|$)/)
   })
+
+  it('leaves the business header band to its variant, and lets the band size itself', () => {
+    // The same defect as above, one level up: `ssg-business__header` and
+    // `ssg-business__header--decorated` are rendered together on every page that
+    // declares a `demo` or a `headerImage`. They used to be two complete page
+    // headers, so on the reference site the base's `flex`/`flex-wrap` and the
+    // variant's `display`/`margin-bottom` resolved to a combination nobody
+    // designed (measured: `flex-wrap: wrap` inside the band, with the base's
+    // 68px margin losing to the variant's). The base must stay layout-neutral
+    // and the variant owns the row.
+    const bodyOf = (name: string) => {
+      const entry = ssgShortcuts.find(
+        (shortcut) => Array.isArray(shortcut) && shortcut[0] === name
+      )
+      return typeof entry?.[1] === 'string' ? entry[1] : ''
+    }
+
+    expect(bodyOf('ssg-business__header')).not.toMatch(
+      /(^|\s)(block|hidden|inline|inline-block|flex|grid|inline-flex)(\s|$)/
+    )
+    expect(bodyOf('ssg-business__header--decorated')).toMatch(
+      /(^|\s)lg:flex(\s|$)/
+    )
+
+    // And the demo is a flex child of that row, not an absolute overlay: an
+    // overlay keeps its own width and therefore a height the band cannot grow
+    // to, which is how 100px of a 215px graphic ended up behind `overflow:
+    // hidden`.
+    expect(bodyOf('ssg-business__band-demo')).not.toMatch(
+      /(^|\s)absolute(\s|$)/
+    )
+  })
+
+  it('styles every ssg-* class its own components render', () => {
+    // A shortcut is only half the contract: the class also has to exist in the
+    // table. `ssg-header__language` was written in `SiteHeader.vue` and nowhere
+    // else, so the language switch rendered as a bare `<a>` — the browser's own
+    // link colour, underlined — and `ssg verify` accepted it because the class
+    // was listed in `UNSTYLED_HOOKS`, where "carries no styling by design" was
+    // the wrong call for a control.
+    const names = new Set(
+      ssgShortcuts
+        .filter((shortcut) => Array.isArray(shortcut))
+        .map((shortcut) => shortcut[0])
+    )
+
+    expect(names.has('ssg-header__language')).toBe(true)
+  })
 })

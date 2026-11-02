@@ -42,6 +42,7 @@
       :phone="extra?.phone"
       :registration="extra?.registration"
       :insured="extra?.insured"
+      :labels="extra?.labels"
     />
 
     <section v-if="content" class="ssg-section">
@@ -79,7 +80,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Hero from '../shared/Hero.vue'
-import HeroImage from './HeroImage.vue'
+import HeroImage from '../shared/HeroImage.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
 import HeroDemo from '../shared/HeroDemo.vue'
 import ProofSection from '../shared/ProofSection.vue'
@@ -88,17 +89,19 @@ import FaqList from '../shared/FaqList.vue'
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import type { PageProps, SiteExtra } from '../shared/types.js'
+import { telHref } from '../shared/tel.js'
 
 const props = defineProps<PageProps & { extra?: SiteExtra }>()
 
 /** The single primary action: explicit `cta:` frontmatter, else the contact page. */
 const primaryCta = computed(() => ({
   message: props.cta?.message ?? 'Get a free quote',
-  route: props.cta?.route ?? '/contact'
+  route: props.cta?.route ?? (props.cta?.href ? undefined : '/contact'),
+  href: props.cta?.href
 }))
 
 const phoneHref = computed(() =>
-  props.extra?.phone ? `tel:${props.extra.phone}` : undefined
+  props.extra?.phone ? telHref(props.extra.phone) : undefined
 )
 
 const phoneLabel = computed(() => props.extra?.phone ?? undefined)

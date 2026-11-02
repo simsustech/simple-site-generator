@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
+import BusinessLayout from '../src/business/Layout.vue'
 import BusinessPage from '../src/business/Page.vue'
+import Landing from '../src/business/Landing.vue'
 import SiteShell from '../src/shared/SiteShell.vue'
 import { buildJsonLd } from '../src/seo/jsonld.js'
 import { menuPagesOf, pathOf, subpagesOf } from '../src/shared/nav.js'
 import {
   mountPageInShell,
   mountWithQuasar,
+  samplePages,
   sampleTags
 } from './support/mount.js'
 import type { SeoContext, SitePage } from '../src/shared/types.js'
@@ -233,17 +237,19 @@ describe('business header navigation', () => {
     })
   }
 
-  it('renders a subpage menu page as a dropdown', () => {
+  it('renders a subpage menu page as an item that opens a menu', () => {
     const wrapper = mountNav(navPages)
     const nav = wrapper.find('.ssg-header__nav')
 
     expect(nav.text()).toContain('Services')
-    // `.q-btn-dropdown` is Quasar's own public class for the dropdown control,
-    // so this asserts the branch without counting internal buttons.
-    expect(nav.find('.q-btn-dropdown').exists()).toBe(true)
+    // `q-item` + `q-menu` is Quasar's native pair: the item is the trigger and
+    // the menu positions, traps focus and handles Esc. `q-btn-dropdown` has no
+    // active props, so it could not mark the group as open.
+    expect(nav.find('.ssg-header__nav-item').exists()).toBe(true)
+    expect(nav.find('.q-btn-dropdown').exists()).toBe(false)
   })
 
-  it('renders a menu page without subpages as a plain navigation button', () => {
+  it('renders a menu page without subpages as a navigation item', () => {
     const wrapper = mountNav([
       { id: 'pricing', label: 'Pricing', tags: ['menu'] }
     ])
@@ -304,5 +310,250 @@ describe('business structured data', () => {
     expect(crumbs.itemListElement[1].item).toBe(
       'https://acme.test/services/leaks'
     )
+  })
+})
+
+describe('business landing page', () => {
+  const landingProps = {
+    id: 'home',
+    title: 'Dog boarding in Velddriel',
+    description: 'Day care and boarding for dogs.',
+    cta: {
+      message: 'Read about boarding',
+      route: '/boarding',
+      secondary: { message: 'See the prices', route: '/prices' }
+    },
+    cards: [
+      {
+        header: 'Boarding',
+        content: 'Overnight stays.',
+        cta: { message: 'Boarding', route: '/boarding' }
+      },
+      {
+        header: 'Day care',
+        content: 'By the day.',
+        cta: { message: 'Day care', route: '/daycare' }
+      }
+    ],
+    images: [
+      { name: 'Hero', src: '/images/hero.webp', caption: 'A dog on the field' }
+    ],
+    extra: { phone: '+31418634717', cardsHeading: 'Diensten' }
+  }
+
+  it('renders one h1 from the title and the description as the tagline', () => {
+    // `Landing.vue` delegates the heading to `Hero`, which owns the document's
+    // single `<h1>`; a second one would fail `ssg verify` on the built page.
+    const wrapper = mountPageInShell(Landing, landingProps)
+
+    expect(wrapper.findAll('h1')).toHaveLength(1)
+    expect(wrapper.find('h1').text()).toBe('Dog boarding in Velddriel')
+    expect(wrapper.text()).toContain('Day care and boarding for dogs.')
+  })
+
+  it('renders the first image as the hero visual and reserves its space', () => {
+    // The hero image is the LCP element: without width and height the page
+    // shifts when it arrives, and `fetchpriority="high"` is what puts it ahead
+    // of the deferred JavaScript.
+    const wrapper = mountPageInShell(Landing, landingProps)
+    const image = wrapper.find('.ssg-hero__image img')
+
+    expect(image.exists()).toBe(true)
+    expect(image.attributes('src')).toBe('/images/hero.webp')
+    expect(image.attributes('alt')).toBe('A dog on the field')
+    expect(image.attributes('width')).toBeTruthy()
+    expect(image.attributes('height')).toBeTruthy()
+    expect(image.attributes('fetchpriority')).toBe('high')
+  })
+
+  it('renders one card per service with its action', () => {
+    const wrapper = mountPageInShell(Landing, landingProps)
+
+    expect(wrapper.find('[data-ssg="bento"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Boarding')
+    expect(wrapper.text()).toContain('Day care')
+    expect(wrapper.find('.ssg-bento__heading').text()).toBe('Diensten')
+  })
+
+  it('takes the secondary action from cta.secondary before the phone number', () => {
+    const wrapper = mountPageInShell(Landing, landingProps)
+    const secondary = wrapper.find('[data-ssg="hero-secondary"]')
+
+    expect(secondary.exists()).toBe(true)
+    expect(secondary.text()).toBe('See the prices')
+  })
+
+  it('falls back to the phone number when the page declares no secondary action', () => {
+    const wrapper = mountPageInShell(Landing, {
+      ...landingProps,
+      cta: { message: 'Read about boarding', route: '/boarding' }
+    })
+    const secondary = wrapper.find('[data-ssg="hero-secondary"]')
+
+    expect(secondary.exists()).toBe(true)
+    expect(secondary.text()).toBe('+31418634717')
+    // The spaces are stripped for the dialler, not for the eye.
+    expect(secondary.attributes('href')).toBe('tel:+31418634717')
+  })
+
+  it('renders no hero visual when the page declares no image', () => {
+    const wrapper = mountPageInShell(Landing, {
+      ...landingProps,
+      images: undefined
+    })
+
+    expect(wrapper.find('.ssg-hero__image').exists()).toBe(false)
+  })
+})
+
+describe('business landing page in a site that is not in English', () => {
+  const dutch = {
+    proofHeading: 'Wat klanten zeggen',
+    proofFacts: 'Gecontroleerde gegevens',
+    address: 'Adres',
+    phone: 'Telefoon',
+    serviceArea: 'Werkgebied',
+    registration: 'KvK',
+    insurance: 'Verzekering',
+    insured: 'Verzekerd',
+    notInsured: 'Niet verzekerd'
+  }
+
+  const props = {
+    id: 'home',
+    title: 'Pension en dagopvang',
+    description: 'Opvang voor uw hond.',
+    cta: {
+      message: 'Lees meer',
+      route: '/pension',
+      secondary: { message: 'Bekijk de prijzen', route: '/prijzen' }
+    },
+    images: [{ name: 'Hero', src: '/images/hero.webp' }],
+    extra: {
+      phone: '0418 63 47 17',
+      address: 'Vliertseweg 1a, Velddriel',
+      labels: dutch
+    }
+  }
+
+  it('takes the proof section’s headings and terms from the site', () => {
+    // Every string in the proof block is invented by the component, so a Dutch
+    // site that cannot set them renders "What customers say" above its Dutch
+    // reviews — the block a visitor reads right before deciding to call.
+    const wrapper = mountPageInShell(Landing, props)
+    const proof = wrapper.find('[data-ssg="proof-section"]')
+
+    expect(proof.text()).toContain('Wat klanten zeggen')
+    expect(proof.text()).toContain('Gecontroleerde gegevens')
+    expect(proof.text()).toContain('Adres')
+    expect(proof.text()).toContain('Telefoon')
+    expect(proof.text()).not.toContain('What customers say')
+    expect(proof.text()).not.toContain('Verified details')
+  })
+
+  it('gives a link-shaped secondary action an arrow, not a phone', () => {
+    // The icon is what makes the secondary button read as "call" at a glance;
+    // on a page whose second action is another page, a phone icon promises a
+    // dialler and delivers a navigation.
+    const wrapper = mountPageInShell(Landing, props)
+    const secondary = wrapper.find('[data-ssg="hero-secondary"]')
+
+    expect(secondary.text()).toBe('Bekijk de prijzen')
+    expect(secondary.html()).toContain('i-mdi-arrow-right')
+    expect(secondary.html()).not.toContain('i-mdi-phone')
+  })
+
+  it('keeps the phone icon when the secondary action is the phone number', () => {
+    const wrapper = mountPageInShell(Landing, {
+      ...props,
+      cta: { message: 'Lees meer', route: '/pension' }
+    })
+    const secondary = wrapper.find('[data-ssg="hero-secondary"]')
+
+    expect(secondary.text()).toBe('0418 63 47 17')
+    expect(secondary.html()).toContain('i-mdi-phone')
+  })
+})
+
+describe('the proof section without reviews', () => {
+  it('does not render an empty review column beside the facts', () => {
+    // The grid is auto-fit, so an empty reviews column still takes a track and
+    // the facts sit in the right half with nothing on the left. A site without
+    // reviews — which is most of them at launch — showed exactly that.
+    const wrapper = mountPageInShell(Landing, {
+      id: 'home',
+      title: 'Pension',
+      extra: { address: 'Vliertseweg 1a, Velddriel' }
+    })
+
+    expect(wrapper.find('.ssg-proof-section__reviews').exists()).toBe(false)
+    expect(wrapper.find('[data-ssg="proof-section"]').text()).toContain(
+      'Vliertseweg 1a'
+    )
+  })
+})
+
+describe('the sticky bar on a business site', () => {
+  const layoutProps = {
+    title: 'Acme Plumbing',
+    favicon: '/favicon.ico',
+    pages: samplePages,
+    tags: sampleTags,
+    extra: {
+      phone: '020 123 4567',
+      clientLoginUrl: 'https://app.example.test',
+      labels: { book: 'Reserveren', contact: 'Contact', call: 'Bel ons' }
+    }
+  }
+
+  it('offers the contact page beside booking, not the phone', () => {
+    // A bar whose second action is a phone number makes calling the reflex on a
+    // site whose bookings arrive online. The contact page is a channel that works
+    // at any hour, so it takes that slot when the site has one.
+    const wrapper = mountWithQuasar(BusinessLayout, { props: layoutProps })
+    const bar = wrapper.find('[data-ssg="sticky-cta"]')
+
+    expect(bar.exists()).toBe(true)
+    expect(bar.find('[data-ssg="sticky-contact"]').attributes('href')).toBe(
+      '/contact'
+    )
+    expect(bar.text()).toContain('Contact')
+    expect(bar.find('a[href^="tel:"]').exists()).toBe(false)
+  })
+
+  it('falls back to the phone on the contact page itself', async () => {
+    const wrapper = mountWithQuasar(BusinessLayout, {
+      props: layoutProps,
+      path: '/contact'
+    })
+
+    // The memory router resolves its initial location asynchronously.
+    await flushPromises()
+
+    const bar = wrapper.find('[data-ssg="sticky-cta"]')
+
+    expect(bar.find('[data-ssg="sticky-contact"]').exists()).toBe(false)
+    expect(bar.find('a[href^="tel:"]').exists()).toBe(true)
+  })
+})
+
+describe('the current page in the header', () => {
+  it('is marked by Quasar itself, not by a hand-rolled comparison', async () => {
+    // `q-item` with `to` receives `q-router-link--active` (and aria-current)
+    // from Quasar's own router-link handling; the design system styles that
+    // class. `q-btn` has no active props at all, which is why the header could
+    // not show where the visitor was.
+    const wrapper = mountWithQuasar(SiteShell, {
+      props: { title: 'Acme', pages: samplePages, tags: sampleTags }
+    })
+
+    // The memory router resolves its initial location asynchronously, and the
+    // active class is computed from the resolved route.
+    await flushPromises()
+
+    const home = wrapper.find('.ssg-header__nav-item')
+
+    expect(home.classes()).toContain('q-router-link--active')
+    expect(home.attributes('aria-current')).toBe('page')
   })
 })

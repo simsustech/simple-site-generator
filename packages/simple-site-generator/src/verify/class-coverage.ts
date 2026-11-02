@@ -43,7 +43,6 @@ export const UNSTYLED_HOOKS: readonly string[] = [
   // what is styled. Both are selection hooks for the component's own tests.
   'ssg-demo__grid',
   'ssg-demo__stop',
-  'ssg-header__language',
   'ssg-header__menu-toggle',
   'ssg-landing',
   'ssg-primary-navigation',

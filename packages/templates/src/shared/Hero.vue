@@ -25,7 +25,7 @@
             :label="secondaryLabel"
             :href="secondaryHref"
             :route="secondaryRoute"
-            icon="i-mdi-phone"
+            :icon="secondaryIcon || undefined"
             data-ssg="hero-secondary"
           />
         </div>
@@ -64,11 +64,18 @@ withDefaults(
     secondaryLabel?: string
     secondaryHref?: string
     secondaryRoute?: string
+    /**
+     * The secondary action's icon. A phone is the right default, because the
+     * usual second action on a local-business page is "call instead"; a page
+     * whose second action is a link passes something else, so the button never
+     * claims to dial.
+     */
+    secondaryIcon?: string
     rating?: number
     reviewCount?: number
     reviewSource?: string
     tinted?: boolean
   }>(),
-  { tinted: true }
+  { tinted: true, secondaryIcon: 'i-mdi-phone' }
 )
 </script>
