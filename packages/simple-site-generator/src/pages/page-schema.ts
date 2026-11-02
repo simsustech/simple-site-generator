@@ -142,6 +142,57 @@ export function validatePage(file: string, data: unknown): PageIssue[] {
 }
 
 /**
+ * Normalise a heading or title for comparison.
+ *
+ * Case, markdown emphasis and stray whitespace are not differences a reader
+ * sees, so they must not be differences here either — `## **Products**` repeats
+ * a title called `Products` just as plainly as `## Products` does.
+ */
+function comparable(text: string): string {
+  return text.replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+/**
+ * Warnings for a page body that opens with its own title.
+ *
+ * The templates render `title` as the page's single `<h1>` above the markdown, so
+ * a body whose first heading repeats it prints the title twice — measured on the
+ * the reference site, where 22 of 38 pages began with `## Products` under
+ * an `<h1>Products</h1>`. Neither `tsc` nor the SEO surface check can see this:
+ * it is one `<h1>` and a legal `<h2>`, just redundant.
+ *
+ * A warning rather than an error, because a page may legitimately use its title
+ * again as a section heading. `check` reports it and still exits 0.
+ */
+export function bodyWarnings(
+  file: string,
+  body: string,
+  data: unknown
+): PageIssue[] {
+  const frontmatter = data as { title?: unknown; label?: unknown } | null
+  const names = [frontmatter?.title, frontmatter?.label].filter(
+    (value): value is string => typeof value === 'string' && value.length > 0
+  )
+
+  if (!names.length) return []
+
+  const heading = body.match(/^#{1,2}[ \t]+(.+?)[ \t]*$/m)
+
+  if (!heading) return []
+
+  const text = comparable(heading[1])
+
+  if (!names.some((name) => comparable(name) === text)) return []
+
+  return [
+    {
+      file,
+      message: `body opens with the heading "${heading[1].trim()}", which repeats the page's own title — the template already renders \`title\` as the <h1>, so this prints it twice`
+    }
+  ]
+}
+
+/**
  * Validate the collection as a whole.
  *
  * Uniqueness and referential integrity are only checkable with every page in

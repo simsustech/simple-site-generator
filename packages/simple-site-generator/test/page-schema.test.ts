@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validatePage } from '../src/pages/page-schema.js'
+import { bodyWarnings, validatePage } from '../src/pages/page-schema.js'
 
 /**
  * The frontmatter contract, focused on the `demo` field the hero graphic reads.
@@ -116,5 +116,57 @@ describe('page frontmatter schema', () => {
     })
 
     expect(issues.some((issue) => issue.message.startsWith('id'))).toBe(true)
+  })
+
+  it('warns when the body opens with the page title as a heading', () => {
+    // Measured on the reference site: 22 of 38 pages opened with `## Products`
+    // under an `<h1>Products</h1>`, because the template renders `title` above
+    // the markdown and the author wrote the title again below it. One `<h1>` and
+    // one legal `<h2>` — invisible to `tsc`, to the SEO surface check and to the
+    // reader who assumes it is a section.
+    const warnings = bodyWarnings(
+      'Products/Products.md',
+      '\n## Products\n\nAlongside client work we build our own products.\n',
+      { ...minimal, title: 'Products' }
+    )
+
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].message).toContain('"Products"')
+    expect(warnings[0].message).toContain('repeats the page')
+  })
+
+  it('compares the heading with the label too, and ignores emphasis and case', () => {
+    const warnings = bodyWarnings(
+      'Website.md',
+      '\n## **websites**\n\nText.\n',
+      {
+        ...minimal,
+        title: 'Websites',
+        label: 'Website'
+      }
+    )
+
+    expect(warnings).toHaveLength(1)
+  })
+
+  it('stays quiet when the first heading is a real section', () => {
+    expect(
+      bodyWarnings('Services.md', '\n## What we do\n\nText.\n', {
+        ...minimal,
+        title: 'Services'
+      })
+    ).toEqual([])
+  })
+
+  it('only looks at the first heading, not every heading', () => {
+    // A page may name a later section after itself without printing the title
+    // twice; what matters is whether the first thing under the title repeats it.
+    expect(
+      bodyWarnings(
+        'Process.md',
+        '\n## What we do\n\nText.\n\n## Products\n\nMore.\n',
+        { ...minimal, title: 'Products' }
+      )
+    ).toEqual([])
   })
 })

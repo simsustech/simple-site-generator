@@ -134,6 +134,12 @@ async function main(argv: string[]): Promise<number> {
         return 0
       }
 
+      // Warnings are printed whatever the outcome: they are the findings a
+      // passing check would otherwise hide.
+      for (const warning of result.warnings) {
+        process.stdout.write(`  note: ${warning.file}: ${warning.message}\n`)
+      }
+
       if (result.ok) {
         process.stdout.write(`Checked ${result.pages} page(s): OK\n`)
 

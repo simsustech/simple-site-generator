@@ -36,3 +36,21 @@ children of `role="list"`, which fails Lighthouse's `aria-required-children` on 
 group. `ssg init` and the docs now match the templates package **by path** in the UnoCSS content scan:
 a `link:`ed kit is resolved to its real location, so a name-only matcher scanned nothing and the site
 lost the Quasar component CSS and every icon the templates render.
+
+A page can now declare `alias`, which the scaffolded route table hands to Vue Router as extra paths —
+for the English slug a page had before it was renamed. It is a client-side alias only: Vitrify's
+`routesToPaths` reads `path` and ignores `alias`, so an alias writes no HTML and a static host answers
+it with the 404 page. The README says so and pairs it with the `redir` a renamed page needs where the
+site is served.
+
+The `Landing` hero photo now carries an edge of its own: an outline-token hairline plus a two-layer
+shadow whose darkest point is at the picture's own edge, and the cards' card radius instead of a
+smaller one. The previous single soft shadow left the band under the picture only 30-44 levels darker
+than itself and ramped away over 40px, which reads as a wash rather than as depth — and the ring that
+was meant to define the edge sat at the same brightness as that wash.
+
+`ssg check` now warns — without failing the run — when a page's body opens with a heading that repeats
+its own `title` or `label`. The templates render `title` as the page's single `<h1>` above the markdown,
+so a body that opens with the same words prints the title twice; on the reference site 22 of 38 pages
+did exactly that, and it is invisible to `tsc`, to the SEO surface check and to the byte budgets. It is
+a warning because a page may legitimately name a later section after itself.
