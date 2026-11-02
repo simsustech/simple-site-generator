@@ -2,18 +2,13 @@ packages:
   - 'packages/*'
 
 overrides:
-  '@simple-site-generator/templates': workspace:*
-  # TypeScript 7 is the native (Go) port and no longer ships the JS API
-  # (`typescript` resolves to a version stub, so `ts.sys` is gone).
-  # @vue/compiler-sfc needs it to resolve imported types in defineProps()/
-  # defineEmits(), so pin to the newest release that still exposes it.
   typescript: '^6.0.3'
   # A single Vue copy, workspace-wide. Without this the root Vitest config
   # compiles the templates' SFCs against one Vue build while the components
   # import another, and rendering a slot throws
   # "Cannot read properties of null (reading 'ce')" — the classic duplicate-Vue
   # instance failure.
-  vue: '^3.5.43'
+  vue: '^3.5.44'
 
 allowBuilds:
   '@parcel/watcher': true
@@ -25,7 +20,8 @@ minimumReleaseAgeExclude:
   - happy-dom@21.0.4
   - sass@1.106.0
   - vite@8.3.5
-  - vitrify@0.29.0 || 0.30.1
+  - vitrify@0.29.0 || 0.30.1 || 0.31.0
   - '@vitest/mocker@5.1.0'
   - '@vitest/spy@5.1.0'
   - vitest@5.1.0
+  - fastify@5.12.8
