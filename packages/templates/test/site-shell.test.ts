@@ -183,6 +183,31 @@ describe('chrome labels and trust marks', () => {
     expect(mark.find('img').attributes('height')).toBe('48')
   })
 
+  it("renders the builder's credit only when the site declares one", () => {
+    // De oude site zette de bouwer in dezelfde regel als het bedrijf
+    // ("© simsustech van Hemert Flowers"). Toen de shell in de kit kwam, verdween
+    // die vermelding zonder dat iemand het merkte; een credit is een keuze van de
+    // site, dus staat hij in `extra.credit` en niet in de template.
+    const withCredit = mountWithQuasar(SiteShell, {
+      props: { ...shellProps, extra: { credit: 'Website door simsustech' } }
+    })
+
+    expect(withCredit.find('.ssg-footer__credit').text()).toBe(
+      'Website door simsustech'
+    )
+    // De regel over het bedrijf blijft staan; de credit komt eronder.
+    expect(withCredit.find('.ssg-footer__legal').text()).toContain('Acme Corp')
+
+    const without = mountWithQuasar(SiteShell, { props: shellProps })
+    expect(without.find('.ssg-footer__credit').exists()).toBe(false)
+
+    const blank = mountWithQuasar(SiteShell, {
+      props: { ...shellProps, extra: { credit: '   ' } }
+    })
+    // Een lege `<p>` neemt nog steeds de marge van de voettekst in.
+    expect(blank.find('.ssg-footer__credit').exists()).toBe(false)
+  })
+
   it('drops a mark that has no image, and renders none when none are declared', () => {
     // `extra` is an open bag; a mark without an image would render the browser's
     // broken-image icon in the footer of every page.

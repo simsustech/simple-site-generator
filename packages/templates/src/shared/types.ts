@@ -297,6 +297,15 @@ export interface SiteExtra {
     notInsured?: string
   }
   /**
+   * Who built the site, when the site says so.
+   *
+   * The shell's legal line names the business (`© <year> <title>`); a site that
+   * credited its maker inside that line lost the credit when the shell moved into
+   * the kit. A credit is the owner's decision, not the template's, so it is a
+   * separate line, off by default.
+   */
+  credit?: string
+  /**
    * Trust marks — trade association, certification, keurmerk.
    *
    * Rendered by the shared footer, on every page, because proof a visitor never

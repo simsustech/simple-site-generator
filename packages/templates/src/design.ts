@@ -289,6 +289,16 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-footer__legal',
     'w-full max-w-content mx-auto mt-space-4 px-space-3 text-step--1 opacity-80'
   ],
+  // The builder's credit sits directly under the legal line, quieter still: it is
+  // a courtesy, not a claim about the business.
+  // Zelfde dekking als de regel erboven, niet minder: op 0.6 haalde de credit
+  // 4.3:1 op de getinte voettekst en faalde `ssg verify` hem op kleurcontrast —
+  // gemeten op de van Hemert Flowers-site, waar deze regel als eerste gebruikt
+  // werd. Kleiner en direct onder de ©-regel maakt hem ondergeschikt genoeg.
+  [
+    'ssg-footer__credit',
+    'w-full max-w-content mx-auto mt-0 mb-space-4 px-space-3 text-step--1 opacity-80'
+  ],
   // Trust marks in the footer: a row of linked logos, each capped so a tall
   // mark cannot push the legal line off the page.
   ['ssg-footer__marks', 'flex-[1_1_12rem] min-w-0'],
