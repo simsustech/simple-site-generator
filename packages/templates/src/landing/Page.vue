@@ -26,6 +26,7 @@
         :lists="lists"
         :videos="videos"
         :images="images"
+        :labels="(extra as SiteExtra | undefined)?.labels"
       />
 
       <slot />
@@ -37,7 +38,7 @@
 import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import { headerImageStyle } from '../design.js'
-import type { PageProps } from '../shared/types.js'
+import type { PageProps, SiteExtra } from '../shared/types.js'
 
 /**
  * Default page for the landing template: prose with the same heading contract as

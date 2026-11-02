@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf" class="ssg-shell">
-    <SkipLink />
+    <SkipLink :label="extra?.labels?.skipToContent" />
 
     <SiteHeader
       :title="title"
@@ -16,10 +16,10 @@
     <q-drawer
       v-model="drawer"
       bordered
-      :aria-label="'Navigation'"
+      :aria-label="navigationLabel"
       :breakpoint="1023"
     >
-      <nav aria-label="Sections">
+      <nav :aria-label="sectionsLabel">
         <q-list>
           <q-item v-for="page in menuPages" :key="page.id" role="listitem">
             <q-item-section v-if="page.icon" avatar>
@@ -36,6 +36,7 @@
               -->
               <router-link
                 class="ssg-shell__drawer-link"
+                exact-active-class="ssg-shell__drawer-link--active"
                 :to="pathOf(page)"
                 @click="drawer = false"
               >
@@ -54,10 +55,19 @@
             This mirrors the header's contact menu exactly: the same tagged
             pages, under the same label, and each page's own icon rather than a
             mail icon borrowed for all of them.
+
+            `role="presentation"` on the divider and `role="listitem"` on the
+            group label: a `q-list` renders `role="list"`, and a list may only
+            own list items. Neither the rule nor the label was one, so
+            Lighthouse's `aria-required-children` audit failed the whole drawer
+            on any site whose contact pages get their own group — measured at 95
+            instead of the 100 the verifier requires. A decorative divider
+            belongs out of the accessibility tree; the label stays in it as a
+            list item, so the group keeps its name.
           -->
           <template v-if="contactPages.length">
-            <q-separator spaced />
-            <q-item-label header>
+            <q-separator spaced role="presentation" />
+            <q-item-label header role="listitem">
               {{ tags?.contact?.label || 'Contact' }}
             </q-item-label>
             <q-item v-for="page in contactPages" :key="page.id" role="listitem">
@@ -67,6 +77,7 @@
               <q-item-section>
                 <router-link
                   class="ssg-shell__drawer-link"
+                  exact-active-class="ssg-shell__drawer-link--active"
                   :to="pathOf(page)"
                   @click="drawer = false"
                 >
@@ -101,7 +112,7 @@
         <q-btn
           fab
           icon="i-mdi-keyboard-arrow-up"
-          aria-label="Back to top"
+          :aria-label="backToTopLabel"
           data-ssg="back-to-top"
         />
       </q-page-scroller>
@@ -139,6 +150,25 @@ const props = defineProps<LayoutProps>()
 const { pages, tags } = toRefs(props)
 
 const drawer = ref(false)
+
+/**
+ * The accessible names the shell invents, from the site's own configuration.
+ *
+ * The skip link, the drawer, its page list and the scroll-to-top control are
+ * either invisible or icon-only, so their names are the only text a
+ * screen-reader user gets — and on a site that is not in English, hardcoded
+ * English here is the first thing read aloud. The English words are the
+ * fallback, so a site that sets nothing renders exactly as before.
+ */
+const navigationLabel = computed(
+  () => props.extra?.labels?.navigation ?? 'Navigation'
+)
+const sectionsLabel = computed(
+  () => props.extra?.labels?.sections ?? 'Sections'
+)
+const backToTopLabel = computed(
+  () => props.extra?.labels?.backToTop ?? 'Back to top'
+)
 
 const route = useRoute()
 

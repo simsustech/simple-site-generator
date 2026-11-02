@@ -39,6 +39,12 @@ export interface SitePage {
   lists?: {
     header?: string
     dense?: boolean
+    /**
+     * Render this list in the browser only, so its contents never reach the
+     * prerendered HTML. For a link that spammers harvest — a WhatsApp or
+     * telephone link — being in the source is the whole problem.
+     */
+    clientOnly?: boolean
     items: {
       label: string
       overline?: string
@@ -187,7 +193,90 @@ export interface SiteExtra {
     /** Names the action: shown while the dark theme is active. */
     light?: string
     clientLogin?: string
+    /**
+     * The strings the shared chrome renders itself.
+     *
+     * `dark`, `light` and `clientLogin` above were the first three, because the
+     * header's controls are the only visible chrome text. Everything below is
+     * either an accessible name on an icon-only control or a heading the footer
+     * invents (`Contact`, `Follow`), and on a site that does not speak English
+     * those read as a template left half-translated — to a screen-reader user
+     * most of all, who hears `Primary`, `Sections` and `Back to top` in English
+     * on a Dutch page.
+     *
+     * Every entry falls back to the English word, so a site that sets none of
+     * them renders exactly what it rendered before this existed.
+     */
+    /** Accessible name of the skip link. */
+    skipToContent?: string
+    /** Accessible name of the control that opens the drawer. */
+    openNavigation?: string
+    /** Accessible name of the desktop menu navigation. */
+    primary?: string
+    /** Accessible name of the drawer's navigation. */
+    navigation?: string
+    /** Accessible name of the drawer's page-list navigation. */
+    sections?: string
+    /** Accessible name of the footer navigation. */
+    footer?: string
+    /** Heading above the address, phone and email in the footer. */
+    contact?: string
+    /** Heading above the social links in the footer. */
+    follow?: string
+    /** Accessible name of the overflow menu. */
+    moreOptions?: string
+    /** Accessible name of the scroll-to-top control. */
+    backToTop?: string
+    /** Accessible name of the gallery's previous-image control. */
+    previousImage?: string
+    /** Accessible name of the gallery's next-image control. */
+    nextImage?: string
+    /** The sticky bar's secondary action, e.g. "Reserveren". */
+    book?: string
+    /** The sticky bar's primary action, e.g. "Bel ons". */
+    call?: string
+    /**
+     * The proof section's own strings: its two headings and the terms of the
+     * facts list. A local business's trust block is the last place an English
+     * label should appear, and on a Dutch site it sits right before the visitor
+     * decides to call.
+     */
+    proofHeading?: string
+    proofFacts?: string
+    serviceArea?: string
+    address?: string
+    phone?: string
+    registration?: string
+    insurance?: string
+    insured?: string
+    notInsured?: string
   }
+  /**
+   * Trust marks — trade association, certification, keurmerk.
+   *
+   * Rendered by the shared footer, on every page, because proof a visitor never
+   * sees is not proof. The list stays absent on a site without marks, so nothing
+   * renders until one is declared.
+   */
+  qualityMarks?: {
+    /** Accessible name; the mark is usually an image of a word, so it needs one. */
+    name: string
+    /** Root-relative path or absolute URL to the mark's image. */
+    imageUrl: string
+    /** Where the mark leads, when it links to the issuing body. */
+    url?: string
+    /**
+     * The mark's own aspect, in pixels.
+     *
+     * An SVG whose root carries only a `viewBox` has no intrinsic size, and an
+     * `<img>` with `width:auto; height:auto` then lays out at 0×0: a mark that
+     * occupies space in the DOM, paints nothing, and reports no error anywhere.
+     * These two values give the browser a ratio to reserve. Omitted, the image
+     * falls back to a 112×48 box that letterboxes rather than distorts.
+     */
+    width?: number
+    height?: number
+  }[]
   [key: string]: unknown
 }
 

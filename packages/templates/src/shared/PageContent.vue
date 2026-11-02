@@ -1,28 +1,17 @@
 <template>
   <div class="ssg-content">
     <template v-if="lists">
-      <q-list v-for="list in lists" :key="list.header" :dense="list.dense">
-        <q-item-label v-if="list.header" header>{{ list.header }}</q-item-label>
-        <q-item
-          v-for="item in list.items"
-          :key="item.label"
-          :clickable="item.href !== undefined"
-          :href="item.href"
-        >
-          <q-item-section v-if="item.icon" avatar>
-            <q-icon :name="item.icon.name" :color="item.icon.color" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label v-if="item.overline" overline>
-              {{ item.overline }}
-            </q-item-label>
-            <q-item-label>{{ item.label }}</q-item-label>
-            <q-item-label v-if="item.caption" caption>
-              {{ item.caption }}
-            </q-item-label>
-          </q-item-section>
-        </q-item>
-      </q-list>
+      <template v-for="list in lists" :key="list.header">
+        <!--
+          A list flagged `clientOnly` is rendered in the browser only. Quasar's
+          `q-no-ssr` drops it from the prerendered page, which is what keeps a
+          scrapeable link out of the source while a visitor still gets it.
+        -->
+        <q-no-ssr v-if="list.clientOnly">
+          <ContentList :list="list" />
+        </q-no-ssr>
+        <ContentList v-else :list="list" />
+      </template>
     </template>
 
     <!--
@@ -46,45 +35,89 @@
       />
     </Suspense>
 
-    <q-carousel
-      v-if="images"
-      v-model="slide"
-      animated
-      arrows
-      navigation
-      infinite
-      class="ssg-content__carousel ssg-content__media"
-      :height="`${carouselHeight}px`"
-    >
-      <q-carousel-slide
-        v-for="image in images"
-        :key="image.name"
-        :name="image.name"
-        :img-src="image.src"
+    <!--
+      The gallery.
+
+      Three things here are deliberate. The height comes from a CSS
+      `aspect-ratio`, not from a measured pixel value: the old version read the
+      viewport in JavaScript and set an inline height after hydration, which
+      moved everything below it by 700px on /pension. The arrows are real
+      buttons with names, because Quasar's default arrows are unnamed `div`s and
+      a keyboard or screen-reader visitor could not change the photo. And every
+      slide carries its caption as accessible text, since the image itself is a
+      CSS background and would otherwise be silent.
+    -->
+    <div v-if="images?.length" class="ssg-content__gallery">
+      <q-carousel
+        ref="carousel"
+        v-model="slide"
+        animated
+        arrows
+        infinite
+        :navigation="false"
+        height="auto"
+        class="ssg-content__carousel ssg-content__media"
       >
-        <div v-if="image.caption" class="ssg-content__caption">
-          {{ image.caption }}
-        </div>
-      </q-carousel-slide>
-    </q-carousel>
+        <q-carousel-slide
+          v-for="image in images"
+          :key="image.name"
+          :name="image.name"
+          :img-src="image.src"
+          :aria-label="labelOf(image)"
+        >
+          <div v-if="image.caption" class="ssg-content__caption">
+            {{ image.caption }}
+          </div>
+        </q-carousel-slide>
+
+        <template #control-prev>
+          <q-btn
+            class="ssg-content__carousel-control"
+            flat
+            round
+            dense
+            :aria-label="labels?.previousImage ?? 'Previous image'"
+            icon="i-mdi-chevron-left"
+            @click="carousel?.previous()"
+          />
+        </template>
+
+        <template #control-next>
+          <q-btn
+            class="ssg-content__carousel-control"
+            flat
+            round
+            dense
+            :aria-label="labels?.nextImage ?? 'Next image'"
+            icon="i-mdi-chevron-right"
+            @click="carousel?.next()"
+          />
+        </template>
+      </q-carousel>
+
+      <p class="ssg-content__counter" aria-hidden="true">
+        {{ currentIndex + 1 }} / {{ images.length }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
-import { useQuasar } from 'quasar'
+import ContentList from './ContentList.vue'
 import { demoteHeadings, demoteH1 } from './headings.js'
-import type { PageContentProps } from './types.js'
+import type { PageContentProps, SiteExtra } from './types.js'
 
 const QMediaPlayer = defineAsyncComponent(() =>
   import('@quasar/quasar-ui-qmediaplayer').then((module) => module.QMediaPlayer)
 )
 
-const props = withDefaults(defineProps<PageContentProps>(), {
-  demoteMarkdownHeadings: true
-})
-
-const $q = useQuasar()
+const props = withDefaults(
+  defineProps<PageContentProps & { labels?: SiteExtra['labels'] }>(),
+  {
+    demoteMarkdownHeadings: true
+  }
+)
 
 /**
  * The hero or page header already renders the page's single `<h1>`, so content
@@ -116,8 +149,25 @@ watch(
   }
 )
 
-const carouselHeight = computed(() => {
-  const width = Math.min($q.screen.width, 1120)
-  return Math.round(width / 1.6)
-})
+/** Quasar's carousel API: `previous()` and `next()` wrap at the ends. */
+const carousel = ref<{ previous: () => void; next: () => void } | null>(null)
+
+/** Which slide is showing, for the counter and the control labels. */
+const currentIndex = computed(() =>
+  Math.max(
+    0,
+    (props.images ?? []).findIndex((image) => image.name === slide.value)
+  )
+)
+
+/**
+ * What a slide is called.
+ *
+ * The image is a CSS `background-image` on the slide, so it has no accessible
+ * name of its own. The caption is the honest name; a photo without one still
+ * gets its author-given `name` rather than nothing.
+ */
+function labelOf(image: { name: string; caption?: string }): string {
+  return image.caption ?? image.name
+}
 </script>

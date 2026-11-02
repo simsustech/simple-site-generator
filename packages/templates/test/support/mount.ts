@@ -17,6 +17,8 @@ export function mountWithQuasar(
   options: {
     props?: Record<string, unknown>
     slots?: Record<string, unknown>
+    /** Route the memory history starts on; default `/`. */
+    path?: string
   } = {}
 ) {
   const router = createRouter({
@@ -27,7 +29,7 @@ export function mountWithQuasar(
     ]
   })
 
-  return mount(component, {
+  const wrapper = mount(component, {
     props: options.props,
     slots: options.slots,
     global: {
@@ -48,6 +50,13 @@ export function mountWithQuasar(
       }
     }
   })
+
+  // `createMemoryHistory` takes a base, not an entry list, so a non-default
+  // starting route is pushed after mount; the navigation resolves while the
+  // caller awaits `flushPromises()`.
+  if (options.path) void router.push(options.path)
+
+  return wrapper
 }
 
 /**

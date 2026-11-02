@@ -8,11 +8,11 @@
           of the most common Lighthouse accessibility failures.
         -->
         <q-btn
-          class="gt-sm-hidden ssg-header__menu-toggle"
+          class="xl:hidden ssg-header__menu-toggle"
           flat
           dense
           icon="i-mdi-menu"
-          aria-label="Open navigation"
+          :aria-label="openNavigationLabel"
           :aria-expanded="drawer"
           aria-controls="ssg-primary-navigation"
           @click="$emit('toggle-drawer')"
@@ -37,56 +37,86 @@
         <nav
           id="ssg-primary-navigation"
           class="ssg-header__nav"
-          aria-label="Primary"
+          :aria-label="primaryLabel"
         >
           <template v-for="page in menuPages" :key="page.id">
             <!--
-              A menu page with `subpages` becomes a dropdown. Quasar's
-              `q-btn-dropdown` handles the menu semantics (roving focus, Esc to
-              close, `aria-expanded`) so this does not have to be hand-rolled.
-            -->
-            <q-btn-dropdown
-              v-if="subpagesOfPage(page).length"
-              flat
-              no-caps
-              auto-close
-              split
-              :label="page.label"
-              :to="pathOf(page)"
-            >
-              <q-list>
-                <q-item
-                  v-for="child in subpagesOfPage(page)"
-                  :key="child.id"
-                  clickable
-                  :to="pathOf(child)"
-                >
-                  <q-item-section>{{ child.label }}</q-item-section>
-                </q-item>
-              </q-list>
-            </q-btn-dropdown>
+              A page with `subpages` opens a menu; the page itself is the first
+              entry, so the parent stays reachable. Quasar's `q-menu` handles the
+              positioning, Esc and outside-click; `q-item`'s own `active` prop
+              marks the group while any of its pages is open.
 
-            <q-btn v-else flat no-caps :to="pathOf(page)" :label="page.label" />
+              Leaf pages are `q-item` rather than `q-btn` because `q-item` is the
+              component that owns router state: `to` plus `active-class` is
+              native, and `q-btn` has no active props at all (only `to`,
+              `replace`, `href`, `target`) — which is why the old nav could not
+              show where the visitor was.
+            -->
+            <q-item
+              v-if="subpagesOfPage(page).length"
+              class="ssg-header__nav-item"
+              clickable
+              :active="isActiveTree(page)"
+              :aria-current="isActiveTree(page) ? 'true' : undefined"
+            >
+              <q-item-section>{{ page.label }}</q-item-section>
+              <q-menu auto-close>
+                <q-list>
+                  <q-item :to="pathOf(page)" clickable>
+                    <q-item-section>{{ page.label }}</q-item-section>
+                  </q-item>
+                  <q-item
+                    v-for="child in subpagesOfPage(page)"
+                    :key="child.id"
+                    :to="pathOf(child)"
+                    clickable
+                    :aria-current="
+                      route.path === pathOf(child) ? 'page' : undefined
+                    "
+                  >
+                    <q-item-section>{{ child.label }}</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-item>
+
+            <q-item
+              v-else
+              class="ssg-header__nav-item"
+              :to="pathOf(page)"
+              exact
+              :aria-current="route.path === pathOf(page) ? 'page' : undefined"
+            >
+              <q-item-section>{{ page.label }}</q-item-section>
+            </q-item>
           </template>
-          <q-btn
+
+          <q-item
             v-if="contactPages.length"
-            flat
-            no-caps
-            :label="tags?.contact?.label || 'Contact'"
+            class="ssg-header__nav-item"
+            clickable
+            :active="isContactActive"
+            :aria-current="isContactActive ? 'true' : undefined"
           >
+            <q-item-section>
+              {{ tags?.contact?.label || 'Contact' }}
+            </q-item-section>
             <q-menu auto-close>
               <q-list separator>
                 <q-item
                   v-for="page in contactPages"
                   :key="page.id"
-                  clickable
                   :to="pathOf(page)"
+                  clickable
+                  :aria-current="
+                    route.path === pathOf(page) ? 'page' : undefined
+                  "
                 >
                   <q-item-section>{{ page.label }}</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
-          </q-btn>
+          </q-item>
         </nav>
 
         <!--
@@ -95,16 +125,14 @@
           a site that sets neither — every site today except one — renders
           neither, and nothing here is invented to fill the space.
 
-          `gt-sm` is the wide-screen placement only. On a narrow screen the
-          toolbar has no room beside the brand, so the login lives in the
-          overflow menu below, and the phone number is already in the footer and
-          in the sticky call bar.
+          The two extras — the phone number and the way into the customer's own
+          environment — are what a header gives up last, not first: on a local
+          business's site the number is the action most visitors want. They are
+          shown from 1024px up, and what collapses instead is the *navigation*
+          (see `ssg-header__nav`, which appears at 1280px). Below 1024px both
+          stay reachable from the overflow menu, and the phone from the footer.
         -->
-        <a
-          v-if="phone"
-          class="gt-sm ssg-header__phone"
-          :href="`tel:${phone.replace(/\s+/g, '')}`"
-        >
+        <a v-if="phone" class="gt-sm ssg-header__phone" :href="telHref(phone)">
           {{ phone }}
         </a>
         <a
@@ -138,7 +166,7 @@
           :to="alternate.path"
         />
 
-        <q-btn flat dense icon="i-mdi-more-vert" aria-label="More options">
+        <q-btn flat dense icon="i-mdi-more-vert" :aria-label="moreOptionsLabel">
           <q-menu auto-close>
             <q-list>
               <q-item
@@ -159,6 +187,14 @@
                 </q-item-section>
               </q-item>
 
+              <!--
+                No phone number here. It was added so the number survived between
+                1024 and 1439 pixels, where the header has no room for it — but a
+                menu that opens on "call us" is the same nudge the site is trying
+                to lose, and below `lg` the fixed action bar already carries the
+                number one tap away. The header still shows it from `gt-sm` up,
+                and the footer on every page.
+              -->
               <template v-if="clientLoginUrl">
                 <q-separator />
 
@@ -211,6 +247,7 @@ import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import { contactPagesOf, menuPagesOf, pathOf, subpagesOf } from './nav.js'
 import type { LayoutProps, SeoPage, SiteExtra } from './types.js'
+import { telHref } from './tel.js'
 
 /**
  * Desktop header. On small screens the drawer carries the navigation, so the
@@ -247,6 +284,20 @@ const otherAlternates = computed(() =>
 )
 
 const menuPages = computed(() => menuPagesOf(pages.value, props.lang))
+
+/** Whether the current route is one of this page's own subpages. */
+function isActiveTree(page: (typeof menuPages.value)[number]): boolean {
+  const target = pathOf(page)
+
+  if (route.path === target) return true
+
+  return subpagesOfPage(page).some((child) => route.path === pathOf(child))
+}
+
+/** Whether the current route is one of the pages in the contact menu. */
+const isContactActive = computed(() =>
+  contactPages.value.some((page) => route.path === pathOf(page))
+)
 
 const contactPages = computed(() => contactPagesOf(pages.value, props.lang))
 
@@ -296,6 +347,21 @@ const themeLabel = computed(() =>
 /** The customer-login label, likewise from the site's configuration. */
 const loginLabel = computed(
   () => props.extra?.labels?.clientLogin ?? 'Client login'
+)
+
+/**
+ * The accessible names this header invents.
+ *
+ * None of them is visible, so a site that translates only its page copy leaves
+ * every one of them in English — and these are the strings a screen-reader user
+ * hears first. They come from `extra.labels` with the English fallbacks.
+ */
+const openNavigationLabel = computed(
+  () => props.extra?.labels?.openNavigation ?? 'Open navigation'
+)
+const primaryLabel = computed(() => props.extra?.labels?.primary ?? 'Primary')
+const moreOptionsLabel = computed(
+  () => props.extra?.labels?.moreOptions ?? 'More options'
 )
 
 /** Resolve a menu page's `subpages` ids to pages (see `nav.ts`). */

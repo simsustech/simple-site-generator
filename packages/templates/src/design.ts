@@ -162,15 +162,56 @@ export const ssgShortcuts: Shortcuts = [
   // the title band below it, the logo, and every accent inside it, instead of
   // by a full-width fill of the accent colour.
   ['ssg-header', `bg-[${CHROME}] text-[${ON_CHROME}]`],
-  ['ssg-header__inner', 'w-full max-w-content mx-auto px-space-3'],
+  [
+    'ssg-header__inner',
+    // De kop is chrome, geen leesbreedte: hij loopt over de volle breedte met
+    // dezelfde zijmarge. Met `max-w-content` (1120px) past een merk plus een
+    // navigatie van zes items plus telefoon en inloggen niet, en dan valt het
+    // laatste bedieningselement buiten beeld — gemeten op 1024, 1280, 1440 en
+    // 1920 pixels.
+    'w-full max-w-none mx-auto px-space-3'
+  ],
   ['ssg-header__toolbar', 'gap-space-2'],
   [
     'ssg-header__brand',
-    `inline-flex items-center gap-space-2 no-underline text-[${ON_CHROME}] font-700 text-step-1`
+    // `min-w-0` is wat het merk laat krimpen: een flex-item heeft standaard
+    // `min-width: auto`, dus de lange bedrijfsnaam duwde de rest van de werkbalk
+    // buiten beeld in plaats van zelf af te kappen. Gemeten op 390px.
+    `inline-flex items-center gap-space-2 min-w-0 max-w-full overflow-hidden no-underline text-[${ON_CHROME}] font-700 text-step-1`
   ],
-  ['ssg-header__logo', 'block w-40px h-40px'],
-  ['ssg-header__brand-name', 'whitespace-nowrap'],
-  ['ssg-header__nav', 'hidden items-center gap-space-1 lg:flex'],
+  ['ssg-header__logo', 'block w-40px h-40px shrink-0'],
+  [
+    'ssg-header__brand-name',
+    // The company name is the one piece of text a visitor uses to confirm they
+    // are on the right site. It shrinks with the viewport (`clamp`) and wraps
+    // onto a second line before it truncates: at 360px a fixed 20px face cut
+    // "a long Dutch company name" to "Hondenvakanti…".
+    'min-w-0 text-[clamp(15px,4.2vw,20px)] line-clamp-3 [line-height:1.15]'
+  ],
+  // Geen ruimte tussen de items: elk item is een knop met eigen padding, dus de
+  // tussenruimte kwam bovenop die padding en kostte ~40px op een rij die het
+  // zonder al nauwelijks redt.
+  [
+    'ssg-header__nav',
+    // De navigatie verschijnt pas waar hij past. Bij 1024 pixels liep de rij nog
+    // 30px over; daaronder neemt de drawer de navigatie over, en de belknop staat
+    // dan in het overflow-menu.
+    'hidden items-center gap-1 xl:flex'
+  ],
+  // Een navigatie-item is een `q-item`, niet een `q-btn`: alleen `q-item` kent
+  // `to` plus `active-class`, en dus een actieve pagina.
+  [
+    'ssg-header__nav-item',
+    // `text-inherit no-underline`: a menu page is a `q-item` with a `to`, so it
+    // renders an `<a>` — and an `<a>` that no rule colours takes the browser's
+    // own link colour, which is what made "Blog" the only blue word in a green
+    // header. The `q-item`s that open a submenu render a `<div>` and inherited
+    // the chrome colour, so the row was coloured inconsistently by accident.
+    // The current-page marker is a separate rule with higher specificity (see
+    // the preflight below), so `no-underline` does not remove its bar.
+    'min-h-[40px] px-space-2 rounded-[8px] text-step-0 font-500 cursor-pointer text-inherit no-underline'
+  ],
+
   // Chrome the plain template asks for: how to reach the business, and the way
   // into its own client environment. Both are guarded by `v-if` in the header,
   // so a site that sets neither renders neither — see `SiteHeader`.
@@ -184,9 +225,35 @@ export const ssgShortcuts: Shortcuts = [
     // not the page's primary action — the CTA inside the page is.
     `inline-flex items-center gap-[6px] min-h-[36px] px-[12px] rounded-[${CARD_RADIUS}] b b-solid b-[${OUTLINE_VARIANT}] text-[${ON_CHROME}] text-[14px] font-600 no-underline whitespace-nowrap hover:opacity-80`
   ],
+  [
+    'ssg-header__language',
+    // The language switch. It was a `q-btn` with no shortcut of its own, so it
+    // was styled by nothing: measured on a prerendered page as an `<a>` in the
+    // browser's own link colour, underlined, beside a right-aligned `q-btn`
+    // that had a tap target. Same shape as the login button minus the border —
+    // it navigates inside the site, so it is a text button, not a control.
+    `inline-flex items-center gap-[6px] min-h-[36px] px-[12px] rounded-[${CARD_RADIUS}] text-[${ON_CHROME}] text-[14px] font-600 no-underline whitespace-nowrap hover:opacity-80`
+  ],
 
   // Shell
-  ['ssg-shell__drawer-link', 'block w-full text-inherit no-underline'],
+  [
+    'ssg-shell__drawer-link',
+    // De rij is de link, niet alleen de tekst: een anker van 21px hoog in een
+    // `q-item` van 48px is met een duim niet te raken. WCAG 2.2 vraagt 24px,
+    // een comfortabele duim 44.
+    //
+    // De inspringing is er voor alle items, niet alleen het actieve: de streep
+    // van de actieve pagina staat in die ruimte, en zonder dezelfde inspringing
+    // op de andere items sprongen hun labels 12px opzij.
+    'flex items-center w-full min-h-[48px] ps-space-2 text-inherit no-underline'
+  ],
+  [
+    'ssg-shell__drawer-link--active',
+    // Dezelfde regel als in de header: gewicht plus een streep, geen kleur. De
+    // streep staat op de link en valt in de inspringing hierboven, zodat hij het
+    // icoon niet raakt en de tekst niet aantikt.
+    'font-600 shadow-[inset_3px_0_0_0_var(--q-primary)]'
+  ],
 
   // Footer — a tonal container, so the page is bookended in the brand colour
   // without a full fill of the accent role.
@@ -222,12 +289,35 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-footer__legal',
     'w-full max-w-content mx-auto mt-space-4 px-space-3 text-step--1 opacity-80'
   ],
+  // Trust marks in the footer: a row of linked logos, each capped so a tall
+  // mark cannot push the legal line off the page.
+  ['ssg-footer__marks', 'flex-[1_1_12rem] min-w-0'],
+  ['ssg-footer__mark', 'inline-flex items-center min-h-[24px]'],
+  [
+    'ssg-footer__mark-image',
+    // `object-contain` letterboxes a logo whose ratio is not the one the
+    // attributes declare; without it a mis-declared ratio stretches the mark.
+    // Een vaste breedte, geen `auto`: een SVG met alleen een viewBox heeft geen
+    // intrinsieke maat en een `img` met twee keer `auto` legt dan 0×0 neer.
+    // `object-contain` houdt de verhouding heel wanneer de hoogte door
+    // `max-height` wordt afgekapt.
+    'block w-[112px] h-auto max-h-[48px] [object-fit:contain]'
+  ],
 
   // Hero
   ['ssg-hero', 'py-space-5'],
   [
     'ssg-hero--tinted',
-    `bg-[${SECONDARY_CONTAINER}] text-[${ON_SECONDARY_CONTAINER}]`
+    // De herosband is een neutraal vlak, niet de merkkleur. Een foto van hooi en
+    // gras op een groene band loopt in elkaar door; op een neutraal vlak staat
+    // hij los. Het groen blijft waar het betekenis heeft: de actie en de
+    // voettekst.
+    //
+    // De band krijgt dezelfde ondermarge als de titelband van de business-pagina
+    // (`mb-space-5`). Zonder die marge begon de eerste sectie op de onderrand van
+    // de band — 0 pixels — terwijl elke andere pagina 42 tot 68 pixels ruimte
+    // onder zijn band heeft.
+    `bg-[${SURFACE_CONTAINER}] text-[${ON_SURFACE}] mb-space-5`
   ],
   [
     'ssg-hero__inner',
@@ -337,7 +427,14 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-proof-section__facts-heading',
     `text-[${ON_SURFACE}] text-step-0 m-0 mb-space-2`
   ],
-  ['ssg-proof-section__list', `text-[${ON_SURFACE_VARIANT}] m-0 text-step--1`],
+  [
+    'ssg-proof-section__list',
+    // A single-column `dl` with no reviews beside it runs the full content
+    // width, and a fact list is read in lines, not in a scroll: the measure caps
+    // it. With reviews present the column is already narrow, so this costs
+    // nothing there.
+    `text-[${ON_SURFACE_VARIANT}] m-0 text-step--1 max-w-[52ch]`
+  ],
   [
     'ssg-proof-section__link',
     `text-[${PRIMARY}] transition-opacity duration-200 hover:opacity-80`
@@ -376,12 +473,36 @@ export const ssgShortcuts: Shortcuts = [
 
   // Page content
   ['ssg-content__media', 'w-full max-w-[1120px]'],
+  ['ssg-content__gallery', 'relative'],
+  [
+    'ssg-content__list-heading',
+    `text-[${ON_SURFACE_VARIANT}] text-step-0 font-600 mt-space-3 mb-space-1`
+  ],
+  [
+    'ssg-content__carousel',
+    // De hoogte komt uit de verhouding, niet uit een gemeten pixelwaarde: de
+    // oude versie las de viewport in JavaScript en zette de hoogte na hydration,
+    // waardoor alles eronder 700px verschoof.
+    'w-full max-w-[1120px] aspect-[3/2] h-auto'
+  ],
+  [
+    'ssg-content__carousel-control',
+    // Op een foto is de achtergrond van de pagina geen betrouwbare ondergrond.
+    'bg-black/45 text-white'
+  ],
+  [
+    'ssg-content__counter',
+    `mt-space-1 mb-0 text-[${ON_SURFACE_VARIANT}] text-step--1`
+  ],
   [
     'ssg-content__caption',
     'absolute top-0 inset-x-0 p-space-2 text-center text-white bg-[rgb(0_0_0_/_55%)]'
   ],
   // The page's primary action, shown in the title band.
-  ['ssg-page-header__cta', 'mt-space-4'],
+  [
+    'ssg-page-header__cta',
+    'mt-space-3 lg:mt-0 lg:shrink-0 self-start lg:self-auto'
+  ],
 
   // Landing
   [
@@ -399,9 +520,24 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-docs__lede', pageLede()],
 
   // Business
-  ['ssg-business__header', pageHeader()],
+  //
+  // One layout owner. The band IS this header with a panel behind it, so the
+  // variant is `pageHeader()` — colour, padding, radius, the accent rule and the
+  // row from `lg` — and the base carries nothing the variant repeats except
+  // `relative`/`overflow-hidden` (same values) and a smaller bottom margin, which
+  // the band raises on purpose.
+  //
+  // They used to be two full page headers composed on one element
+  // (`plainPageHeader()` and `pageHeader()`), so two equal-specificity rules set
+  // `display`, `flex-wrap` and `margin-bottom` at once and the winner was
+  // whichever came later in the sheet. Measured on the reference site, that
+  // combination resolved to `display:flex` + `flex-wrap:wrap` + a 68px margin: a
+  // row nobody designed, and the reason nothing could be reasoned about.
+  ['ssg-business__header', 'relative overflow-hidden mb-space-3'],
+  // The band, for a page whose header carries decoration behind its copy. From
+  // `lg` the decoration sits beside the copy rather than over it.
+  ['ssg-business__header--decorated', pageHeader()],
   ['ssg-business__title', pageTitle()],
-  ['ssg-business__lede', pageLede()],
   ['ssg-business__cards', 'mt-space-5'],
   [
     'ssg-business__cards-heading',
@@ -416,16 +552,23 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-business__band-copy--narrow', 'lg:max-w-[58%]'],
   [
     'ssg-business__band-demo',
-    // Absolute in the band, which is already `relative overflow-hidden`. Below
-    // `lg` the band has no room for a graphic beside the copy, so it is hidden
-    // rather than shrunk — the labels are the point and they stop being legible
-    // first. `pointer-events-none` keeps it from swallowing the copy's links.
+    // A flex child of the band, not an overlay on it: its height then comes from
+    // its own width through the SVG's 360 × 220 ratio, and the band grows to hold
+    // it. It used to be `absolute top-space-3 right-space-3` at `w-[40%]`, which
+    // only worked while the band was tall — on the compact title band the graphic
+    // measured 352 × 215 inside a 130px box, so `overflow-hidden` cut off 100px
+    // of it and what stayed visible was the dot grid and two labels.
+    //
+    // Below `lg` the band has no room for a graphic beside the copy, so it is
+    // hidden rather than shrunk — the labels are the point and they stop being
+    // legible first. `pointer-events-none` keeps it from swallowing the copy's
+    // links.
     //
     // `hidden` here only wins because `ssg-demo` does not also set a display
     // value; see the note on that shortcut. Two equal-specificity classes each
     // setting `display` would be resolved by stylesheet order, and this one lost
     // — the graphic rendered on top of the headline on every phone.
-    'hidden lg:block pointer-events-none absolute top-space-3 right-space-3 w-[40%] max-w-[22rem]'
+    'hidden lg:block pointer-events-none w-[40%] max-w-[22rem] shrink-0'
   ],
 
   // Plain — the sober template: one service, one action, a price on the screen
@@ -659,7 +802,12 @@ export const ssgShortcuts: Shortcuts = [
    carry the brand tint itself, but the header and footer now do — a band in the
    same tone as the header above it would read as one block. */
 function pageHeader(): string {
-  return `relative overflow-hidden bg-[${BAND}] text-[${ON_BAND}] p-space-4 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5`
+  // Compact on purpose. The band exists to open the page with the title, one line
+  // of orientation and one action — it is not a hero, and at `p-space-4` with a
+  // lede at `text-step-1` it measured 158 to 319 pixels on a phone, 19 to 38% of
+  // the first screen. From `lg` up the action sits beside the copy instead of
+  // under it, which is where most of the height came from on a wide screen.
+  return `relative overflow-hidden bg-[${BAND}] text-[${ON_BAND}] p-space-3 rounded-[${CARD_RADIUS}] b-s-4 b-s-solid b-s-[${PRIMARY}] mb-space-5 lg:flex lg:items-center lg:justify-between lg:gap-space-4`
 }
 
 /**
@@ -692,7 +840,15 @@ function pageTitle(): string {
 }
 
 function pageLede(): string {
-  return 'text-inherit opacity-85 text-step-1 mt-space-2 mb-0 max-w-measure'
+  // `leading-[1.45]` is not decoration: without it the lede inherits
+  // `line-height: 1`, and a three-line lede on a phone is three touching lines
+  // directly under the h1. Measured at 20.14px/20.14px before this.
+  //
+  // Body size, not lede size: the lede is the page's own description, and at
+  // `text-step-1` the contact page's five-line description was 147 of the band's
+  // 319 pixels — the single largest thing in a block that is meant to be a
+  // heading with a subtitle.
+  return 'text-inherit opacity-85 text-step-0 leading-[1.45] mt-space-2 mb-0 max-w-measure'
 }
 
 /**
@@ -783,6 +939,116 @@ body .ssg-header.q-header {
 /* The layout already offsets for the header; the page container must not add it. */
 .ssg-shell .q-page-container {
   padding-top: 0;
+}
+
+/*
+  The current page, marked.
+
+  q-router-link--active is Quasar's own class — a q-item with to gets it
+  without any help — and the router's router-link-active is Vue Router's. Both
+  are native, so the marker is styled where it is emitted rather than computed by
+  hand in the component. The tint is mixed from the primary token, so it follows
+  the theme instead of naming a colour.
+*/
+.ssg-header .ssg-header__nav .ssg-header__nav-item.q-router-link--active,
+.ssg-header .ssg-header__nav .ssg-header__nav-item.q-item--active {
+  /* Quasar colours an active link with the primary token, and a tinted backdrop
+     drags the ink under the 4.5:1 AA floor: primary on the sage band is 4.0:1,
+     and in dark mode the tint drops it to 3.7:1. So the ink and the backdrop stay
+     as they are and the marker is a bar plus weight — a bar is a non-text
+     indicator, where 3:1 is the floor. */
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--q-primary);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+/*
+  One page gutter, owned here.
+
+  The page needs a name for its own gutter because the tinted hero band runs edge
+  to edge: its background sat inside the page padding and read as a white frame
+  around a coloured band rather than as a band. Naming the value once lets the
+  hero cancel exactly what the page applies.
+
+  The padding itself is not declared here. unocss-preset-quasar already gives
+  q-page a padding of var(--q-space-md), which resolves to 12px — the same value
+  this rule used to write out as a literal, so it was a second source of truth
+  for one number, and a stale one the day the token changes. Only the alias is
+  ours.
+*/
+.ssg-shell {
+  --ssg-page-gutter: var(--q-space-md);
+
+  /* Height of the fixed action bar below the lg breakpoint: its own padding, the
+     48px tap target, the safe-area inset and the 1px rule. Declared once so the control it
+     collides with can be lifted by exactly the same amount, and so the footer can
+     reserve it. */
+  --ssg-sticky-bar-height: calc(
+    48px + 1.5rem + env(safe-area-inset-bottom, 0px) + 1px
+  );
+}
+
+.ssg-shell .ssg-hero--tinted {
+  margin-inline: calc(-1 * var(--ssg-page-gutter));
+}
+
+/*
+  A band that owns its background owns the top of the page.
+
+  The page's gutter is right for content, and wrong above a coloured band: 12px
+  of page background sat between the header and the band, which reads as a seam
+  rather than as a margin. Cancelling it for a hero that is the first thing on the
+  page — and only then, so a hero placed lower cannot overlap what is above it —
+  puts the band's own colour against the header where it belongs.
+*/
+.ssg-shell .ssg-hero--tinted:first-child {
+  margin-block-start: calc(-1 * var(--ssg-page-gutter));
+}
+
+/*
+  The current page in the drawer.
+
+  A vertical stripe at the start of the link, inside the inset the shortcut gives
+  every drawer link. On the row itself an inset rule follows the pill's radius and
+  curves around the icon; inside the link's own inset it is a straight 3px stripe
+  in the gap between icon and label, and no label moves when a page becomes
+  current.
+*/
+
+/*
+  The hero photo sits on a coloured band, so it needs an edge of its own: without
+  one the picture's own greens bleed into the band and the two read as one flat
+  plane.
+
+  A hairline border plus a tight shadow, not a wide soft one. Measured on the
+  reference site at 3x: the previous single 0 10px 28px shadow at 12% black left
+  the band only 30-44 levels darker than itself just under the picture, ramping
+  away over 40px — a wash, which the eye does not read as depth, and the ring
+  around it (the outline-variant token) was the same brightness as that wash, so
+  there was no edge either. What reads as a lifted object is a crisp dark line
+  and a shadow that is darkest at the edge and falls off fast: the 1px outline
+  is roughly 110 levels below the band, and the 6px shadow halves within 16px.
+
+  The border uses the outline token rather than outline-variant because it is the
+  same role a control border uses: in dark mode it is a light hairline on a dark
+  band, where a black shadow alone would leave the picture edgeless.
+
+  The radius is the cards' own card radius, so a framed photo and a card beside
+  it agree. This is also the LCP element, so it stays one plain img rule: no
+  wrapper to add a second box.
+*/
+.ssg-hero__image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--q-card-radius, 0.75rem);
+  border: 1px solid var(--q-outline, rgb(0 0 0 / 16%));
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 14%),
+    0 6px 16px -4px rgb(0 0 0 / 32%);
 }
 
 #main {
@@ -891,13 +1157,85 @@ body .ssg-header.q-header {
   color: var(--q-on-surface-variant, inherit);
 }
 
-/* The hero image is the LCP element: block-level, full width, rounded. */
-.ssg-hero__image img {
-  display: block;
+/*
+  Markdown tables.
+
+  A table is the one block in prose no utility can reach: the body arrives as
+  v-html from the build-time renderer, so it carries no classes of its own.
+  Without these rules a price table renders as the browser's default — no
+  borders, no padding, an undifferentiated first row — which reads as broken on
+  the page whose whole job is a column of numbers.
+
+  The header styling applies to the thead element and to a table written as raw HTML
+  without one (its first row becomes the header row). Borders are set per side:
+  border-style alone paints the CSS initial width of 3px, so a hairline becomes
+  a box.
+*/
+.ssg-prose :where(table) {
   width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
+  margin-block: ${SPACE['4']};
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
+
+.ssg-prose :where(thead th, tr:first-child > th) {
+  text-align: start;
+  font-weight: 600;
+  border-block-end: 2px solid var(--q-outline-variant, currentColor);
+}
+
+.ssg-prose :where(th, td) {
+  padding: ${SPACE['1']} ${SPACE['2']};
+  border-block-end: 1px solid var(--q-outline-variant, currentColor);
+  vertical-align: top;
+}
+
+.ssg-prose :where(tbody tr:last-child > td) {
+  border-block-end: 0;
+}
+
+/* Zebra striping on the row, so the tint is continuous across the cells. */
+.ssg-prose :where(tbody tr:nth-child(even)) {
+  background: var(--q-surface-container-low, transparent);
+}
+
+/*
+  Figures line up: a column of prices reads as a column, not as ragged text.
+  tabular-nums is ignored by a browser whose font has no such figures, which
+  is why it is a refinement rather than a requirement.
+*/
+.ssg-prose :where(td):not(:first-child) {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  Labels in a content list wrap instead of being cut.
+
+  q-item__label sets white-space: nowrap with an ellipsis, and the contact
+  page puts whole instructions in it — "Kijk eerst op https://app.example.test
+  voor de beschikbaarheid voordat u contact op neemt." At 360px that rendered as
+  "Kijk eerst op https://app.example.test voor de be…", which is content loss on
+  the page a visitor uses to reach the business.
+*/
+.ssg-content .q-item__label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/*
+  A wide table scrolls instead of pushing the page sideways.
+
+  Squeezing four price columns into 360px wraps every cell to a few characters;
+  a scroll container keeps the numbers aligned. the :has() selector degrades safely — where
+  it is unsupported the rule is dropped and the table simply overflows the
+  document, which is the behaviour before this existed.
+*/
+.ssg-content__markdown:has(> table) {
+  overflow-x: auto;
+}
+
 
 /* Definition-list terms in the proof section. */
 .ssg-proof-section__list dt {
@@ -946,6 +1284,23 @@ body .ssg-header.q-header {
     background: var(--q-primary, #1976d2);
     border-color: var(--q-primary, #1976d2);
     color: var(--q-on-primary, #ffffff);
+  }
+
+  /*
+    Nothing hides behind the bar.
+
+    It is fixed to the bottom of the viewport, so the end of the page scrolls
+    underneath it: the footer's closing line — the copyright and the e-mail
+    address — sat behind it and could not be read. The footer reserves the bar's
+    height, and the back-to-top control, which Quasar positions from its own
+    offset, is lifted by the same amount so the two no longer overlap.
+  */
+  .ssg-shell .ssg-footer {
+    padding-block-end: calc(var(--ssg-sticky-bar-height) + var(--q-space-md));
+  }
+
+  .ssg-shell .q-page-sticky.fixed-bottom-right {
+    margin-bottom: calc(var(--ssg-sticky-bar-height) + 18px) !important;
   }
 }
 
