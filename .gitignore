@@ -25,5 +25,7 @@
 /rewrite.md
 
 # The coding agent's own cache (`fff` frecency, debug logs). Machine-local state,
-# never source, and it reappears after every session.
-/.pi
+# never source, and it reappears after every session. Any depth: a session started
+# inside a package writes a nested one, and those databases were committed once
+# because only the root was ignored.
+**/.pi
