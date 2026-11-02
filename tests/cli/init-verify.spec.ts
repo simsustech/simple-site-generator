@@ -154,12 +154,19 @@ describe('ssg init', () => {
     // is scanned; the shortcut names are safelisted separately. Dropping this
     // include looks like a free ~17 KB of CSS and is actually an unstyled drawer
     // and missing icons, so it is pinned here.
+    //
+    // Pinned by **path**, not by package name. Vite resolves a `link:`ed kit to
+    // where it really lives, so it arrives as `.../packages/templates/dist/*.js`
+    // and a matcher built from `ssg.templatePackage` scans nothing — silently,
+    // which is how the reference site shipped without any Quasar CSS.
+    //
     // Matched structurally rather than by the literal text: the pattern is
     // written with escaped backslashes, and a `toContain` of that text breaks on
     // how many of them survive the template engine and the test literal.
     expect(config).toMatch(
-      /content:\s*\{[\s\S]*?pipeline:[\s\S]*?new RegExp\([\s\S]*?ssg\.templatePackage/
+      /content:\s*\{[\s\S]*?pipeline:[\s\S]*?new RegExp\([\s\S]*?templates\/dist\/\.[*]\\\\\.js/
     )
+    expect(config).not.toMatch(/new RegExp\([^)]*ssg\.templatePackage/)
     expect(config).toContain('include')
   })
 
