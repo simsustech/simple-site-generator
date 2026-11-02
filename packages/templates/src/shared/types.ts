@@ -100,6 +100,33 @@ export interface SitePage {
     width?: number
     height?: number
   }[]
+
+  /**
+   * The page's header illustration: the band's background, and the plain
+   * template's hero photograph.
+   *
+   * A URL, and only a URL: a band paints it as a background, so nothing lays the
+   * photo out there and its size is not the band's business.
+   */
+  headerImage?: string
+  /**
+   * The header photograph's own width and height, in pixels.
+   *
+   * Load-bearing on the plain template, which renders `headerImage` as a real
+   * `<img>` above the page: an image with no `width`/`height` occupies 0px until
+   * it decodes, so everything below it jumps down when it lands — measured on a
+   * 1156×721 hero with the photo held back 1.2s, the figure went from 0px to
+   * 190px at 360 wide and to 300px at 1280, for CLS 0.157 and 0.016. Declaring
+   * them reserves the box from the photo's own ratio before the bytes arrive.
+   *
+   * Omitted, the hero reserves a landscape 1200×750 — the same fallback
+   * `HeroImage` uses. A photo of another shape then settles to its own height
+   * when it arrives: a smaller jump than a collapsed hero, still a jump, so a
+   * site that knows the size should declare it.
+   */
+  headerImageWidth?: number
+  /** The header photograph's own height; see `headerImageWidth`. */
+  headerImageHeight?: number
   subpages?: string[]
   tags?: string[]
   /** Sort weight; the home page is always first. */
@@ -133,15 +160,6 @@ export interface SitePage {
   extra?: Record<string, unknown>
   /** Excluded from the sitemap and marked `noindex`. */
   noindex?: boolean
-  /**
-   * Illustration for the page's header band, rendered as the band's background.
-   *
-   * Declared here, not only on `SeoPage`: a field missing from this type is
-   * never exposed as a prop (Vue derives runtime props from the type), so the
-   * frontmatter value would land in `attrs` and the band would render without
-   * its background.
-   */
-  headerImage?: string
   /**
    * The hero's process graphic: a route with the given stops, drawn and
    * animated as an inline SVG (`shared/HeroDemo.vue`).
@@ -409,6 +427,10 @@ export interface SeoPage {
    * self-contained card, a header illustration is decoration behind the title.
    */
   headerImage?: string
+  /** The hero photograph's own width in pixels; see `SitePage`. */
+  headerImageWidth?: number
+  /** The hero photograph's own height in pixels; see `SitePage`. */
+  headerImageHeight?: number
   /**
    * BCP-47 tag for this page when it differs from the site default — `nl` on a
    * Dutch page of an otherwise English site. Drives `<html lang>`, `og:locale`
