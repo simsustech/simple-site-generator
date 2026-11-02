@@ -1,4 +1,4 @@
-{{ url }} {
+{{ host }} {
   # The bundler fingerprints every asset as `name-<hash>.ext`; such a file is
   # immutable, so the browser may keep it for a year without revalidating.
   @hashed path_regexp hashed -[A-Za-z0-9_]{8,}\.(js|mjs|css|woff2|png|jpe?g|webp|svg)$
@@ -6,7 +6,7 @@
 
   encode zstd gzip
   handle {
-    root * /srv/{{ url }}
+    root * /srv/{{ host }}
     try_files {path}.html {path}
     file_server
   }
@@ -16,7 +16,7 @@
   # mistyped URL is served as a real page and a crawler indexes it. The status
   # a monitor sees would be a lie too.
   handle_errors {
-    root * /srv/{{ url }}
+    root * /srv/{{ host }}
     @notFound expression {err.status_code} == 404
     rewrite @notFound /404.html
     file_server

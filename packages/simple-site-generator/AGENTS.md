@@ -63,12 +63,21 @@ your frontmatter and the site config, in the layout, so they are emitted for eve
 Put site-wide facts in the `ssg` block of `vitrify.config.ts`, not in pages:
 
 ```ts
-extra: { phone, email, address, serviceArea: [...], rating, reviewCount, reviews: [...] },
+extra: {
+  phone, email, address, serviceArea: [...], rating, reviewCount, reviews: [...],
+  // A site not in English names the chrome's own strings here: the skip link,
+  // the drawer, the overflow menu, the back-to-top button and the footer's two
+  // headings. Every entry falls back to English, so an English site sets none.
+  labels: { skipToContent, openNavigation, primary, navigation, sections, footer, contact, follow, moreOptions, backToTop, dark, light, clientLogin },
+  // Trust marks (a keurmerk, a trade association) rendered in the footer.
+  qualityMarks: [{ name: 'Dibevo', imageUrl: '/dibevo.svg', url: 'https://dibevo.nl/' }]
+},
 jsonLd: { business: { type: 'Plumber', openingHours: [{ days: ['Mo'], opens: '08:00', closes: '18:00' }] } }
 ```
 
 Those fields feed the visible proof section _and_ `LocalBusiness` structured data from one source, so
-the page and the crawler cannot disagree.
+the page and the crawler cannot disagree. `labels` and `qualityMarks` are the two that make the shared
+chrome speak the site's language and show its marks.
 
 `ssg.lang` must be a **Quasar language pack id**, not a bare language code: Quasar writes the
 `<html lang>` from the pack it loads, and the template passes `ssg.lang` through as `vitrify.lang`.

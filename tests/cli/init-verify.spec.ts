@@ -102,19 +102,22 @@ describe('ssg init', () => {
     }
   })
 
-  it('names the landing component only on a landing site', async () => {
+  it('names the landing component only on a site whose module exports one', async () => {
     // The scaffold's home page used to hardcode `page: Landing` whatever template
-    // was chosen. Only the `landing` module exports a `Landing`, so a `business`
-    // or `docs` site named a component that does not exist — and the router fell
-    // back to `Page` and silently rendered the wrong home page. That is a build
-    // failure now, so the scaffold itself has to be right.
+    // was chosen. A module without a `Landing` then named a component that does
+    // not exist, and the router fell back to `Page` and silently rendered the
+    // wrong home page. That is a build failure now, so the scaffold itself has to
+    // be right — and the flag follows the export, not the template's name:
+    // `landing` has always had one, and `business` grew one for a local
+    // business's front page.
     const read = (dir: string) =>
       fs.readFile(join(workspace, dir, 'src/pages/Index.md'), 'utf8')
 
     for (const [template, expected] of [
       ['landing', /^page: Landing$/m],
-      ['business', null],
-      ['docs', null]
+      ['business', /^page: Landing$/m],
+      ['docs', null],
+      ['plain', null]
     ] as const) {
       const dir = `site-${template}`
       const { code } = await run(
@@ -130,6 +133,7 @@ describe('ssg init', () => {
       else expect(page).not.toMatch(/^page:/m)
     }
   })
+
   it('renders the chosen template into the generated config', async () => {
     const config = await fs.readFile(
       join(target(), 'vitrify.config.ts'),

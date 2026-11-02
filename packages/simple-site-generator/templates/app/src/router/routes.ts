@@ -26,6 +26,18 @@ interface PageFrontmatter {
   noindex?: boolean
   image?: string
   /**
+   * Other paths that resolve to this page, e.g. the English slug a page had
+   * before it was renamed.
+   *
+   * These are client-side aliases only. The prerenderer builds its file list
+   * from the route's `path` (Vitrify's `routesToPaths` does not read `alias`), so
+   * an alias writes no HTML of its own and a static host answers it with the 404
+   * page. A renamed page therefore also needs a redirect where the site is
+   * served — `build/Caddyfile` — and the alias is what keeps the dev server and
+   * in-app navigation working.
+   */
+  alias?: string[]
+  /**
    * BCP-47 tag when this page is not in the site's default language, e.g. `nl`.
    * Drives `<html lang>`, `og:locale` and the JSON-LD `inLanguage`.
    */
@@ -183,7 +195,12 @@ const routes: RouteRecordRaw[] = [
           name: id,
           component: noSsr ? noSsrComponent : vuePage,
           props: noSsr ? { page: props, component: vuePage } : props,
-          alias: id === 'home' ? ['home'] : [],
+          // `home` is an alias of the parent path, so it stays relative; a
+          // page's own aliases name paths of this router and carry a slash.
+          alias: [
+            ...(id === 'home' ? ['home'] : []),
+            ...(attributes.alias ?? [])
+          ],
           /**
            * The single source of truth about a page, read by both the shell (for
            * `<head>` tags) and the build (for the sitemap).

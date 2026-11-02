@@ -54,6 +54,8 @@ export const pageFrontmatterSchema = z.object({
     .object({
       message: z.string().min(1),
       route: z.string().min(1).optional(),
+      /** Absolute destination (`tel:`, `mailto:`, another host). */
+      href: z.string().min(1).optional(),
       /**
        * The quieter action beside the primary one, rendered as an outline.
        *
@@ -64,7 +66,9 @@ export const pageFrontmatterSchema = z.object({
       secondary: z
         .object({
           message: z.string().min(1),
-          route: z.string().min(1).optional()
+          route: z.string().min(1).optional(),
+          /** Absolute destination for the second action, e.g. a `tel:` link. */
+          href: z.string().min(1).optional()
         })
         .optional()
     })
