@@ -539,6 +539,8 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-business__header--decorated', pageHeader()],
   ['ssg-business__title', pageTitle()],
   ['ssg-business__cards', 'mt-space-5'],
+  // The page's closing action, when its frontmatter declares a `cta`.
+  ['ssg-business__action', 'mt-space-5'],
   [
     'ssg-business__cards-heading',
     `text-[${ON_SURFACE}] text-step-2 m-0 mb-space-3`

@@ -79,6 +79,30 @@
         <BentoGrid :tiles="tiles" />
       </section>
 
+      <!--
+        The page's own primary action, when the frontmatter declares one.
+
+        `cta` was a dead field on this template: the band used to render it, the
+        band lost it when it was cut back to a title, and every page that declared
+        one — both contact pages on the reference site, ten pages on the second
+        site — got nothing. Not in the band: an action repeated above the fold on
+        every page is the thing that made that block the loudest on ten pages in a
+        row. It closes the page instead, after the prose it belongs to, which is
+        where a reader who has just been convinced needs it.
+
+        `href` carries `mailto:` and `tel:` just as well as `route` carries an
+        in-app path, so a contact page asks for the email without a form.
+      -->
+      <div v-if="cta" class="ssg-business__action">
+        <CtaButton
+          :label="cta.message"
+          :route="cta.route"
+          :href="cta.href"
+          variant="primary"
+          data-ssg="page-cta"
+        />
+      </div>
+
       <slot />
     </article>
   </q-page>
@@ -88,6 +112,7 @@
 import { computed } from 'vue'
 import Breadcrumbs from '../shared/Breadcrumbs.vue'
 import BentoGrid from '../shared/BentoGrid.vue'
+import CtaButton from '../shared/CtaButton.vue'
 import PageContent from '../shared/PageContent.vue'
 import HeroDemo from '../shared/HeroDemo.vue'
 import PrincipleGrid from '../shared/PrincipleGrid.vue'
