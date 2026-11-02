@@ -28,6 +28,7 @@ Usage:
 Options:
   --template <name>         ${TEMPLATES.join(' | ')} (default: docs)
   --site-name <name>        Displayed site name
+  --package-name <name>     npm package name (default: a slug of the site name)
   --url <origin>            Absolute site origin, e.g. https://example.com
   --title <title>           add-page: page title
   --description <text>      add-page: meta description
@@ -54,6 +55,7 @@ async function main(argv: string[]): Promise<number> {
     string: [
       'template',
       'site-name',
+      'package-name',
       'url',
       'title',
       'description',
@@ -79,7 +81,7 @@ async function main(argv: string[]): Promise<number> {
       const result = await init({
         directory,
         template: args.template,
-        name: args['site-name'],
+        name: args['package-name'],
         productName: args['site-name'],
         url: args.url,
         yes: args.yes

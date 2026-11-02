@@ -23,6 +23,8 @@ interface SimpleSiteGenerator {
     template: string
     templatePackage: string
     favicon: string
+    /** Absolute or root-relative social-card image; optional. */
+    image?: string
     lang: string
     sourceColor: string
     tags: Record<string, { label: string }>
@@ -40,6 +42,10 @@ const ssg: SimpleSiteGenerator['ssg'] = {
   url: '{{ url }}',
   description: '{{ description }}',
   favicon: '/favicon-96.png',
+  // The image a shared link shows. Leave it unset and `og:image` is simply not
+  // emitted; point it at a 1200x630 file in `public/` once you have one, and the
+  // Twitter card switches from `summary` to `summary_large_image` by itself.
+  // image: '/images/social-card.jpg',
   // Rendered from the `--template` value passed to `ssg init`. It selects which
   // template module the app imports, so it must be templated, not hardcoded.
   template: '{{ template }}',
@@ -125,6 +131,7 @@ export default async function ({
           url: ssg.url,
           description: ssg.description,
           favicon: ssg.favicon,
+          image: ssg.image,
           lang: ssg.lang,
           extra: ssg.extra,
           jsonLd: ssg.jsonLd
@@ -155,6 +162,7 @@ export default async function ({
               title: ssg.title,
               url: ssg.url,
               favicon: ssg.favicon,
+              image: ssg.image,
               lang: ssg.lang,
               template: ssg.template,
               templatePackage: ssg.templatePackage,
@@ -213,7 +221,6 @@ export default async function ({
         content: {
           pipeline: {
             include: [
-              /\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html)($|\?)/,
               // The templates package IS scanned, and has to be: a template
               // component renders `q-separator` and `i-mdi-phone` as readily as
               // it renders an `ssg-*` class, and `unocss-preset-quasar` is what
@@ -227,7 +234,13 @@ export default async function ({
               // it is not the shortcut CSS this supplies — it is the Quasar and
               // icon classes. The noise that rides along with it is bounded by
               // the design system's own `blocklist`.
-              new RegExp(`${ssg.templatePackage}.*\\.js`)
+              //
+              // Matched by path, not by package name: Vite resolves a `link:`ed
+              // dependency to where it really lives, so a kit checked out beside
+              // this project arrives as `…/packages/templates/dist/*.js` — a
+              // name-only matcher scans nothing, reports nothing, and the only
+              // symptom is that same unstyled drawer.
+              new RegExp('templates/dist/.*\\.js')
             ]
           }
         }

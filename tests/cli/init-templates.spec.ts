@@ -145,3 +145,164 @@ describe('ssg init --template plain', () => {
     }
   })
 })
+
+describe('the generated package.json', () => {
+  it('provides the ssg binary its own scripts call', async () => {
+    // A generated project's `check`, `build` and `verify` scripts run `ssg`, and
+    // nothing in the dependency list provided it: a fresh site installed and
+    // then failed with "ssg: not found". The reference site adds it by hand,
+    // which is exactly the fix a scaffold should not require.
+    const { code } = await run(
+      ['init', join(workspace, 'binary'), '--template', 'business', '--yes'],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const pkg = JSON.parse(
+      await fs.readFile(join(workspace, 'binary', 'package.json'), 'utf8')
+    ) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+
+    expect(pkg.devDependencies?.['simple-site-generator']).toMatch(/^\^0\.2\.0/)
+    expect(pkg.dependencies?.['@simple-site-generator/templates']).toMatch(
+      /^\^0\.2\.0/
+    )
+  })
+
+  it('turns a display name into a package name vitrify accepts', async () => {
+    // `--site-name` used to be written into `package.json` as `name`, and
+    // vitrify refuses a `name` with spaces in it: "Invalid name: I See You".
+    // The scaffold could not build. The display name still reaches productName.
+    const { code } = await run(
+      [
+        'init',
+        join(workspace, 'display'),
+        '--template',
+        'landing',
+        '--site-name',
+        'Hondenvakantieboerderij Nicky',
+        '--yes'
+      ],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const pkg = JSON.parse(
+      await fs.readFile(join(workspace, 'display', 'package.json'), 'utf8')
+    ) as { name: string; productName?: string }
+
+    expect(pkg.name).toBe('hondenvakantieboerderij-nicky')
+    expect(pkg.productName).toBe('Hondenvakantieboerderij Nicky')
+  })
+
+  it('takes an explicit package name over the slug', async () => {
+    const { code } = await run(
+      [
+        'init',
+        join(workspace, 'explicit'),
+        '--template',
+        'business',
+        '--site-name',
+        'Hondenvakantieboerderij Nicky',
+        '--package-name',
+        'hvbnicky',
+        '--yes'
+      ],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const pkg = JSON.parse(
+      await fs.readFile(join(workspace, 'explicit', 'package.json'), 'utf8')
+    ) as { name: string }
+
+    expect(pkg.name).toBe('hvbnicky')
+  })
+})
+
+describe('the generated home page', () => {
+  it('names Landing for the modules that export one', async () => {
+    // `business` grew a `Landing` component because a local business's front
+    // page is not a service page. The scaffold writes `page: Landing` only where
+    // that component exists — for a module without it, the router throws during
+    // prerender and the site cannot build at all.
+    for (const [template, expectsLanding] of [
+      ['business', true],
+      ['landing', true],
+      ['docs', false],
+      ['plain', false]
+    ] as const) {
+      const { code } = await run(
+        [
+          'init',
+          join(workspace, `home-${template}`),
+          '--template',
+          template,
+          '--yes'
+        ],
+        workspace
+      )
+
+      expect(code).toBe(0)
+
+      const home = await fs.readFile(
+        join(workspace, `home-${template}`, 'src/pages/Index.md'),
+        'utf8'
+      )
+
+      expect(/^page: Landing$/m.test(home)).toBe(expectsLanding)
+    }
+  })
+})
+
+describe('the generated deploy target', () => {
+  it('splits the origin into a host for Caddy and the /srv path', async () => {
+    // The scaffold interpolated the full origin into both, which produced
+    // `root * /srv/https://example.com` and a Caddy site address of
+    // `https://example.com` — a directory no server has. The origin still
+    // reaches `ssg.url`, because a canonical has to be absolute.
+    const { code } = await run(
+      [
+        'init',
+        join(workspace, 'host'),
+        '--template',
+        'business',
+        '--url',
+        'https://www.example.com/',
+        '--yes'
+      ],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const caddy = await fs.readFile(
+      join(workspace, 'host', 'build/Caddyfile'),
+      'utf8'
+    )
+
+    expect(caddy.startsWith('www.example.com {')).toBe(true)
+    expect(caddy).toContain('root * /srv/www.example.com')
+    expect(caddy).not.toContain('/srv/https:')
+
+    const workflow = await fs.readFile(
+      join(workspace, 'host', '.github/workflows/deploy-rsync.yaml'),
+      'utf8'
+    )
+
+    // The workflow keeps `${{env.host}}` in the path — the literal host there
+    // would have to be kept in step by hand — but the env value is the bare host.
+    expect(workflow).toContain('host: www.example.com')
+    expect(workflow).toContain('remote_path: /srv/${{env.host}}')
+    expect(workflow).not.toContain('/srv/https:')
+
+    const config = await readConfig('host')
+
+    expect(config).toContain("url: 'https://www.example.com/'")
+  })
+})

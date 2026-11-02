@@ -38,44 +38,48 @@ const DEPENDENCIES: Record<string, string> = {
   // needs a Markdown parser in the browser. The prose styles still come from
   // the preset's ported selectors, which `appExtensions: ['qmarkdown']` in
   // `vitrify.config.ts` declares — that entry is a style name, not a package.
-  '@quasar/quasar-ui-qmediaplayer': '^3.0.1',
-  '@simple-site-generator/templates': '^0.1.19',
-  quasar: '^2.32.3',
-  'unocss-preset-quasar': '^0.7.0',
-  'vite-plugin-pwa': '^1.0.0',
-  vue: '^3.5.42',
+  '@quasar/quasar-ui-qmediaplayer': '^3.0.2',
+  '@simple-site-generator/templates': '^0.2.0',
+  quasar: '^2.35.2',
+  'unocss-preset-quasar': '^0.7.4',
+  'vite-plugin-pwa': '^2.0.0',
+  vue: '^3.5.44',
   // Must match the ^5 range the templates package is built against, otherwise
   // the app installs a second, incompatible vue-router.
-  'vue-router': '^5.3.1'
+  'vue-router': '^5.4.0'
 }
 
 const DEV_DEPENDENCIES: Record<string, string> = {
   '@iconify-json/mdi': '^1.2.3',
-  '@types/node': '^26.5.1',
-  '@unocss/preset-icons': '^66.10.2',
-  '@unocss/preset-web-fonts': '^66.10.2',
-  '@vitejs/plugin-vue': '^6.0.9',
-  '@vue/reactivity': '^3.5.42',
-  '@vue/runtime-core': '^3.5.42',
-  '@vue/runtime-dom': '^3.5.42',
-  '@vue/server-renderer': '^3.5.42',
-  '@vue/shared': '^3.5.42',
-  beasties: '^0.3.0',
-  devcert: '^1.2.2',
-  fastify: '^5.2.1',
+  '@types/node': '^26.6.5',
+  '@unocss/preset-icons': '^66.11.0',
+  '@unocss/preset-web-fonts': '^66.11.0',
+  '@vitejs/plugin-vue': '^6.0.10',
+  '@vue/reactivity': '^3.5.44',
+  '@vue/runtime-core': '^3.5.44',
+  '@vue/runtime-dom': '^3.5.44',
+  '@vue/server-renderer': '^3.5.44',
+  '@vue/shared': '^3.5.44',
+  beasties: '^0.5.5',
+  devcert: '^1.2.3',
+  fastify: '^5.12.7',
   'gray-matter': '^4.0.3',
   'icon-gen': '^5.0.0',
   'npm-run-all': '^4.1.5',
-  oxfmt: '^0.68.0',
-  oxlint: '^1.83.0',
+  oxfmt: '^0.74.0',
+  oxlint: '^1.89.0',
+  // The `ssg` binary the generated `check`, `build` and `verify` scripts call.
+  // Without it a fresh project installs, then fails `pnpm check` with
+  // "ssg: not found": the scripts reference a command nothing provides.
+  'simple-site-generator': '^0.2.0',
   // TypeScript 7 is the native port and dropped the JS API that
   // @vue/compiler-sfc needs to resolve imported types in defineProps().
   typescript: '^6.0.3',
-  unocss: '^66.10.2',
-  vite: '^8.3.0',
+  unocss: '^66.11.0',
+  vite: '^8.3.5',
   'vite-plugin-markdown': '^2.2.0',
-  vitrify: '^0.28.1',
-  'workbox-window': '^7.3.0'
+  vitrify: '^0.30.0',
+  'workbox-window': '^7.4.1'
 }
 
 const SCRIPTS: Record<string, string> = {
@@ -145,6 +149,45 @@ function assertTemplate(value: string): TemplateName {
 }
 
 /**
+ * The hostname of a site origin, without the scheme or a trailing slash.
+ *
+ * `https://www.example.com/` becomes `www.example.com`. Caddy's site address and
+ * the `/srv/<host>` target both want this shape; the site config wants the full
+ * origin, which is why both variables exist.
+ */
+function hostOf(url: string): string {
+  return url.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').replace(/\/+$/, '')
+}
+
+/**
+ * What an npm package name may contain.
+ *
+ * The same shape npm enforces: lowercase, no spaces, no leading dot or
+ * underscore. Vitrify reads `package.json`'s `name` and refuses an invalid one,
+ * so a scaffold whose name came from a display name could not build at all.
+ */
+const PACKAGE_NAME = /^[a-z0-9][a-z0-9._-]*$/
+
+/**
+ * Turn a display name into a package name.
+ *
+ * `Hondenvakantieboerderij Nicky` becomes `hondenvakantieboerderij-nicky`.
+ * Accents are folded rather than dropped so `Café` becomes `cafe` and not `caf`.
+ * An empty result (a name in a script with no Latin letters) falls back to the
+ * directory name, which is what the scaffold used before this existed.
+ */
+function packageNameOf(displayName: string, fallback: string): string {
+  const slug = displayName
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return slug.length > 0 ? slug : fallback
+}
+
+/**
  * Resolve options, prompting only when it is safe and wanted.
  *
  * A non-interactive run must never hang waiting on stdin, which is why the
@@ -177,25 +220,33 @@ export async function resolveInitOptions(
   const fallbackName = basename(directory) || 'site'
   const interactive = !options.yes && process.stdin.isTTY
 
-  const name =
-    options.name ??
-    (interactive
-      ? await input({
-          message: 'Package name',
-          default: fallbackName,
-          validate: (value: string) => Boolean(value?.length)
-        })
-      : fallbackName)
-
   const productName =
     options.productName ??
     (interactive
       ? await input({
           message: 'Site name',
-          default: name,
+          default: options.name ?? fallbackName,
           validate: (value: string) => Boolean(value?.length)
         })
-      : name)
+      : (options.name ?? fallbackName))
+
+  /**
+   * The npm package name, derived from the site name when not given.
+   *
+   * It is an identifier, not a display name: `--site-name "I See You"` used to be
+   * written into `package.json` as `name`, and vitrify then refused to build
+   * ("Invalid name: I See You"). A slug cannot carry that mistake, and the human
+   * name still reaches `productName` and the document title.
+   */
+  const name =
+    options.name ??
+    (interactive
+      ? await input({
+          message: 'Package name',
+          default: packageNameOf(productName, fallbackName),
+          validate: (value: string) => PACKAGE_NAME.test(value)
+        })
+      : packageNameOf(productName, fallbackName))
 
   const url =
     options.url ??
@@ -238,10 +289,21 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
     // too -- and the router, having no such component, fell back to the generic
     // `Page` and rendered the wrong home page with no warning. Once an unknown
     // `page:` became a build failure, that scaffold could not build at all.
-    landingPage: resolved.template === 'landing',
+    // Both modules that export a `Landing` component get the home page that
+    // names it: `landing`, and `business` since its module grew one. A
+    // scaffold that writes `page: Landing` for a module without it fails the
+    // build (unknown component), so the flag follows the export, not the name.
+    landingPage:
+      resolved.template === 'landing' || resolved.template === 'business',
     name: resolved.name,
     productName: resolved.productName,
     url: resolved.url,
+    // The bare host, for the two places that need a hostname and not an origin:
+    // Caddy's site address and the `/srv/<host>` directory the site is served
+    // from. Interpolating the origin into those wrote `root * /srv/https://…`
+    // and rsynced into a directory literally named `https:`, which is not a
+    // path any server has.
+    host: hostOf(resolved.url),
     description: resolved.description,
     author: resolved.author
   }
