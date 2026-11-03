@@ -45,6 +45,10 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // Quasar's `Meta` writes the document through a 50ms timer, and vitest tears
+    // the environment down the moment a file ends. The setup file holds it open
+    // long enough for the pending update to land (see that file for the detail).
+    setupFiles: ['packages/templates/test/support/setup.ts'],
     include: [
       'packages/templates/test/**/*.test.ts',
       'packages/simple-site-generator/test/**/*.test.ts',

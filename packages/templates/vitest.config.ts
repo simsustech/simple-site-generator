@@ -32,6 +32,9 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // Quasar's `Meta` writes the document through a 50ms timer; the setup file
+    // holds the environment open long enough for the pending update to land.
+    setupFiles: ['test/support/setup.ts'],
     include: ['test/**/*.test.ts'],
     reporters: 'default'
   }
