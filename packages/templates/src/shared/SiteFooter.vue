@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <p class="ssg-footer__legal">© {{ year }} {{ title }}</p>
+    <p class="ssg-footer__legal">{{ legal }}</p>
     <!--
       Who built the site, when the site says so.
 
@@ -180,5 +180,22 @@ const credit = computed(() => {
   return typeof value === 'string' && value.trim().length > 0
     ? value.trim()
     : undefined
+})
+
+/**
+ * The copyright line under the footer.
+ *
+ * The default names the business. A site whose *builder* holds the copyright sets
+ * the whole line instead — `© 2026 simsustech` — because the two names are not
+ * interchangeable and the template cannot guess which one a site means. Same
+ * defensive read as `credit`: `extra` is an open bag, and whitespace is not a
+ * line.
+ */
+const legal = computed(() => {
+  const value = extra.value?.legal
+
+  return typeof value === 'string' && value.trim().length > 0
+    ? value.trim()
+    : `© ${year} ${props.title}`
 })
 </script>

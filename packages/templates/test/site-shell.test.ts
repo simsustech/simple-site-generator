@@ -208,6 +208,27 @@ describe('chrome labels and trust marks', () => {
     expect(blank.find('.ssg-footer__credit').exists()).toBe(false)
   })
 
+  it('lets a site name its builder in the copyright line', () => {
+    // Hetzelfde gat als bij de credit, maar voor de regel zelf: een site waar de
+    // bouwer de rechthebbende is — `© 2026 simsustech` — kan dat niet in `title`
+    // kwijt, want die naam staat ook in de kop. `extra.legal` vervangt de hele
+    // regel; zonder die waarde blijft de bedrijfsnaam staan.
+    const withLegal = mountWithQuasar(SiteShell, {
+      props: { ...shellProps, extra: { legal: '© 2026 simsustech' } }
+    })
+
+    expect(withLegal.find('.ssg-footer__legal').text()).toBe(
+      '© 2026 simsustech'
+    )
+    expect(withLegal.find('.ssg-footer__legal').text()).not.toContain('Acme')
+
+    const blankLegal = mountWithQuasar(SiteShell, {
+      props: { ...shellProps, extra: { legal: '   ' } }
+    })
+    // Witruimte is geen regel: dan geldt de standaard.
+    expect(blankLegal.find('.ssg-footer__legal').text()).toContain('Acme Corp')
+  })
+
   it('drops a mark that has no image, and renders none when none are declared', () => {
     // `extra` is an open bag; a mark without an image would render the browser's
     // broken-image icon in the footer of every page.

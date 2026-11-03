@@ -324,6 +324,19 @@ export interface SiteExtra {
    */
   credit?: string
   /**
+   * The copyright line itself, when the site needs a different one.
+   *
+   * The default names the business (`© <year> <title>`), which is what most
+   * sites want. A site whose *builder* holds the copyright — `© 2026 simsustech`
+   * — sets the whole line here, because the builder's name is not the
+   * business's and the template cannot know which of the two a site means.
+   *
+   * This replaced the same information living inside `credit`: a site that put
+   * its maker in the legal line lost the mention when the shell moved into the
+   * kit, and adding a second line to say it again is not the same sentence.
+   */
+  legal?: string
+  /**
    * Trust marks — trade association, certification, keurmerk.
    *
    * Rendered by the shared footer, on every page, because proof a visitor never
