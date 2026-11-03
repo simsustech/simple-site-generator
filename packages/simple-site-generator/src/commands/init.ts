@@ -1,4 +1,4 @@
-import { promises as fs } from 'node:fs'
+import { promises as fs, readFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import {
   renderDirectory,
@@ -29,6 +29,28 @@ const APP_TEMPLATE_URL = new URL('../../templates/app/', import.meta.url)
  * scaffolding slow, network-dependent and non-reproducible. A static map means
  * `ssg init` works offline and two runs a month apart produce the same project.
  */
+/**
+ * The version this CLI shipped as, read from its own manifest rather than typed.
+ *
+ * `simple-site-generator` and `@simple-site-generator/templates` are one `fixed`
+ * group in `.changeset/config.json`, so a release gives both packages the same
+ * version and `changeset version` is the only thing that bumps them. A literal
+ * goes stale the moment that runs — it did: `^0.4.0` against a 0.4.1 manifest,
+ * which left every scaffold pinning a kit its own CLI no longer matched.
+ *
+ * `import.meta.url` is `dist/commands/` in the build and `src/commands/` in the
+ * source, and both sit two levels below the package root — the same arithmetic
+ * `APP_TEMPLATE_URL` above relies on, and the manifest ships in the package, so
+ * this works from an installed copy as well as from this workspace.
+ */
+const KIT_PIN = `^${
+  (
+    JSON.parse(
+      readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+    ) as { version: string }
+  ).version
+}`
+
 const DEPENDENCIES: Record<string, string> = {
   '@fastify/middie': '^9.0.1',
   '@fastify/static': '^8.0.3',
@@ -43,10 +65,10 @@ const DEPENDENCIES: Record<string, string> = {
   // the first one that ever existed. A caret on a `0.x` version locks the minor
   // (`^0.2.0` means `>=0.2.0 <0.3.0`), so a scaffold pinned there installed kit
   // 0.2.0 two releases after 0.4.0 shipped — with the retired template names and
-  // without a single fix. `tests/cli/init-templates.spec.ts` asserts these
-  // against the versions in this workspace, so a release that forgets them fails
-  // the suite instead of scaffolding a stale site.
-  '@simple-site-generator/templates': '^0.5.0',
+  // without a single fix. `KIT_PIN` derives the pin from this package's own
+  // version, so `changeset version` moves it with the release; a typed constant
+  // went stale exactly that way (`^0.4.0` against a 0.4.1 manifest).
+  '@simple-site-generator/templates': KIT_PIN,
   quasar: '^2.35.2',
   'unocss-preset-quasar': '^0.7.4',
   'vite-plugin-pwa': '^2.0.0',
@@ -78,7 +100,7 @@ const DEV_DEPENDENCIES: Record<string, string> = {
   // The `ssg` binary the generated `check`, `build` and `verify` scripts call.
   // Without it a fresh project installs, then fails `pnpm check` with
   // "ssg: not found": the scripts reference a command nothing provides.
-  'simple-site-generator': '^0.5.0',
+  'simple-site-generator': KIT_PIN,
   // TypeScript 7 is the native port and dropped the JS API that
   // @vue/compiler-sfc needs to resolve imported types in defineProps().
   typescript: '^6.0.3',

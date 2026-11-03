@@ -183,11 +183,18 @@ describe('the generated package.json', () => {
     )
   })
 
-  it('pins the kit to the release that ships this scaffold', async () => {
-    // A caret on a `0.x` version locks the minor, so `^0.2.0` installed kit
-    // 0.2.0 — retired template names, no fixes — two releases after 0.4.0
-    // shipped. Asserting the pins against this workspace's own versions makes a
-    // release that forgets them fail here instead of scaffolding a stale site.
+  it('scaffolds pins that follow the release, both kit packages on one version', async () => {
+    // A caret on a `0.x` version locks the minor, so a scaffold pinned to an old
+    // release installs that release — retired template names, no fixes — however
+    // long ago it shipped.
+    //
+    // What is asserted here is not a hand-typed constant. The pins are derived
+    // from the CLI's own manifest (`KIT_PIN` in `init.ts`), because the two kit
+    // packages are one `fixed` group: `changeset version` gives them one version
+    // and the scaffold follows. The earlier form of this test compared a typed
+    // `^0.4.0` against the manifest, which made it red from the release of 0.4.1
+    // until somebody remembered to edit the constant — a test that only passed
+    // while nobody had released.
     const { code } = await run(
       ['init', join(workspace, 'pins'), '--template', 'plain', '--yes'],
       workspace
@@ -233,6 +240,9 @@ describe('the generated package.json', () => {
       )
     )
 
+    // The invariant that makes one derived pin correct for two packages: a fixed
+    // group is released on a single version.
+    expect(templates).toBe(cli)
     expect(pkg.dependencies?.['@simple-site-generator/templates']).toBe(
       `^${templates}`
     )

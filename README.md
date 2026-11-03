@@ -441,9 +441,13 @@ pnpm exec changeset                                 # every consumer-visible cha
 The two packages are one **fixed group** in `.changeset/config.json`, so they always release on the
 same version. That is not tidiness: a scaffold pins the kit it was built against — `ssg init` writes
 `^<version>` for both `simple-site-generator` and `@simple-site-generator/templates` — so a CLI one
-minor ahead of its templates scaffolds a site against a kit that does not exist yet.
-`tests/cli/init-templates.spec.ts` asserts those pins against the versions in this workspace, so a
-release that forgets to update them fails the suite instead of shipping a stale scaffold.
+minor ahead of its templates would scaffold a site against a kit that does not exist yet.
+
+The pins are **derived** from the CLI's own manifest (`KIT_PIN` in `init.ts`), not typed in. Nothing
+needs editing at release time: `changeset version` moves the version and the scaffold follows. Typed
+pins had already gone stale once — `^0.4.0` left in place while the manifest said 0.4.1 — and
+`tests/cli/init-templates.spec.ts` now asserts the two manifests share one version and that the
+scaffold pins equal it, which is the invariant that holds across a release instead of only before one.
 `pnpm exec changeset status` before publishing shows both packages at the same version.
 
 Commit messages follow conventional commits with a scope (`feat(templates): …`, `fix(website): …`),
