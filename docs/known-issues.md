@@ -15,7 +15,7 @@ works, and a constraint buried in a prose section is a constraint nobody tracks.
 **Status:** open. **Impact:** the byte gate can fail on a dependency bump.
 
 `ssg verify` fails hard when transferred JavaScript exceeds 250 KB gzipped. The
-reference site (`the reference site`, the `business` template) measures
+reference site (the `business` template) measures
 **192.6 KB — 77% of the budget**. Quasar's runtime dominates it: `vendor.mjs`
 85 KB and `quasar.mjs` 58 KB of the 192.6.
 

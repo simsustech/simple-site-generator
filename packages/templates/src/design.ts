@@ -109,7 +109,7 @@ const CARD_RADIUS = 'var(--q-card-radius)'
  * The prose column is a *container*, not a measure: running text is capped at
  * this so a paragraph stays readable, but a figure is not. Holding the whole
  * column to the measure is what shrank every 1200px illustration on the
- * the reference site to about 40% of its authored size, and it is not what a measure
+ * reference site to about 40% of its authored size, and it is not what a measure
  * is for.
  */
 const MEASURE = '68ch'
@@ -184,8 +184,8 @@ export const ssgShortcuts: Shortcuts = [
     'ssg-header__brand-name',
     // The company name is the one piece of text a visitor uses to confirm they
     // are on the right site. It shrinks with the viewport (`clamp`) and wraps
-    // onto a second line before it truncates: at 360px a fixed 20px face cut
-    // "a long Dutch company name" to "Hondenvakanti…".
+    // onto a second line before it truncates: at 360px a fixed 20px face cut a
+    // long Dutch company name in half.
     //
     // The clamp is written as arbitrary properties, not as `line-clamp-3`. That
     // utility belongs to the default preset chain and this design system ships
@@ -304,10 +304,9 @@ export const ssgShortcuts: Shortcuts = [
   ],
   // The builder's credit sits directly under the legal line, quieter still: it is
   // a courtesy, not a claim about the business.
-  // Zelfde dekking als de regel erboven, niet minder: op 0.6 haalde de credit
-  // 4.3:1 op de getinte voettekst en faalde `ssg verify` hem op kleurcontrast —
-  // gemeten op de a client site-site, waar deze regel als eerste gebruikt
-  // werd. Kleiner en direct onder de ©-regel maakt hem ondergeschikt genoeg.
+  // The same coverage as the line above, not less: at 0.6 the credit measured
+  // 4.3:1 on the tinted footer and `ssg verify` failed it on colour contrast.
+  // Smaller and directly under the © line makes it subordinate enough.
   [
     'ssg-footer__credit',
     'w-full max-w-content mx-auto mt-0 mb-space-4 px-space-3 text-step--1 opacity-80'
@@ -1304,11 +1303,10 @@ body .ssg-header.q-header {
 /*
   Labels in a content list wrap instead of being cut.
 
-  q-item__label sets white-space: nowrap with an ellipsis, and the contact
-  page puts whole instructions in it — "Kijk eerst op https://app.example.test
-  voor de beschikbaarheid voordat u contact op neemt." At 360px that rendered as
-  "Kijk eerst op https://app.example.test voor de be…", which is content loss on
-  the page a visitor uses to reach the business.
+  q-item__label sets white-space: nowrap with an ellipsis, and a contact page
+  puts whole instructions in it — "zie https://… voor de beschikbaarheid
+  voordat u contact opneemt". At 360px that renders as "zie https://… voor de
+  be…", which is content loss on the page a visitor uses to reach the business.
 */
 .ssg-content .q-item__label {
   white-space: normal;

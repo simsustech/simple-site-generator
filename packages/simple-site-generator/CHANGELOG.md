@@ -17,8 +17,8 @@
 
   `fit: contain` is what a catalogue needs when its photos were not shot at one ratio. Without it a site
   has only one honest option — author each photo's own ratio — and each card's height then follows its
-  photo, so a row of a portrait and a landscape shot leaves a card half empty. Measured on the
-  a client site catalogue: four landscape product photos next to portrait ones produced rows with a
+  photo, so a row of a portrait and a landscape shot leaves a card half empty. Measured on a
+  catalogue page: four landscape product photos next to portrait ones produced rows with a
   170px blank area inside the shorter cards. Cropping instead destroys a branch shot (the reason
   `contain` exists), so the choice belongs in the frontmatter where the author can make it. The wrapper carries the ratio, so the
   space is reserved from the numbers rather than measured after the bytes arrive: a grid of forty

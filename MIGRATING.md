@@ -29,19 +29,26 @@ renders) and the retired template names.
 
 ## Which of your sites is where
 
-| site                               | pinned    | template            | notes                                                                |
-| ---------------------------------- | --------- | ------------------- | -------------------------------------------------------------------- |
-| `example-site`                         | `^0.1.20` | —                   | closest to current; on oxlint-era tooling                            |
-| `websites/www.a client site.nl` | `0.1.17`  | `small-business-v2` | **retired name**; eslint/prettier; `globalCss` already commented out |
-| `websites/personal`                | `0.1.11`  | `personal`          | **retired name**; `link:` dep                                        |
-| `websites/www.example.com`    | `0.1.11`  | —                   | `link:` dep                                                          |
-| `www.example.com`             | `^0.1.8`  | —                   | looks like a stale duplicate of the above                            |
-| `example-site`                     | `^0.1.18` | —                   |                                                                      |
-| `the reference site`               | `file:`   | `business`          | **already migrated** — use it as the reference                       |
+Find out, per site, rather than trusting a list here: the kit does not track its
+consumers, and a table of them would be stale the moment one is retired.
 
-Do the smallest site first, and do `websites/personal` and `www.example.com`
-only after deciding whether they are still live: they pin `link:` to the kit's
-working tree, so they change behaviour whenever the kit does.
+    node -p "require('./package.json').dependencies['@simple-site-generator/templates']"
+    readlink node_modules/@simple-site-generator/templates   # a .pnpm path, or a checkout
+    grep -n "template:" vitrify.config.ts
+
+The three answers that decide the work:
+
+- **`0.1.x`** — the retired template names, which will not resolve at all.
+- **`link:` or `file:`** — the site is not pinned to a release: `file:` keeps the
+  package name inside `node_modules/.pnpm/…` and is fine for local work, `link:`
+  resolves to wherever the kit is checked out and changes behaviour whenever the
+  kit does.
+- **a `0.2.x`+ pin with a retired `template:` name** — the dependency moved but
+  the template did not, so the build fails on an unknown component.
+
+Do the smallest site first. And do a site only after deciding whether it is still
+live: a `link:` pin means the site changes whenever the kit does, which is fine for
+a site under construction and a liability for one that is serving customers.
 
 ## The procedure
 
@@ -105,8 +112,8 @@ vitrify: {
 Then **delete `globalCss`**. The templates package no longer builds CSS at all;
 that entry used to import the UnoCSS scanner's leavings and nothing else.
 
-`the reference site/vitrify.config.ts` is the reference implementation of all of
-the above.
+A site already migrated onto the current kit is the reference implementation of all
+of the above; `ssg init` produces one, which is the cheapest way to see it.
 
 ### 3. Delete what the kit now owns
 

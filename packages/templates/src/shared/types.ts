@@ -24,7 +24,7 @@ export interface SitePage {
    * Optional on purpose. A single-language site declares it nowhere and the
    * navigation behaves exactly as it did before this existed; a site whose pages
    * are in more than one language declares it — or derives it in its route table
-   * from an id convention, as the the reference site does — and each page then gets
+   * from an id convention — and each page then gets
    * the menu of its own language rather than the default language's.
    */
   lang?: string
@@ -238,7 +238,7 @@ export interface SiteExtra {
    *
    * Site-wide here because that is the shape of this bag; a site whose pages are
    * not all in one language passes the right one per page from its route table
-   * instead (see the the reference site's `routes.ts`).
+   * instead (see the site's own `routes.ts`).
    */
   cardsHeading?: string
   /**

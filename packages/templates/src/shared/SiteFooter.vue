@@ -91,7 +91,8 @@
       Who built the site, when the site says so.
 
       The kit's own legal line names the business; a site that credited its maker
-      in that line — "© simsustech a client site" on the old a client site site — lost the credit when the shell moved into the kit. A credit is
+      in that line — `© <builder> <business>` — lost the credit when the shell
+      moved into the kit. A credit is
       the site owner's decision, not the template's, so it is a separate line that
       renders only when `extra.credit` is set.
     -->

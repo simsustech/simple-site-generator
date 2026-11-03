@@ -308,7 +308,7 @@ It is matched **by path** (`templates/dist/*.js`), not by package name. Vite res
 dependency to where it really lives, so a kit checked out beside the site arrives as
 `…/packages/templates/dist/business.js` — an `@simple-site-generator/templates` matcher scans nothing,
 reports nothing, and the only symptom is that same unstyled drawer and a CSS file roughly 65 KB lighter
-than it should be (measured on the the reference site, 2026-11-02).
+than it should be (measured on the reference site).
 
 ### The failure mode, and the guards around it
 

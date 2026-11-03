@@ -17,8 +17,8 @@
 
   `fit: contain` is what a catalogue needs when its photos were not shot at one ratio. Without it a site
   has only one honest option — author each photo's own ratio — and each card's height then follows its
-  photo, so a row of a portrait and a landscape shot leaves a card half empty. Measured on the
-  a client site catalogue: four landscape product photos next to portrait ones produced rows with a
+  photo, so a row of a portrait and a landscape shot leaves a card half empty. Measured on a
+  catalogue page: four landscape product photos next to portrait ones produced rows with a
   170px blank area inside the shorter cards. Cropping instead destroys a branch shot (the reason
   `contain` exists), so the choice belongs in the frontmatter where the author can make it. The wrapper carries the ratio, so the
   space is reserved from the numbers rather than measured after the bytes arrive: a grid of forty
@@ -42,7 +42,7 @@
 
   The shell's legal line names the business — `© <year> <title>` — and that was the
   only place a credit could live once the footer moved into the kit. A site that
-  put its maker in that line lost it silently in the migration: the a client site site went from "© simsustech a client site" on every page to the
+  put its maker in that line lost it silently in the migration: one site went from "© <builder> <business>" on every page to the
   business alone, and nothing anywhere reported the change.
 
   `extra.credit` is a second line under the legal one, off by default. It is
@@ -742,7 +742,7 @@
 
   A link in a table cell is not prose, so it inherited nothing but the user
   agent's own `#0000ee`. On white that is 7.5:1 and every contrast audit passed it;
-  on the dark surface it is **1.83:1**, found on the example-site contact page as soon as
+  on the dark surface it is **1.83:1**, found on a contact page as soon as
   the site began following the operating system's colour scheme.
 
   Tables are how the `plain` template shows contact details — phone, e-mail,
@@ -907,7 +907,7 @@
   The avatar uses the template's own `avatar-border` class again, instead of the
   `shadow-lg shadow-accent` UnoCSS utilities. The colour in those utilities comes
   from the consumer's `vitrify.unocss` theme, so apps that do not configure it
-  (such as example-site) never generate `.shadow-accent` and the shadow disappeared.
+  never generate `.shadow-accent` and the shadow disappeared.
 
 ## 0.1.19
 

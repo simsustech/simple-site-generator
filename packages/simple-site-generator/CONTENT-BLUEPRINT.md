@@ -55,7 +55,7 @@ cta:
   href: '#offerte'
 ```
 
-`#offerte` is the convention the example-site site uses: a real anchor, so the button
+`#offerte` is the convention the reference site uses: a real anchor, so the button
 is a link before any script runs, plus one delegated listener in the app shell
 that opens the form instead of jumping. The page declares the hash and nothing
 else — no component name, no JavaScript in frontmatter.

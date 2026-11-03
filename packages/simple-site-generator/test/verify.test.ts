@@ -4,7 +4,7 @@ import { checkSeoSurface } from '../src/verify/seo-surface.js'
 
 /**
  * Regression tests for the two verifier defects found while building the
- * the reference site on the kit:
+ * reference site on the kit:
  *
  *   1. the SEO surface counted tags inside HTML comments, so a page whose head
  *      was entirely commented out — which really happened — passed;

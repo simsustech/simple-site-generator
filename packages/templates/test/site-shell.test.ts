@@ -185,15 +185,15 @@ describe('chrome labels and trust marks', () => {
 
   it("renders the builder's credit only when the site declares one", () => {
     // De oude site zette de bouwer in dezelfde regel als het bedrijf
-    // ("© simsustech a client site"). Toen de shell in de kit kwam, verdween
+    // (`© <builder> <business>`). Toen de shell in de kit kwam, verdween
     // die vermelding zonder dat iemand het merkte; een credit is een keuze van de
     // site, dus staat hij in `extra.credit` en niet in de template.
     const withCredit = mountWithQuasar(SiteShell, {
-      props: { ...shellProps, extra: { credit: 'Website door simsustech' } }
+      props: { ...shellProps, extra: { credit: 'Website door De Bouwer' } }
     })
 
     expect(withCredit.find('.ssg-footer__credit').text()).toBe(
-      'Website door simsustech'
+      'Website door De Bouwer'
     )
     // De regel over het bedrijf blijft staan; de credit komt eronder.
     expect(withCredit.find('.ssg-footer__legal').text()).toContain('Acme Corp')

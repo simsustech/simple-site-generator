@@ -216,7 +216,7 @@ function comparable(text: string): string {
  *
  * The templates render `title` as the page's single `<h1>` above the markdown, so
  * a body whose first heading repeats it prints the title twice — measured on the
- * the reference site, where 22 of 38 pages began with `## Products` under
+ * reference site, where 22 of 38 pages began with `## Products` under
  * an `<h1>Products</h1>`. Neither `tsc` nor the SEO surface check can see this:
  * it is one `<h1>` and a legal `<h2>`, just redundant.
  *
