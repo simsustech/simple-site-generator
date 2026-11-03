@@ -1,5 +1,85 @@
 # simple-site-generator
 
+## 0.4.1
+
+### Patch Changes
+
+- fa44156: Pin a scaffolded project to the kit and vitrify releases that ship it.
+
+  The dependency map behind `ssg init` pinned `@simple-site-generator/templates` and
+  `simple-site-generator` to `^0.2.0`, and `vitrify` to `^0.30.0`. A caret on a `0.x`
+  version does **not** float to the newest release — `^0.2.0` means `>=0.2.0 <0.3.0`
+  — so a site scaffolded the day after 0.4.0 shipped installed kit 0.2.0: retired
+  template names, the pre-hashing bundler, and none of the fixes. The scaffold looked
+  current and produced a project two releases old.
+
+  Now `^0.4.0` and `^0.32.0`, and `tests/cli/init-templates.spec.ts` asserts each
+  pin against the version in this workspace, so a release that forgets them fails the
+  CLI suite instead of quietly scaffolding a stale site again. The templates package's
+  own `vitrify` dev-dependency moves to `^0.32.0` with it, so the version the kit is
+  developed against is the version a new site receives.
+
+- 2a96441: Match the hash the bundler emits in the scaffolded cache rule.
+
+  The scaffolded `Cache-Control` rule matched `-[A-Za-z0-9_]{8,}` after the dash, but
+  Rolldown hashes are base64url, so a hash containing `-` — `index-1HO4-Wjr.mjs` —
+  was silently left out of `immutable`. That rule exists for nothing else, so the
+  failure was invisible: the file still loaded, it just revalidated.
+
+  Eight characters exactly, not "eight or more": an open-ended class matches a
+  hyphenated word as readily as a hash (`server-renderer.mjs`).
+
+- fef5d11: Stop a scaffolded site from serving its own Caddyfile.
+
+  The scaffold copies `build/Caddyfile` into `dist/static/` — that is how the file
+  reaches the server, which imports it from the web root — so `GET /Caddyfile`
+  returned the entire configuration, comments about the server included, on every
+  site created from this kit. Both `file_server` blocks now `hide Caddyfile`, in
+  `build/Caddyfile.hbs` and in `build/Caddyfile.preview`, which serves the same
+  artifact locally.
+
+  The argument is a file name, not a path: `hide /Caddyfile` validates and then does
+  nothing at all. Measured against a running Caddy 2.11 — `hide Caddyfile` answers
+  404, `hide /Caddyfile` answers 200. The scaffold test asserts over directives
+  rather than raw text, because the comment that explains this names both forms.
+
+- fa44156: Write a site name with an ampersand as itself, not as an HTML entity.
+
+  `ssg init` renders the scaffold through Handlebars, and the double-brace form
+  escapes for HTML. That is right for `build/Caddyfile` and the deploy workflow and
+  wrong for every value that lands inside a JavaScript string: a site named
+  a display name containing `&` was written into `vitrify.config.ts` as its HTML
+  entity (`&amp;` instead of `&`),
+  which then renders as `&amp;amp;` in `<title>` and puts an escaped name into the
+  JSON-LD, the OpenGraph tags and the sitemap. Measured on a site scaffolded from
+  this kit, and fixed there by hand before this.
+
+  The three affected values (`title`, `url`, `description`) now travel to the
+  template already quoted as JavaScript string literals (`JSON.stringify` in
+  `init.ts`) and are inserted raw, so quotes and ampersands survive as themselves.
+  A quote in a site name is the same bug seen from the other side, and it would have
+  produced a config file that does not parse.
+
+- fa44156: Write `404.html` for a scaffolded site, and ship the guard that checks it.
+
+  The scaffolded `build/Caddyfile` rewrites a missing URL to `/404.html`, and
+  nothing ever created that file: the prerenderer writes one HTML file per concrete
+  route `path`, and the router's only error route was the `:catchAll(.*)*` pattern.
+  Every site built from this kit therefore answered a mistyped URL with status 404
+  and an **empty body** — measured on two of them, 0 bytes.
+
+  The scaffold's router now carries an explicit `404` route beside the catch-all,
+  with the same component and a shared `notFoundMeta` that includes a `description`.
+  That last field is not optional: `ssg verify` requires one on every built HTML
+  file, so the new route fails the build without it — which is how the gap was
+  found.
+
+  The scaffold also ships `test/caddyfile.test.ts`, the guard every patched site
+  grew by hand: `hide Caddyfile` in each `file_server` and never with a leading
+  slash, a base64url hash class of exactly eight characters, and the `/404.html`
+  rewrite. Until now a freshly generated project had no test file at all, so its own
+  `pnpm test` exited non-zero on "no tests found" — read as a broken scaffold.
+
 ## 0.4.0
 
 ### Minor Changes
