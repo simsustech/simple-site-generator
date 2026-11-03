@@ -46,7 +46,7 @@ const DEPENDENCIES: Record<string, string> = {
   // without a single fix. `tests/cli/init-templates.spec.ts` asserts these
   // against the versions in this workspace, so a release that forgets them fails
   // the suite instead of scaffolding a stale site.
-  '@simple-site-generator/templates': '^0.4.0',
+  '@simple-site-generator/templates': '^0.5.0',
   quasar: '^2.35.2',
   'unocss-preset-quasar': '^0.7.4',
   'vite-plugin-pwa': '^2.0.0',
@@ -78,7 +78,7 @@ const DEV_DEPENDENCIES: Record<string, string> = {
   // The `ssg` binary the generated `check`, `build` and `verify` scripts call.
   // Without it a fresh project installs, then fails `pnpm check` with
   // "ssg: not found": the scripts reference a command nothing provides.
-  'simple-site-generator': '^0.4.0',
+  'simple-site-generator': '^0.5.0',
   // TypeScript 7 is the native port and dropped the JS API that
   // @vue/compiler-sfc needs to resolve imported types in defineProps().
   typescript: '^6.0.3',

@@ -438,6 +438,14 @@ SSG_E2E_URL=http://127.0.0.1:4173 pnpm run test:e2e # Playwright against a serve
 pnpm exec changeset                                 # every consumer-visible change needs one
 ```
 
+The two packages are one **fixed group** in `.changeset/config.json`, so they always release on the
+same version. That is not tidiness: a scaffold pins the kit it was built against — `ssg init` writes
+`^<version>` for both `simple-site-generator` and `@simple-site-generator/templates` — so a CLI one
+minor ahead of its templates scaffolds a site against a kit that does not exist yet.
+`tests/cli/init-templates.spec.ts` asserts those pins against the versions in this workspace, so a
+release that forgets to update them fails the suite instead of shipping a stale scaffold.
+`pnpm exec changeset status` before publishing shows both packages at the same version.
+
 Commit messages follow conventional commits with a scope (`feat(templates): …`, `fix(website): …`),
 enforced by a `commit-msg` hook. The pre-commit hook runs `lint` and `format:check`.
 
