@@ -22,7 +22,7 @@ pnpm install
 pnpm check      # validate every page against the contract
 pnpm build      # prerender to dist/static
 pnpm verify     # SEO surface, byte budgets, markup↔stylesheet, Lighthouse
-pnpm preview    # serve the build the way production does → :8095
+pnpm preview    # serve the build the way production does → prints the URL (8150)
 ```
 
 Four templates: `docs`, `landing` (conversion-oriented single page), `business` (multi-page local
@@ -335,6 +335,7 @@ depends on the template.
 vitrify.config.ts        site identity, colours, the template, Caddyfile copy
 build/Caddyfile          production: real 404, immutable hashed assets
 build/Caddyfile.preview  `pnpm preview`
+scripts/preview.mjs     prints the URL, then starts Caddy on that port
 index.html               document shell
 src/pages/               Markdown: Index (home), Contact, GettingStarted
 src/pages/Error404Page.vue

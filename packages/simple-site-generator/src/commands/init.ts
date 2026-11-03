@@ -102,8 +102,11 @@ const SCRIPTS: Record<string, string> = {
   // Build, then serve the result the way production does — extensionless URLs
   // and a real 404 — rather than `caddy file-server`, which has no `try_files`
   // and answers 404 for every page URL.
-  preview:
-    'pnpm run build && caddy run --config build/Caddyfile.preview --adapter caddyfile',
+  //
+  // The last step is the script, not `caddy run`: a `:port` site block makes Caddy
+  // print no URL, and two previews on one port both bind (`reuseport`). See
+  // `scripts/preview.mjs`.
+  preview: 'pnpm run build && node scripts/preview.mjs',
   verify: 'ssg verify',
   test: 'vitrify test',
   lint: 'oxlint src',

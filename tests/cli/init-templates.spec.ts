@@ -468,3 +468,49 @@ describe('the generated router', () => {
     expect(guard).toContain('@hashed path_regexp hashed')
   })
 })
+
+describe('the generated preview', () => {
+  it('prints the URL it binds, from one port the Caddyfile agrees on', async () => {
+    // `caddy run` on a `:port` site block announces no URL — just a JSON line
+    // with `"addr":":8150"` — so the address is knowledge the reader has to
+    // carry. Worse, Caddy binds with `reuseport`: two previews on one port both
+    // "succeed" and the kernel hands each request to whichever process it likes,
+    // which surfaces as one site's HTML with another site's modules.
+    //
+    // Sites built from this kit hit both, so the scaffold now ships
+    // `scripts/preview.mjs`, which prints the address before starting and passes
+    // the same port in. A `preview` script that bypasses it brings both back, so
+    // the pair is asserted here: the script is wired, and its default port is the
+    // one the Caddyfile would bind on its own.
+    const { code } = await run(
+      ['init', join(workspace, 'preview'), '--template', 'plain', '--yes'],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const pkg = JSON.parse(
+      await fs.readFile(join(workspace, 'preview', 'package.json'), 'utf8')
+    ) as { scripts: Record<string, string> }
+
+    expect(pkg.scripts.preview).toContain('node scripts/preview.mjs')
+
+    const script = await fs.readFile(
+      join(workspace, 'preview', 'scripts/preview.mjs'),
+      'utf8'
+    )
+
+    expect(script).toContain('Preview: http://localhost:')
+
+    const port = /const DEFAULT_PORT = '(\d+)'/.exec(script)?.[1]
+
+    expect(port).toBeDefined()
+
+    const preview = await fs.readFile(
+      join(workspace, 'preview', 'build/Caddyfile.preview'),
+      'utf8'
+    )
+
+    expect(preview).toContain(`:{$PREVIEW_PORT:${port}} {`)
+  })
+})

@@ -167,7 +167,7 @@ the prose block is a container, the measure caps running text only.
 ```bash
 pnpm build && pnpm check && pnpm exec tsc --noEmit
 CHROME_PATH=/usr/bin/chromium pnpm verify
-pnpm preview        # http://localhost:8090
+pnpm preview        # prints the URL it serves on; PREVIEW_PORT picks another
 ```
 
 `ssg verify` fails hard on the deterministic half (SEO surface, gzipped byte
