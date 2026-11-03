@@ -50,7 +50,7 @@ interface PageFrontmatter {
    * so a single-language site shows no switch at all).
    *
    * The pairing is app-specific — declare it per page, or derive it here as
-   * `the reference site` does for its `nl-`-prefixed pages.
+   * a site that translates its pages does for its `nl-`-prefixed ones.
    */
   alternates?: { lang: string; path: string; label?: string }[]
   breadcrumbs?: string[]
@@ -124,6 +124,22 @@ const orderedPages = [
 ]
 
 const pageList = orderedPages.map(([, page]) => attributesOf(page))
+
+/**
+ * The error page, and the metadata both of its routes carry.
+ *
+ * `description` is not optional: `ssg verify` requires one on every built HTML
+ * file, and `404.html` is built like any other page. The title stays English on
+ * purpose — it is the document title of a page that is `noindex` and never
+ * navigated to, while the visible copy belongs to the site.
+ */
+const notFoundPage = () => import('../pages/Error404Page.vue')
+const notFoundMeta = {
+  id: '404',
+  title: 'Page not found',
+  description: 'This page does not exist (any more).',
+  noindex: true
+}
 
 const routes: RouteRecordRaw[] = [
   {
@@ -218,6 +234,21 @@ const routes: RouteRecordRaw[] = [
         } as RouteRecordRaw
       }),
 
+      /*
+       * The error page, twice.
+       *
+       * The first of the two is the route the prerenderer writes to
+       * `dist/static/404.html`. Without it nothing ever created that file — a
+       * catch-all pattern cannot be prerendered — so the Caddyfile's
+       * `handle_errors`, which rewrites a missing URL to `/404.html`, answered
+       * with an empty body and no error page.
+       */
+      {
+        path: '404',
+        name: '404',
+        component: notFoundPage,
+        meta: notFoundMeta
+      },
       // The catch-all is a CHILD of the layout on purpose. As a sibling it
       // rendered outside the shell, so it had no header, no footer and — because
       // `useSeo` lives in the layout — no `<head>` tags at all. Vue Router ranks
@@ -225,8 +256,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: ':catchAll(.*)*',
         name: 'not-found',
-        component: () => import('../pages/Error404Page.vue'),
-        meta: { id: '404', title: 'Page not found', noindex: true }
+        component: notFoundPage,
+        meta: notFoundMeta
       }
     ]
   }

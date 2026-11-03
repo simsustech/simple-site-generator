@@ -20,7 +20,7 @@ minimumReleaseAgeExclude:
   - happy-dom@21.0.4
   - sass@1.106.0
   - vite@8.3.5
-  - vitrify@0.29.0 || 0.30.1 || 0.31.0
+  - vitrify@0.29.0 || 0.30.1 || 0.31.0 || 0.32.0
   - '@vitest/mocker@5.1.0'
   - '@vitest/spy@5.1.0'
   - vitest@5.1.0

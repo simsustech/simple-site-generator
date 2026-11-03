@@ -39,7 +39,14 @@ const DEPENDENCIES: Record<string, string> = {
   // the preset's ported selectors, which `appExtensions: ['qmarkdown']` in
   // `vitrify.config.ts` declares — that entry is a style name, not a package.
   '@quasar/quasar-ui-qmediaplayer': '^3.0.2',
-  '@simple-site-generator/templates': '^0.2.0',
+  // The kit packages are pinned to the release that ships this scaffold, not to
+  // the first one that ever existed. A caret on a `0.x` version locks the minor
+  // (`^0.2.0` means `>=0.2.0 <0.3.0`), so a scaffold pinned there installed kit
+  // 0.2.0 two releases after 0.4.0 shipped — with the retired template names and
+  // without a single fix. `tests/cli/init-templates.spec.ts` asserts these
+  // against the versions in this workspace, so a release that forgets them fails
+  // the suite instead of scaffolding a stale site.
+  '@simple-site-generator/templates': '^0.4.0',
   quasar: '^2.35.2',
   'unocss-preset-quasar': '^0.7.4',
   'vite-plugin-pwa': '^2.0.0',
@@ -71,14 +78,16 @@ const DEV_DEPENDENCIES: Record<string, string> = {
   // The `ssg` binary the generated `check`, `build` and `verify` scripts call.
   // Without it a fresh project installs, then fails `pnpm check` with
   // "ssg: not found": the scripts reference a command nothing provides.
-  'simple-site-generator': '^0.2.0',
+  'simple-site-generator': '^0.4.0',
   // TypeScript 7 is the native port and dropped the JS API that
   // @vue/compiler-sfc needs to resolve imported types in defineProps().
   typescript: '^6.0.3',
   unocss: '^66.11.0',
   vite: '^8.3.5',
   'vite-plugin-markdown': '^2.2.0',
-  vitrify: '^0.30.0',
+  // Likewise locked to the minor: 0.32.0 is what hashes the client chunks, and
+  // the scaffolded `@hashed` cache rule is only worth anything on that line.
+  vitrify: '^0.32.0',
   'workbox-window': '^7.4.1'
 }
 
@@ -171,7 +180,7 @@ const PACKAGE_NAME = /^[a-z0-9][a-z0-9._-]*$/
 /**
  * Turn a display name into a package name.
  *
- * `a long Dutch company name` becomes `my-long-site-name`.
+ * `My Long Site Name` becomes `my-long-site-name`.
  * Accents are folded rather than dropped so `Café` becomes `cafe` and not `caf`.
  * An empty result (a name in a script with no Latin letters) falls back to the
  * directory name, which is what the scaffold used before this existed.
@@ -297,6 +306,21 @@ export async function init(options: InitOptions = {}): Promise<InitResult> {
       resolved.template === 'landing' || resolved.template === 'business',
     name: resolved.name,
     productName: resolved.productName,
+    /**
+     * The same three values as ready-made JavaScript string literals.
+     *
+     * `renderDirectory` runs the scaffold through Handlebars, and `{{ value }}`
+     * escapes for HTML. That is right for the Caddyfile and the workflow, and
+     * wrong for every value that lands inside a JS string: a site named
+     * a display name containing `&` was written into `vitrify.config.ts` as its
+     * HTML entity, which then renders as `&amp;amp;` in `<title>` and puts
+     * an escaped name in the JSON-LD and the sitemap. `JSON.stringify` produces
+     * a literal that Handlebars inserts raw (`{{{ }}}` in the template), so
+     * quotes and ampersands survive as themselves.
+     */
+    productNameLiteral: JSON.stringify(resolved.productName),
+    urlLiteral: JSON.stringify(resolved.url),
+    descriptionLiteral: JSON.stringify(resolved.description),
     url: resolved.url,
     // The bare host, for the two places that need a hostname and not an origin:
     // Caddy's site address and the `/srv/<host>` directory the site is served
