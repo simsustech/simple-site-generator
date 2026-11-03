@@ -1,14 +1,21 @@
 {{ host }} {
   # The bundler fingerprints every asset as `name-<hash>.ext`; such a file is
   # immutable, so the browser may keep it for a year without revalidating.
-  @hashed path_regexp hashed -[A-Za-z0-9_]{8,}\.(js|mjs|css|woff2|png|jpe?g|webp|svg)$
+  @hashed path_regexp hashed -[A-Za-z0-9_-]{8}\.(js|mjs|css|woff2|png|jpe?g|webp|svg)$
   header @hashed Cache-Control "public, max-age=31536000, immutable"
 
   encode zstd gzip
   handle {
     root * /srv/{{ host }}
     try_files {path}.html {path}
-    file_server
+    file_server {
+      # This file is copied into `dist/static` (see `vitrify.config.ts`) because
+      # the server imports `/srv/<site>/Caddyfile` — which puts it inside the web
+      # root, where `file_server` would hand it to anyone who asks for
+      # `/Caddyfile`. `hide` matches on file name, not path: `hide /Caddyfile`
+      # validates and then does nothing.
+      hide Caddyfile
+    }
   }
 
   # A missing page has to answer 404. Ending `try_files` in a file — the old
@@ -19,6 +26,8 @@
     root * /srv/{{ host }}
     @notFound expression {err.status_code} == 404
     rewrite @notFound /404.html
-    file_server
+    file_server {
+      hide Caddyfile
+    }
   }
 }

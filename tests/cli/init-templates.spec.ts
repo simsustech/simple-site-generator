@@ -61,6 +61,17 @@ afterAll(async () => {
 const readConfig = (dir: string) =>
   fs.readFile(join(workspace, dir, 'vitrify.config.ts'), 'utf8')
 
+/**
+ * A Caddyfile with its comments removed, so an assertion counts directives rather
+ * than prose. The comments in these files name the directives they explain.
+ */
+function directives(config: string): string {
+  return config
+    .split('\n')
+    .filter((line) => !line.trimStart().startsWith('#'))
+    .join('\n')
+}
+
 describe('the generated config colour input', () => {
   it('sets a single source colour and no palette map', async () => {
     // A new site used to receive two colour inputs: a nine-entry `colors` map
@@ -166,10 +177,98 @@ describe('the generated package.json', () => {
       devDependencies?: Record<string, string>
     }
 
-    expect(pkg.devDependencies?.['simple-site-generator']).toMatch(/^\^0\.2\.0/)
+    expect(pkg.devDependencies?.['simple-site-generator']).toMatch(/^\^0\./)
     expect(pkg.dependencies?.['@simple-site-generator/templates']).toMatch(
-      /^\^0\.2\.0/
+      /^\^0\./
     )
+  })
+
+  it('pins the kit to the release that ships this scaffold', async () => {
+    // A caret on a `0.x` version locks the minor, so `^0.2.0` installed kit
+    // 0.2.0 — retired template names, no fixes — two releases after 0.4.0
+    // shipped. Asserting the pins against this workspace's own versions makes a
+    // release that forgets them fail here instead of scaffolding a stale site.
+    const { code } = await run(
+      ['init', join(workspace, 'pins'), '--template', 'plain', '--yes'],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const pkg = JSON.parse(
+      await fs.readFile(join(workspace, 'pins', 'package.json'), 'utf8')
+    ) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+
+    const versionOf = async (path: string): Promise<string> => {
+      const manifest = JSON.parse(await fs.readFile(path, 'utf8')) as {
+        version: string
+      }
+      return manifest.version
+    }
+
+    const templates = await versionOf(
+      fileURLToPath(
+        new URL('../../packages/templates/package.json', import.meta.url)
+      )
+    )
+    const cli = await versionOf(
+      fileURLToPath(
+        new URL(
+          '../../packages/simple-site-generator/package.json',
+          import.meta.url
+        )
+      )
+    )
+    // vitrify is not a dependency of this workspace root; the templates package
+    // is the one that declares and installs it.
+    const vitrify = await versionOf(
+      fileURLToPath(
+        new URL(
+          '../../packages/templates/node_modules/vitrify/package.json',
+          import.meta.url
+        )
+      )
+    )
+
+    expect(pkg.dependencies?.['@simple-site-generator/templates']).toBe(
+      `^${templates}`
+    )
+    expect(pkg.devDependencies?.['simple-site-generator']).toBe(`^${cli}`)
+    // Locked to the minor as well: 0.32.0 is the line that hashes the client
+    // chunks, and the scaffolded `@hashed` cache rule is only worth anything
+    // there.
+    expect(pkg.devDependencies?.vitrify).toBe(`^${vitrify}`)
+  })
+
+  it('writes a site name with an ampersand as itself, not as an entity', async () => {
+    // `renderDirectory` runs the scaffold through Handlebars, whose double-brace
+    // form escapes HTML. In a JS string that is silently wrong: a name containing
+    // `&` became its HTML entity, which renders as `&amp;amp;` in `<title>` and
+    // puts an escaped name in the JSON-LD and the sitemap.
+    const { code } = await run(
+      [
+        'init',
+        join(workspace, 'ampersand'),
+        '--template',
+        'plain',
+        '--site-name',
+        'Ampersand & Fixture',
+        '--yes'
+      ],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const config = await readConfig('ampersand')
+
+    expect(config).toContain(`title: "Ampersand & Fixture",`)
+    // The comment above the value spells `&amp;` out as the failure mode, so the
+    // assertion is on the value, not on the whole file.
+    expect(config).not.toMatch(/title: "Ampersand &amp;/)
   })
 
   it('turns a display name into a package name vitrify accepts', async () => {
@@ -183,7 +282,7 @@ describe('the generated package.json', () => {
         '--template',
         'landing',
         '--site-name',
-        'a long Dutch company name',
+        'My Long Site Name',
         '--yes'
       ],
       workspace
@@ -196,7 +295,7 @@ describe('the generated package.json', () => {
     ) as { name: string; productName?: string }
 
     expect(pkg.name).toBe('my-long-site-name')
-    expect(pkg.productName).toBe('a long Dutch company name')
+    expect(pkg.productName).toBe('My Long Site Name')
   })
 
   it('takes an explicit package name over the slug', async () => {
@@ -207,9 +306,9 @@ describe('the generated package.json', () => {
         '--template',
         'business',
         '--site-name',
-        'a long Dutch company name',
+        'My Long Site Name',
         '--package-name',
-        'example-site',
+        'explicit-name',
         '--yes'
       ],
       workspace
@@ -221,7 +320,7 @@ describe('the generated package.json', () => {
       await fs.readFile(join(workspace, 'explicit', 'package.json'), 'utf8')
     ) as { name: string }
 
-    expect(pkg.name).toBe('example-site')
+    expect(pkg.name).toBe('explicit-name')
   })
 })
 
@@ -290,6 +389,22 @@ describe('the generated deploy target', () => {
     expect(caddy).toContain('root * /srv/www.example.com')
     expect(caddy).not.toContain('/srv/https:')
 
+    // Both files end up inside the web root: `Caddyfile` because the server
+    // imports it from there, `Caddyfile.preview` because the same build copies it
+    // next to the site. So both have to keep it out of `file_server`, and the
+    // slash-prefixed form is the one that validates and does nothing — `hide`
+    // matches on file name. Asserted over directives, because the comment that
+    // explains this names both forms.
+    const preview = await fs.readFile(
+      join(workspace, 'host', 'build/Caddyfile.preview'),
+      'utf8'
+    )
+
+    for (const config of [caddy, preview]) {
+      expect(directives(config).match(/hide Caddyfile/g)).toHaveLength(2)
+      expect(directives(config)).not.toContain('hide /Caddyfile')
+    }
+
     const workflow = await fs.readFile(
       join(workspace, 'host', '.github/workflows/deploy-rsync.yaml'),
       'utf8'
@@ -303,6 +418,53 @@ describe('the generated deploy target', () => {
 
     const config = await readConfig('host')
 
-    expect(config).toContain("url: 'https://www.example.com/'")
+    expect(config).toContain('url: "https://www.example.com/"')
+  })
+})
+
+describe('the generated router', () => {
+  it('has an explicit 404 route beside the catch-all', async () => {
+    // The scaffolded Caddyfile rewrites a missing URL to `/404.html`, and nothing
+    // created that file: the prerenderer writes one HTML file per concrete route
+    // path, and a catch-all pattern is not one. Every scaffolded site answered
+    // 404 with an empty body — measured on two of them.
+    const { code } = await run(
+      ['init', join(workspace, 'route'), '--template', 'plain', '--yes'],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const routes = await fs.readFile(
+      join(workspace, 'route', 'src/router/routes.ts'),
+      'utf8'
+    )
+
+    expect(routes).toContain("path: '404',")
+    // The shared metadata, so `404.html` carries the `description` that
+    // `ssg verify` requires of every built HTML file.
+    expect(routes).toContain('const notFoundMeta = {')
+    expect(routes).toContain('description:')
+    expect(routes.match(/component: notFoundPage/g)).toHaveLength(2)
+  })
+
+  it('ships the Caddyfile guard as a test, so `pnpm test` has one', async () => {
+    // A fresh site's `pnpm test` ran `vitrify test` with no test files and exited
+    // non-zero, which reads as a broken scaffold. The guard is also the thing
+    // that keeps `hide Caddyfile` and the hash class from regressing silently.
+    const { code } = await run(
+      ['init', join(workspace, 'guard'), '--template', 'plain', '--yes'],
+      workspace
+    )
+
+    expect(code).toBe(0)
+
+    const guard = await fs.readFile(
+      join(workspace, 'guard', 'test/caddyfile.test.ts'),
+      'utf8'
+    )
+
+    expect(guard).toContain('hide Caddyfile')
+    expect(guard).toContain('@hashed path_regexp hashed')
   })
 })
