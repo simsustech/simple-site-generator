@@ -85,17 +85,23 @@ jobs:
           "$RUNNER_TEMP/site" --template docs --yes
           --site-name "CI Site" --url https://ci.test
 
-      # Consume the templates from the workspace rather than the registry, so
-      # this tests the current commit instead of the last published release.
-      - name: Point the site at the workspace templates
+      # Consume both kit packages from the workspace rather than the registry,
+      # so this tests the current commit instead of the last published release.
+      # Only the templates were repointed before, which left the CLI dependency
+      # at the pin this checkout derives from its own version: on a version PR
+      # those name a release that does not exist yet, and `pnpm install` died
+      # with ERR_PNPM_NO_MATCHING_VERSION before it could test anything.
+      - name: Point the site at the workspace kit
         run: |
           node -e '
             const fs = require("fs")
             const file = process.env.RUNNER_TEMP + "/site/package.json"
             const pkg = JSON.parse(fs.readFileSync(file, "utf8"))
-            const dep = "@simple-site-generator/templates"
             const root = process.cwd()
-            pkg.dependencies[dep] = "file:" + root + "/packages/templates"
+            pkg.dependencies["@simple-site-generator/templates"] =
+              "file:" + root + "/packages/templates"
+            pkg.devDependencies["simple-site-generator"] =
+              "file:" + root + "/packages/simple-site-generator"
             fs.writeFileSync(file, JSON.stringify(pkg, null, 2))
           '
 
