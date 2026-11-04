@@ -959,6 +959,24 @@ export const ssgPreflights: Preflights = [
   left: 0;
 }
 
+/* The page band's rhythm beats the page's own gutter.
+
+   unocss-preset-quasar gives q-page a padding of var(--q-space-md) — 12px — and
+   every page template puts the ssg-section class on that same root. Both
+   selectors have the same specificity, so the preset's rule won on source order:
+   the first band of every page sat 12px under the header instead of at the
+   section rhythm, which reads as content shoved against the header rather than a
+   page that starts. Measured on a business page before this rule: the h1 at 62px
+   with the header ending at 50px.
+
+   Scoped to the shell so it wins on specificity rather than on import order, and
+   written from the same space-5 token the ssg-section shortcut uses, so the two
+   cannot drift. The 12px gutter itself is untouched — a tinted hero still cancels
+   exactly that with the ssg-page-gutter alias. */
+.ssg-shell .ssg-section {
+  padding-block: ${SPACE['5']};
+}
+
 /* The plain template's buttons carry the same corner as its photo card.
 
    MD3's default button is a full pill, and next to a 6px card that reads as a
