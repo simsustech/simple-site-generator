@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isIgnored } from '../src/verify/ignore.js'
+import { lighthouseConfigFor } from '../src/verify/lighthouse.js'
 import { checkSeoSurface } from '../src/verify/seo-surface.js'
 
 /**
@@ -84,5 +85,33 @@ describe('isIgnored', () => {
 
   it('ignores nothing when no patterns are given', () => {
     expect(isIgnored('index.html', [])).toBe(false)
+  })
+})
+
+describe('lighthouseConfigFor', () => {
+  // A "desktop" run that keeps the mobile network model and the 4x CPU slowdown
+  // reports FCP/LCP about four times too slow: measured on a prerendered page,
+  // 0.9 s and performance 98 against 0.2 s and 100. The throttling block is what
+  // makes the form factor real, so it is the thing to hold.
+  it('gives desktop runs the desktop throttling, not only the form factor', () => {
+    const config = lighthouseConfigFor('desktop') as {
+      settings?: { formFactor?: string; throttling?: Record<string, number> }
+    }
+
+    expect(config.settings?.formFactor).toBe('desktop')
+    expect(config.settings?.throttling).toEqual({
+      rttMs: 40,
+      throughputKbps: 10 * 1024,
+      cpuSlowdownMultiplier: 1,
+      requestLatencyMs: 0,
+      downloadThroughputKbps: 0,
+      uploadThroughputKbps: 0
+    })
+  })
+
+  it('leaves mobile on the default throttling', () => {
+    const config = lighthouseConfigFor('mobile') as { settings?: unknown }
+
+    expect(config.settings).toBeUndefined()
   })
 })

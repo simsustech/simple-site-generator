@@ -36,6 +36,46 @@ export interface LighthouseOptions {
  */
 const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo']
 
+/**
+ * The Lighthouse config for a form factor.
+ *
+ * `formFactor: 'desktop'` alone does not make a desktop run. The default config
+ * keeps the mobile network model and its 4x CPU slowdown, so a "desktop" run
+ * reports FCP and LCP roughly four times too slow — measured on a prerendered
+ * page: 0.9 s and a performance score of 98 with the default throttling, 0.2 s
+ * and 100 with the block below, three runs each. The values are Lighthouse's own
+ * desktop preset, which is `desktopDense4G` without the CPU slowdown.
+ */
+export function lighthouseConfigFor(
+  formFactor: LighthouseOptions['formFactor']
+): Parameters<typeof lighthouse>[2] {
+  if (formFactor !== 'desktop') {
+    return { extends: 'lighthouse:default' }
+  }
+
+  return {
+    extends: 'lighthouse:default',
+    settings: {
+      formFactor: 'desktop',
+      throttling: {
+        rttMs: 40,
+        throughputKbps: 10 * 1024,
+        cpuSlowdownMultiplier: 1,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0
+      },
+      screenEmulation: {
+        mobile: false,
+        width: 1350,
+        height: 940,
+        deviceScaleFactor: 1,
+        disabled: false
+      }
+    }
+  }
+}
+
 export async function runLighthouse(
   url: string,
   options: LighthouseOptions = {}
@@ -62,22 +102,9 @@ export async function runLighthouse(
         logLevel: 'error',
         onlyCategories: CATEGORIES
       },
-      // Lighthouse 12+ expects the form factor in the config's settings.
-      options.formFactor === 'desktop'
-        ? {
-            extends: 'lighthouse:default',
-            settings: {
-              formFactor: 'desktop',
-              screenEmulation: {
-                mobile: false,
-                width: 1350,
-                height: 940,
-                deviceScaleFactor: 1,
-                disabled: false
-              }
-            }
-          }
-        : { extends: 'lighthouse:default' }
+      // Lighthouse 12+ expects the form factor in the config's settings, and the
+      // throttling that goes with it — see `lighthouseConfigFor`.
+      lighthouseConfigFor(options.formFactor)
     )
 
     if (!result) {
