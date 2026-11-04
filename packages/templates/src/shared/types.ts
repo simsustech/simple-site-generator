@@ -145,6 +145,14 @@ export interface SitePage {
     /** Absolute destination (`tel:`, `mailto:`); ignored when `route` is set. */
     href?: string
     /**
+     * A line of context above the button, in the closing band.
+     *
+     * Optional on purpose: a page that has just made its case benefits from
+     * naming it — "Ready to start?" over a button reads differently from a bare
+     * button — while a page that already ends in a sentence does not need one.
+     */
+    heading?: string
+    /**
      * The quieter action beside the primary one.
      *
      * The hero carries two on purpose: the primary is the one the page is for,

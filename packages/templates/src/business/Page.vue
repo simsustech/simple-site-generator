@@ -90,10 +90,36 @@
         row. It closes the page instead, after the prose it belongs to, which is
         where a reader who has just been convinced needs it.
 
+        A band of its own, not a bare row: with only `mt-space-5` on the wrapper,
+        the button was spaced like a section without being one — no padding below
+        it, so on a page whose content fills the viewport it sat 12px above the
+        footer, and on a shorter page the page-fill left it stranded mid-gap. A
+        button that lands wherever the content runs out reads as something that
+        fell off the page. A hairline now marks where the page ends, the band pads
+        above and below, and the action sits on the article's own gutter.
+
+        With a `cta.heading` the band is a row — the sentence on the left, the
+        action on the right, which uses the width instead of centring a narrow
+        block in the middle of it — and it stacks below `lg`. Without one it is
+        centred and the button carries the ending alone.
+
+        No `ssg-section__inner` around the button, deliberately: this page is an
+        `article` that already pads its own gutter, and the shared inner adds
+        another `px-space-3` on top of it — measured, that put the button 16px to
+        the right of every heading and paragraph above it. Here the article is the
+        container axis; a page without that gutter would need the inner.
+
         `href` carries `mailto:` and `tel:` just as well as `route` carries an
         in-app path, so a contact page asks for the email without a form.
       -->
-      <div v-if="cta" class="ssg-business__action">
+      <section
+        v-if="cta"
+        class="ssg-business__action"
+        :class="{ 'ssg-business__action--row': cta.heading }"
+      >
+        <h2 v-if="cta.heading" class="ssg-business__action-heading">
+          {{ cta.heading }}
+        </h2>
         <CtaButton
           :label="cta.message"
           :route="cta.route"
@@ -101,7 +127,7 @@
           variant="primary"
           data-ssg="page-cta"
         />
-      </div>
+      </section>
 
       <slot />
     </article>

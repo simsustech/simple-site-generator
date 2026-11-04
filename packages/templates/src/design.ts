@@ -579,7 +579,27 @@ export const ssgShortcuts: Shortcuts = [
   ['ssg-business__title', pageTitle()],
   ['ssg-business__cards', 'mt-space-5'],
   // The page's closing action, when its frontmatter declares a `cta`.
-  ['ssg-business__action', 'mt-space-5'],
+  //
+  // A hairline marks where the page ends, and the band pads above and below it:
+  // before, the button carried the same top margin as a band and none of the
+  // padding, so its distance from the footer was whatever the content left. The
+  // rule sits on the article's gutter, like the prose and the cards.
+  //
+  // Centred when the band carries only a button; `--row` lays the heading and the
+  // action on one line from `lg`, which fills the width instead of leaving a
+  // narrow block floating in the middle of it.
+  [
+    'ssg-business__action',
+    `mt-space-5 pt-[56px] pb-space-5 text-center b-t b-t-solid b-[${OUTLINE_VARIANT}]`
+  ],
+  [
+    'ssg-business__action--row',
+    'text-left lg:flex lg:items-center lg:justify-between lg:gap-[32px]'
+  ],
+  [
+    'ssg-business__action-heading',
+    `text-[${ON_SURFACE}] text-step-2 m-0 mb-space-3 lg:mb-0`
+  ],
   [
     'ssg-business__cards-heading',
     `text-[${ON_SURFACE}] text-step-2 m-0 mb-space-3`

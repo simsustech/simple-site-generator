@@ -135,6 +135,84 @@ describe('business template page', () => {
     )
   })
 
+  // The button used to sit in a bare wrapper carrying `mt-space-5` and nothing
+  // else, so it was spaced like a section without being one: the gap under it was
+  // whatever the page had left, 12px above the footer on one page and 370px on
+  // another, which is what made it read as a stray control. It closes the page as
+  // a section now, with padding below it.
+  it('closes the page with the action inside a section band', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'contact',
+      title: 'Contact',
+      cta: { message: 'Email us', href: 'mailto:hi@example.com' }
+    })
+    const band = wrapper.find('.ssg-business__action')
+
+    expect(band.element.tagName).toBe('SECTION')
+    expect(band.find('[data-ssg="page-cta"]').exists()).toBe(true)
+  })
+
+  // The `article` already pads its gutter; `ssg-section__inner` would add a
+  // second `px-space-3`, which measured as 16px of drift from every heading and
+  // paragraph above the button.
+  it('keeps the action on the page gutter, not a nested inner', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'contact',
+      title: 'Contact',
+      cta: { message: 'Email us', href: 'mailto:hi@example.com' }
+    })
+
+    expect(
+      wrapper.find('.ssg-business__action .ssg-section__inner').exists()
+    ).toBe(false)
+  })
+
+  it('puts the declared heading above the action', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'services',
+      title: 'Services',
+      cta: { message: 'Get in touch', route: '/contact', heading: 'Ready?' }
+    })
+    const heading = wrapper.find('.ssg-business__action-heading')
+
+    expect(heading.text()).toBe('Ready?')
+    expect(heading.element.tagName).toBe('H2')
+  })
+
+  // A heading turns the band into a row: the sentence on the left, the action on
+  // the right. Without one the band is centred and the button carries the ending
+  // alone, so a page whose last block is a card grid does not get a lone button
+  // pushed into the corner.
+  it('lays the band out as a row only when it has a heading', () => {
+    const withHeading = mountPageInShell(BusinessPage, {
+      id: 'services',
+      title: 'Services',
+      cta: { message: 'Get in touch', route: '/contact', heading: 'Ready?' }
+    })
+    const without = mountPageInShell(BusinessPage, {
+      id: 'contact',
+      title: 'Contact',
+      cta: { message: 'Email us', route: '/contact' }
+    })
+
+    expect(withHeading.find('.ssg-business__action').classes()).toContain(
+      'ssg-business__action--row'
+    )
+    expect(without.find('.ssg-business__action').classes()).not.toContain(
+      'ssg-business__action--row'
+    )
+  })
+
+  it('renders no heading when the frontmatter declares none', () => {
+    const wrapper = mountPageInShell(BusinessPage, {
+      id: 'services',
+      title: 'Services',
+      cta: { message: 'Get in touch', route: '/contact' }
+    })
+
+    expect(wrapper.find('.ssg-business__action-heading').exists()).toBe(false)
+  })
+
   it('renders no action when the page declares none', () => {
     const wrapper = mountPageInShell(BusinessPage, {
       id: 'about',
