@@ -37,6 +37,7 @@ Options:
   --yes                     Never prompt; use defaults
   --no-lighthouse           verify: skip Lighthouse (deterministic checks only)
   --ignore <glob>           verify: skip HTML files matching a glob (repeatable)
+  --port <n>                verify: port for the measurement server (default: any free port)
   --js-budget <kb>          verify: JavaScript budget in KB (default 250)
   --css-budget <kb>         verify: CSS budget in KB (default 60)
   -h, --help                Show this message
@@ -61,7 +62,8 @@ async function main(argv: string[]): Promise<number> {
       'description',
       'tags',
       'page',
-      'ignore'
+      'ignore',
+      'port'
     ],
     boolean: ['yes', 'lighthouse', 'help'],
     default: { lighthouse: true, ignore: [] },
@@ -177,6 +179,7 @@ async function main(argv: string[]): Promise<number> {
         skipLighthouse: args.lighthouse === false,
         siteUrl: args.url,
         ignore: [args.ignore].flat().filter(Boolean),
+        port: args.port ? Number(args.port) : undefined,
         budgets:
           args['js-budget'] || args['css-budget']
             ? {

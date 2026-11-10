@@ -3,12 +3,14 @@
 // @vitest-environment node
 
 import { execFile } from 'node:child_process'
+import { createServer } from 'node:net'
 import { promises as fs } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { startStaticServer } from '../../packages/simple-site-generator/src/verify/serve.js'
 
 /**
  * Seam S1 — the `ssg` CLI boundary.
@@ -318,7 +320,22 @@ describe('ssg add-page', () => {
   })
 })
 
-describe('ssg verify', () => {
+/**
+ * Whether this runner may bind a loopback port at all.
+ *
+ * `verify` starts a real server, and a sandboxed agent is often granted a range
+ * of ports instead of any ephemeral one («listen EACCES»). The tests below are
+ * about what `verify` measures, not about the runner's port policy, so they skip
+ * rather than fail there — and the skip says why. `--port` exists for exactly
+ * that environment.
+ */
+const canBindLoopback = await new Promise<boolean>((resolve) => {
+  const probe = createServer()
+  probe.once('error', () => resolve(false))
+  probe.listen(0, '127.0.0.1', () => probe.close(() => resolve(true)))
+})
+
+describe.skipIf(!canBindLoopback)('ssg verify', () => {
   async function withDist(
     html: string,
     assets: Record<string, string> = { 'main.mjs': 'export const a = 1\n' }
@@ -383,6 +400,28 @@ describe('ssg verify', () => {
     expect(stderr).toContain('JSON')
     expect(stderr).toContain('<h1>')
     expect(stderr).toContain('lang')
+  })
+
+  /*
+   * `--port` exists for environments that grant a range of ports instead of any
+   * free one (a sandboxed agent, a locked-down CI runner): with the default 0 the
+   * OS picks from the ephemeral range, which such a runner may deny.
+   */
+  it('binds the port it is given', async () => {
+    const dir = await withDist(goodHtml)
+
+    // Learn a free port, release it, then ask for exactly that one.
+    const probe = await startStaticServer(join(dir, 'dist/static'))
+    const port = probe.port
+    await probe.close()
+
+    const { code, stdout } = await run(
+      ['verify', '--no-lighthouse', '--port', String(port)],
+      dir
+    )
+
+    expect(code).toBe(0)
+    expect(stdout).toContain('OK')
   })
 
   it('fails when there is no build output to verify', async () => {

@@ -35,6 +35,11 @@ export interface VerifyOptions {
   ignore?: string[]
   /** Chromium binary for Lighthouse. */
   chromePath?: string
+  /**
+   * Port for the measurement server. Default: any free port. Set it where the
+   * environment allows only a range (`ssg verify --port 8090`).
+   */
+  port?: number
 }
 
 export interface VerifyResult {
@@ -185,7 +190,9 @@ export async function verify(
   let scores: Record<string, number> | undefined
 
   if (htmlFiles.length > 0) {
-    const server = await startStaticServer(outputDir)
+    const server = await startStaticServer(outputDir, {
+      port: options.port
+    })
 
     try {
       if (options.skipLighthouse) {

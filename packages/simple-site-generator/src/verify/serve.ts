@@ -82,7 +82,19 @@ function candidatesFor(root: string, pathname: string): string[] {
   return [join(base, 'index.html'), `${base}.html`, join(base, 'index.html')]
 }
 
-export async function startStaticServer(root: string): Promise<StaticServer> {
+export interface StaticServerOptions {
+  /**
+   * Port to bind. Default 0: the OS picks a free port, so parallel runs cannot
+   * collide. Set it only where the environment grants a specific range — a
+   * sandbox that denies an ephemeral bind, for instance.
+   */
+  port?: number
+}
+
+export async function startStaticServer(
+  root: string,
+  options: StaticServerOptions = {}
+): Promise<StaticServer> {
   const absoluteRoot = resolve(root)
 
   const server: Server = createServer(async (request, response) => {
@@ -132,8 +144,7 @@ export async function startStaticServer(root: string): Promise<StaticServer> {
 
   await new Promise<void>((done, fail) => {
     server.once('error', fail)
-    // Port 0 → the OS picks a free port, so parallel runs cannot collide.
-    server.listen(0, '127.0.0.1', () => done())
+    server.listen(options.port ?? 0, '127.0.0.1', () => done())
   })
 
   const address = server.address()
