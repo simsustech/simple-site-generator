@@ -1,5 +1,42 @@
 # simple-site-generator
 
+## 0.7.0
+
+### Minor Changes
+
+- f768fbf: feat: `ssg generate-icons`, and a header mark that is separate from the favicon
+
+  A site ships three pictures of the same mark — the tab icon, the ICO a legacy Windows shell asks for,
+  and the picture the header draws — and until now every project produced them by hand. Hand-made icons
+  drift silently: the logo is traced again, the 96 px PNG keeps showing the old artwork, and the only
+  place that shows it is somebody's bookmark bar.
+
+  `ssg generate-icons` renders all of them from one SVG (`logo.svg`, or `--input`) into `public/`, and
+  `ssg init` scaffolds it as `pnpm run generate:icons`. Rasterising stays icon-gen's job: it renders
+  through sharp's librsvg, which is what keeps a gradient and a clip-path alive at 16 px.
+
+  Two rules the command encodes, both learnt the hard way: the favicon stays a **PNG/ICO** — a
+  `rel="icon"` pointing at an SVG is ignored by most browsers, and the tab then shows a blank page
+  icon — and the header gets its **own** prop. `LayoutProps.logo` is the mark the header draws; the
+  header falls back to `favicon` when a site sets only that, so nothing regressed.
+
+### Patch Changes
+
+- e200157: fix(cli): let `ssg verify` bind a port the environment grants
+
+  `verify` measures the built site behind a real static server, and it always asked
+  the OS for an ephemeral port. A sandboxed agent or a locked-down CI runner is
+  often granted a range of ports instead of any free one, where `listen(0, …)`
+  fails with `EACCES` before a single page is measured — the gate then reports an
+  environment error rather than a verdict on the site.
+
+  `ssg verify --port <n>` binds that port for the measurement server, and
+  `startStaticServer(root, { port })` takes the same option for callers of the API.
+  The default stays `0`, so parallel runs still cannot collide.
+
+  The verify tests skip, with a reason, where the runner may not bind loopback at
+  all: they are about what `verify` measures, not about the runner's port policy.
+
 ## 0.6.2
 
 No changes in this release.
