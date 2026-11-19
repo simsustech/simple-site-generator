@@ -47,6 +47,26 @@ describe('shared site shell', () => {
     expect(wrapper.find('.ssg-header__brand-name').text()).toBe('Acme Corp')
   })
 
+  it('draws the logo when the site sets one, and the favicon otherwise', () => {
+    // Two pictures, two props: the favicon has to survive a tab bar at 32px, the
+    // header mark is drawn at 40px on the site's own surface. A site that sets
+    // only `logo` showed the favicon in the header before this prop existed,
+    // which is what the fallback keeps working.
+    const withLogo = mountWithQuasar(SiteShell, {
+      props: { ...shellProps, logo: '/logo.svg' }
+    })
+
+    expect(withLogo.find('.ssg-header__logo').attributes('src')).toBe(
+      '/logo.svg'
+    )
+
+    const withoutLogo = mountWithQuasar(SiteShell, { props: shellProps })
+
+    expect(withoutLogo.find('.ssg-header__logo').attributes('src')).toBe(
+      '/favicon.ico'
+    )
+  })
+
   it('renders the navigation of the language being viewed', () => {
     // `route.meta.lang` wins; with a route table that declares none (as this
     // harness has) the site's own language is the fallback.

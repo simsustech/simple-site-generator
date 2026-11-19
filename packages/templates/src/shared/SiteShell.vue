@@ -5,6 +5,7 @@
     <SiteHeader
       :title="title"
       :favicon="favicon"
+      :logo="logo"
       :pages="pages"
       :tags="tags"
       :lang="navLang"

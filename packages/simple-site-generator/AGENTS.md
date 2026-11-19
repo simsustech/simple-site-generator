@@ -12,6 +12,7 @@ verifier and the generated `<head>` all assume it.
 ssg init my-site --template landing --site-name "Acme Plumbing" --url https://acme.com
 cd my-site && pnpm install
 ssg add-page services --title "Services" --tags menu
+ssg generate-icons # favicons + the header SVG, from logo.svg
 ssg check          # validate frontmatter before building
 ssg build          # prerender to dist/static
 ssg verify         # SEO surface + byte budgets + Lighthouse
@@ -19,6 +20,12 @@ ssg verify         # SEO surface + byte budgets + Lighthouse
 
 `init` is non-interactive with `--yes` (it never prompts when stdin is not a TTY). Templates:
 `docs`, `landing`, `business`, `plain`.
+
+`generate-icons` reads one SVG (`logo.svg`, or `--input`) and writes the favicon set, `favicon.ico`
+and the header mark's copy into `public/`. It is the only supported way to produce them: a hand-made
+favicon drifts from the artwork the moment the logo is re-traced. The tab icon stays a PNG — a
+`rel="icon"` pointing at an SVG is ignored by most browsers — and the header may use the SVG
+(`ssg.logo`), which stays sharp on a 3× display.
 
 **Do not deploy until `ssg verify` exits 0.** It is the only thing standing between "the agent says
 it built a site" and "the site is actually correct and fast".

@@ -18,12 +18,20 @@
           @click="$emit('toggle-drawer')"
         />
 
-        <!-- Brand: name + logo together, so the navigation identifies the site. -->
+        <!--
+          Brand: mark + name together, so the navigation identifies the site.
+
+          `logo` is the mark as the site drew it and `favicon` is what the tab
+          bar gets; a site that sets only the favicon renders exactly as before.
+          The image is decorative here — the name next to it already says who
+          the site is — so it carries no alt text and stays out of the
+          accessibility tree.
+        -->
         <router-link to="/" class="ssg-header__brand">
           <img
-            v-if="favicon"
+            v-if="logo || favicon"
             class="ssg-header__logo"
-            :src="favicon"
+            :src="logo || favicon"
             alt=""
             width="40"
             height="40"
@@ -254,7 +262,10 @@ import { telHref } from './tel.js'
  * header keeps only the brand, the menu toggle and the overflow menu.
  */
 const props = defineProps<
-  Pick<LayoutProps, 'title' | 'favicon' | 'pages' | 'tags' | 'lang'> & {
+  Pick<
+    LayoutProps,
+    'title' | 'favicon' | 'logo' | 'pages' | 'tags' | 'lang'
+  > & {
     drawer?: boolean
     /**
      * The site's own facts. `phone` and `clientLoginUrl` are the two the chrome

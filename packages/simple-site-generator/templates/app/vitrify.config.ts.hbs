@@ -22,7 +22,14 @@ interface SimpleSiteGenerator {
     description: string
     template: string
     templatePackage: string
+    /** The tab-bar icon. A PNG: `rel="icon"` pointing at an SVG is ignored by most browsers. */
     favicon: string
+    /**
+     * The mark the header draws, as an SVG. Distinct from `favicon`: one is a
+     * 32px picture that has to survive a tab bar, the other is drawn at 40px on
+     * the site's own surface. Unset, the header falls back to the favicon.
+     */
+    logo?: string
     /** Absolute or root-relative social-card image; optional. */
     image?: string
     lang: string
@@ -48,6 +55,9 @@ const ssg: SimpleSiteGenerator['ssg'] = {
   url: {{{ urlLiteral }}},
   description: {{{ descriptionLiteral }}},
   favicon: '/favicon-96.png',
+  // The header mark. `pnpm run generate:icons` renders the favicons from
+  // `logo.svg` and copies it here, so the two are always the same artwork.
+  logo: '/logo.svg',
   // The image a shared link shows. Leave it unset and `og:image` is simply not
   // emitted; point it at a 1200x630 file in `public/` once you have one, and the
   // Twitter card switches from `summary` to `summary_large_image` by itself.
@@ -168,6 +178,7 @@ export default async function ({
               title: ssg.title,
               url: ssg.url,
               favicon: ssg.favicon,
+              logo: ssg.logo,
               image: ssg.image,
               lang: ssg.lang,
               template: ssg.template,

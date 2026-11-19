@@ -4,6 +4,7 @@ import parseArgs from 'minimist'
 import { addPage } from './commands/add-page.js'
 import { build } from './commands/build.js'
 import { check } from './commands/check.js'
+import { generateIcons } from './commands/generate-icons.js'
 import { TEMPLATES, confirmOverwrite, init } from './commands/init.js'
 import { verify } from './commands/verify.js'
 import { DEFAULT_BUDGETS } from './verify/budgets.js'
@@ -23,6 +24,7 @@ Usage:
   ssg add-page <id>         Create a page with valid frontmatter
   ssg check                 Validate every page's frontmatter
   ssg build                 Build the static site (vitrify build -m ssg)
+  ssg generate-icons        Favicons + the header SVG from logo.svg
   ssg verify                Verify the built site (SEO surface, budgets, Lighthouse)
 
 Options:
@@ -34,6 +36,9 @@ Options:
   --description <text>      add-page: meta description
   --tags <a,b>              add-page: comma-separated tags (${['menu', 'footer', 'contact'].join(', ')})
   --page <component>        add-page: template component, e.g. Landing
+  --input <file>            generate-icons: source SVG (default: logo.svg)
+  --output <directory>      generate-icons: output directory (default: public)
+  --icon-name <prefix>      generate-icons: PNG prefix (default: favicon-)
   --yes                     Never prompt; use defaults
   --no-lighthouse           verify: skip Lighthouse (deterministic checks only)
   --ignore <glob>           verify: skip HTML files matching a glob (repeatable)
@@ -62,6 +67,9 @@ async function main(argv: string[]): Promise<number> {
       'description',
       'tags',
       'page',
+      'input',
+      'output',
+      'icon-name',
       'ignore',
       'port'
     ],
@@ -91,7 +99,8 @@ async function main(argv: string[]): Promise<number> {
 
       process.stdout.write(
         `Created ${result.template} site in ${result.directory}\n` +
-          `Next: cd ${basename(result.directory)} && pnpm install && pnpm check\n`
+          `Next: cd ${basename(result.directory)} && pnpm install && pnpm check\n` +
+          'Icons: put your mark in logo.svg, then run `pnpm run generate:icons`.\n'
       )
 
       return 0
@@ -170,6 +179,22 @@ async function main(argv: string[]): Promise<number> {
 
       process.stdout.write(`Built to ${result.outputDir}\n`)
       process.stdout.write('Next: ssg verify\n')
+
+      return 0
+    }
+
+    case 'generate-icons': {
+      const result = await generateIcons({
+        input: args.input,
+        output: args.output,
+        name: args['icon-name']
+      })
+
+      for (const file of result.files) {
+        process.stdout.write(`  ${file}\n`)
+      }
+
+      if (result.logo) process.stdout.write(`  ${result.logo}\n`)
 
       return 0
     }

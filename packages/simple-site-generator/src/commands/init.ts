@@ -121,6 +121,11 @@ const SCRIPTS: Record<string, string> = {
   'build:ssr': 'vitrify build -m ssr',
   'build:ssg': 'vitrify build -m ssg',
   check: 'ssg check',
+  // The favicon set and the header mark, from the one SVG in the project root.
+  // Hand-made icons drift: the logo is traced again and the 96px PNG keeps
+  // showing the old artwork, invisible on the site and obvious in a bookmark
+  // bar. One source, one command.
+  'generate:icons': 'ssg generate-icons',
   // Build, then serve the result the way production does — extensionless URLs
   // and a real 404 — rather than `caddy file-server`, which has no `try_files`
   // and answers 404 for every page URL.

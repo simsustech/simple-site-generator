@@ -31,6 +31,7 @@
     "chrome-launcher": "^1.2.2",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.10",
+    "icon-gen": "^5.0.0",
     "inquirer": "^14.2.5",
     "latest-version": "^9.0.0",
     "lighthouse": "^13.6.0",

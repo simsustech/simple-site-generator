@@ -13,6 +13,9 @@ overrides:
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  # `icon-gen` renders the favicons through sharp, which links a prebuilt
+  # libvips at install time; pnpm 12 fails the install when that is skipped.
+  sharp: true
   simple-git-hooks: true
   unrs-resolver: true
 

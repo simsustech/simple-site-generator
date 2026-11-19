@@ -477,6 +477,15 @@ export interface SeoPage {
 export interface LayoutProps {
   title: string
   favicon?: string
+  /**
+   * The brand mark shown in the header, as an SVG.
+   *
+   * Separate from `favicon` because they are two different pictures: a favicon
+   * is a 32px PNG that has to survive a tab bar, and a header mark is drawn at
+   * 40px against the site's own surface. Falling back to `favicon` keeps every
+   * site that sets only that one rendering as it did.
+   */
+  logo?: string
   pages?: SitePage[]
   tags?: Record<string, SiteThing>
   extra?: SiteExtra
